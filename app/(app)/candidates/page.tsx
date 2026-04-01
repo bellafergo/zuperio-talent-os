@@ -1,5 +1,17 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { listCandidatesForUi } from "@/lib/candidates/queries";
 
-export default function CandidatesPage() {
-  return <PlaceholderPage title="Candidates" />;
+import { CandidatesHeader } from "./_components/candidates-header";
+import { CandidatesModule } from "./_components/candidates-module";
+
+export const dynamic = "force-dynamic";
+
+export default async function CandidatesPage() {
+  const candidates = await listCandidatesForUi();
+
+  return (
+    <div className="space-y-6">
+      <CandidatesHeader />
+      <CandidatesModule candidates={candidates} />
+    </div>
+  );
 }

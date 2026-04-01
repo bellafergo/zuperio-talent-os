@@ -52,6 +52,13 @@ enum VacancyStatus {
   CANCELLED
 }
 
+enum CandidateAvailabilityStatus {
+  AVAILABLE
+  IN_PROCESS
+  ASSIGNED
+  NOT_AVAILABLE
+}
+
 // --- Models -----------------------------------------------------------------
 // Auth/session fields can be added later; this is an internal-directory shape.
 
@@ -147,4 +154,27 @@ model Vacancy {
   @@index([opportunityId])
   @@index([status])
   @@index([seniority])
+}
+
+/// Staff-augmentation talent pool member (no Vacancy relation yet).
+model Candidate {
+  id                   String                      @id @default(cuid())
+  firstName            String
+  lastName             String
+  email                String?
+  phone                String?
+  role                 String
+  seniority            VacancySeniority
+  /// Comma-separated skills for now (e.g. "React, Node.js, TypeScript").
+  skills               String
+  availabilityStatus   CandidateAvailabilityStatus @default(AVAILABLE)
+  currentCompany       String?
+  notes                String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([seniority])
+  @@index([availabilityStatus])
+  @@index([email])
 }

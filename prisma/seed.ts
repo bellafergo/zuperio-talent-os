@@ -4,6 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
 import {
+  SEED_CANDIDATES,
   SEED_COMPANIES,
   SEED_CONTACTS,
   SEED_OPPORTUNITIES,
@@ -136,12 +137,43 @@ async function main() {
       },
     });
   }
+
+  for (const c of SEED_CANDIDATES) {
+    await prisma.candidate.upsert({
+      where: { id: c.id },
+      create: {
+        id: c.id,
+        firstName: c.firstName,
+        lastName: c.lastName,
+        email: c.email ?? null,
+        phone: c.phone ?? null,
+        role: c.role,
+        seniority: c.seniority,
+        skills: c.skills,
+        availabilityStatus: c.availabilityStatus,
+        currentCompany: c.currentCompany ?? null,
+        notes: c.notes ?? null,
+      },
+      update: {
+        firstName: c.firstName,
+        lastName: c.lastName,
+        email: c.email ?? null,
+        phone: c.phone ?? null,
+        role: c.role,
+        seniority: c.seniority,
+        skills: c.skills,
+        availabilityStatus: c.availabilityStatus,
+        currentCompany: c.currentCompany ?? null,
+        notes: c.notes ?? null,
+      },
+    });
+  }
 }
 
 main()
   .then(() => {
     console.info(
-      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies.`,
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates.`,
     );
   })
   .catch((e) => {

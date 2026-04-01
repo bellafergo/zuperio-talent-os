@@ -536,3 +536,184 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     opportunityId: "opp_12",
   },
 ];
+
+export type SeedCandidateAvailability =
+  | "AVAILABLE"
+  | "IN_PROCESS"
+  | "ASSIGNED"
+  | "NOT_AVAILABLE";
+
+export type SeedCandidateSeniority = SeedVacancySeniority;
+
+export type SeedCandidate = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  role: string;
+  seniority: SeedCandidateSeniority;
+  skills: string;
+  availabilityStatus: SeedCandidateAvailability;
+  currentCompany?: string;
+  notes?: string;
+};
+
+export const SEED_CANDIDATES: SeedCandidate[] = [
+  {
+    id: "cand_1",
+    firstName: "Ricardo",
+    lastName: "Sousa",
+    email: "ricardo.sousa@talent.example",
+    phone: "+351 910 100 201",
+    role: "Senior Backend Engineer",
+    seniority: "SENIOR",
+    skills: "Java, Spring Boot, PostgreSQL, Kafka, Docker",
+    availabilityStatus: "IN_PROCESS",
+    currentCompany: "TechPartner Lda",
+    notes: "Strong logistics domain; open to hybrid in Lisbon.",
+  },
+  {
+    id: "cand_2",
+    firstName: "Sofia",
+    lastName: "Martins",
+    email: "sofia.martins@talent.example",
+    role: "Frontend Developer",
+    seniority: "MID",
+    skills: "React, TypeScript, Next.js, Tailwind CSS, Jest",
+    availabilityStatus: "AVAILABLE",
+    notes: "Prefer product teams; EU remote.",
+  },
+  {
+    id: "cand_3",
+    firstName: "Miguel",
+    lastName: "Torres",
+    email: "miguel.torres@talent.example",
+    role: "QA Automation Engineer",
+    seniority: "MID",
+    skills: "Selenium, Cypress, Java, REST APIs, CI/CD",
+    availabilityStatus: "AVAILABLE",
+    currentCompany: "QA Works Remote",
+  },
+  {
+    id: "cand_4",
+    firstName: "Laura",
+    lastName: "Schmidt",
+    email: "laura.schmidt@talent.example",
+    phone: "+49 170 2200330",
+    role: "Technical Program Manager",
+    seniority: "LEAD",
+    skills: "Agile, Jira, Stakeholder management, Cloud programs, Risk",
+    availabilityStatus: "ASSIGNED",
+    currentCompany: "Northwind Partner",
+    notes: "Assignment ends Q3; book early for retail programs.",
+  },
+  {
+    id: "cand_5",
+    firstName: "André",
+    lastName: "Pinto",
+    email: "andre.pinto@talent.example",
+    role: "Data Engineer",
+    seniority: "SENIOR",
+    skills: "SQL, dbt, Python, Airflow, Snowflake, BigQuery",
+    availabilityStatus: "AVAILABLE",
+  },
+  {
+    id: "cand_6",
+    firstName: "Yuki",
+    lastName: "Tanaka",
+    email: "yuki.tanaka@talent.example",
+    role: "Full-stack Engineer",
+    seniority: "SENIOR",
+    skills: "Node.js, React, GraphQL, AWS, PostgreSQL",
+    availabilityStatus: "IN_PROCESS",
+    currentCompany: "Fabrikam Alumni",
+  },
+  {
+    id: "cand_7",
+    firstName: "Clara",
+    lastName: "Ibáñez",
+    email: "clara.ibanez@talent.example",
+    role: "Junior Frontend Developer",
+    seniority: "JUNIOR",
+    skills: "React, JavaScript, HTML, CSS, Git",
+    availabilityStatus: "AVAILABLE",
+    notes: "Bootcamp graduate; eager on design systems.",
+  },
+  {
+    id: "cand_8",
+    firstName: "Oliver",
+    lastName: "Berg",
+    email: "oliver.berg@talent.example",
+    phone: "+46 70 440 8899",
+    role: "Principal Software Architect",
+    seniority: "PRINCIPAL",
+    skills: "Java, Kotlin, Microservices, Kubernetes, Event-driven design",
+    availabilityStatus: "NOT_AVAILABLE",
+    currentCompany: "Enterprise Hold Co",
+    notes: "Not taking new mandates until next year.",
+  },
+  {
+    id: "cand_9",
+    firstName: "Beatriz",
+    lastName: "Nunes",
+    email: "beatriz.nunes@talent.example",
+    role: "Product Manager",
+    seniority: "MID",
+    skills: "Roadmaps, Discovery, Analytics, SQL, Figma",
+    availabilityStatus: "AVAILABLE",
+  },
+  {
+    id: "cand_10",
+    firstName: "James",
+    lastName: "Okafor",
+    email: "james.okafor@talent.example",
+    role: "DevOps Engineer",
+    seniority: "SENIOR",
+    skills: "Kubernetes, Terraform, GitHub Actions, AWS, Prometheus",
+    availabilityStatus: "AVAILABLE",
+  },
+  {
+    id: "cand_11",
+    firstName: "Helena",
+    lastName: "Costa",
+    email: "helena.costa@talent.example",
+    role: "Data Analyst",
+    seniority: "JUNIOR",
+    skills: "SQL, Excel, Looker, Python, Statistics",
+    availabilityStatus: "IN_PROCESS",
+  },
+  {
+    id: "cand_12",
+    firstName: "Pablo",
+    lastName: "Romero",
+    email: "pablo.romero@talent.example",
+    role: "Mobile Engineer",
+    seniority: "MID",
+    skills: "React Native, Swift, Kotlin, Firebase",
+    availabilityStatus: "AVAILABLE",
+  },
+  {
+    id: "cand_13",
+    firstName: "Emma",
+    lastName: "Lindqvist",
+    email: "emma.lindqvist@talent.example",
+    phone: "+46 76 900 1122",
+    role: "Engineering Manager",
+    seniority: "LEAD",
+    skills: "People leadership, Hiring, Java, Cloud, OKRs",
+    availabilityStatus: "AVAILABLE",
+    notes: "Open to interim EM roles (3–6 months).",
+  },
+  {
+    id: "cand_14",
+    firstName: "Diogo",
+    lastName: "Ferreira",
+    email: "diogo.ferreira@talent.example",
+    role: "Intern — Software",
+    seniority: "INTERN",
+    skills: "Python, Git, REST basics, Linux",
+    availabilityStatus: "AVAILABLE",
+    notes: "University final year; part-time possible.",
+  },
+];
