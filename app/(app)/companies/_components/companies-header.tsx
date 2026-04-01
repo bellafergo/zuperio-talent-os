@@ -1,6 +1,4 @@
-import { PlusIcon } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { CompaniesNewCompanyDialog } from "./companies-new-company-dialog";
 
 export function CompaniesHeader() {
   return (
@@ -14,10 +12,7 @@ export function CompaniesHeader() {
           are local only until data is connected.
         </p>
       </div>
-      <Button type="button" className="shrink-0 gap-1.5">
-        <PlusIcon className="size-4" aria-hidden />
-        New Company
-      </Button>
+      <CompaniesNewCompanyDialog />
     </div>
   );
 }
