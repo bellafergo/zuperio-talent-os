@@ -98,6 +98,7 @@ export type ProposalWithRelations = {
   profileSummary: string | null;
   scopeNotes: string | null;
   commercialNotes: string | null;
+  proposalPdfExportedAt: Date | null;
   pricing: {
     scheme: PrismaPricingScheme;
     monthlyHours: number;
@@ -136,6 +137,7 @@ export function mapProposalToListRowUi(row: ProposalWithRelations): ProposalList
   const marginPct = parseDecimal(row.pricing?.grossMarginPercent) ?? null;
 
   return {
+    proposalPdfExportedAt: row.proposalPdfExportedAt?.toISOString() ?? null,
     id: row.id,
     companyId: row.companyId,
     companyName: row.company.name,

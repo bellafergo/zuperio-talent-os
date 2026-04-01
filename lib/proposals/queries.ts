@@ -29,6 +29,7 @@ const proposalSelect = {
   profileSummary: true,
   scopeNotes: true,
   commercialNotes: true,
+  proposalPdfExportedAt: true,
   pricing: {
     select: {
       scheme: true,

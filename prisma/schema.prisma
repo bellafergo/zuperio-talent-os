@@ -422,6 +422,9 @@ model Proposal {
   scopeNotes       String?
   commercialNotes  String?
 
+  /// Last successful server-side PDF export (economic proposal); drives email-draft attachment state.
+  proposalPdfExportedAt DateTime?
+
   createdById String?
   createdBy   User? @relation("ProposalCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 

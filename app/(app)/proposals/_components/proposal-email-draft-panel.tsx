@@ -1,6 +1,7 @@
 import type { ProposalEmailDraft } from "@/lib/proposals/email-draft";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,6 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+function formatExportedAt(iso: string | null): string {
+  if (!iso) return "Never exported";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }).format(d) + " UTC";
+}
 
 export function ProposalEmailDraftPanel({ draft }: { draft: ProposalEmailDraft }) {
   return (
@@ -44,25 +56,48 @@ export function ProposalEmailDraftPanel({ draft }: { draft: ProposalEmailDraft }
         <CardHeader className="border-b border-border pb-4">
           <CardTitle className="text-base font-medium">Attachments</CardTitle>
           <CardDescription>
-            Placeholders for the matching + proposal + CV workflow — files are not
-            generated in-app yet.
+            Economic proposal PDF is available from Zuperio; candidate CV PDF export
+            is planned.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-4">
           {draft.attachments.map((a) => (
             <div
               key={a.kind}
-              className="flex flex-col gap-2 rounded-lg border border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-lg border border-border px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
             >
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">{a.label}</p>
                 <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
                   {a.filenameSuggestion}
                 </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Last export:{" "}
+                  <span className="font-medium text-foreground">
+                    {formatExportedAt(a.lastExportedAt)}
+                  </span>
+                </p>
+                {a.downloadHref ? (
+                  <p className="mt-1 break-all text-xs text-muted-foreground">
+                    Endpoint:{" "}
+                    <code className="rounded bg-muted px-1 py-0.5 text-[0.7rem]">
+                      {a.downloadHref}
+                    </code>
+                  </p>
+                ) : null}
               </div>
-              <Badge variant="secondary" className="w-fit shrink-0">
-                {a.ready ? "Ready" : "Pending export"}
-              </Badge>
+              <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+                <Badge variant={a.ready ? "default" : "secondary"} className="w-fit">
+                  {a.ready ? "Exported" : "Not exported yet"}
+                </Badge>
+                {a.downloadHref ? (
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={a.downloadHref} download={a.filenameSuggestion}>
+                      Download PDF
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
             </div>
           ))}
         </CardContent>

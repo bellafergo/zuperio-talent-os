@@ -1,3 +1,7 @@
+import {
+  proposalCandidateCvPdfFilename,
+  proposalEconomicPdfFilename,
+} from "./pdf-filename";
 import type { ProposalDetailUi } from "./types";
 
 export type ProposalEmailAttachmentPlaceholder = {
@@ -5,8 +9,12 @@ export type ProposalEmailAttachmentPlaceholder = {
   label: string;
   filenameSuggestion: string;
   mimeType: "application/pdf";
-  /** True when a generated file exists in storage; always false until export ships. */
+  /** True after at least one successful server-side economic proposal PDF export. */
   ready: boolean;
+  /** ISO timestamp of last successful export (economic PDF only for v1). */
+  lastExportedAt: string | null;
+  /** Authenticated relative URL to download/regenerate the economic PDF, or null for not-yet-built assets. */
+  downloadHref: string | null;
 };
 
 export type ProposalEmailDraft = {
@@ -16,27 +24,6 @@ export type ProposalEmailDraft = {
   bodyPlainText: string;
   attachments: ProposalEmailAttachmentPlaceholder[];
 };
-
-function slugPart(raw: string, maxLen: number): string {
-  const s = raw
-    .trim()
-    .replace(/[^\p{L}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, maxLen);
-  return s || "document";
-}
-
-function attachmentFilename(
-  proposal: ProposalDetailUi,
-  suffix: string,
-): string {
-  const company = slugPart(proposal.companyName, 24);
-  const who = slugPart(
-    proposal.candidateName !== "—" ? proposal.candidateName : proposal.vacancyTitle,
-    24,
-  );
-  return `Zuperio-${suffix}-${company}-${who}.pdf`;
-}
 
 export type ProposalEmailDraftContext = {
   preparedByDisplay: string;
@@ -72,6 +59,10 @@ export function buildProposalEmailDraft(
   const rateLine = proposal.finalMonthlyRateLabel;
   const rateVatLine = proposal.finalMonthlyRateWithVATLabel;
 
+  const economicName = proposalEconomicPdfFilename(proposal);
+  const cvName = proposalCandidateCvPdfFilename(proposal);
+  const pdfDownloadPath = `/api/proposals/${proposal.id}/pdf`;
+
   const subject = `Commercial proposal — ${proposal.companyName} — ${candidateLine}`;
 
   const bodyPlainText = [
@@ -84,9 +75,14 @@ export function buildProposalEmailDraft(
     `Indicative monthly rate (incl. VAT): ${rateVatLine}`,
     `Proposal validity: ${proposal.validityDays} days from issue.`,
     "",
-    "Attachments to include when sending (prepare from Zuperio templates):",
-    `• ${attachmentFilename(proposal, "Economic-Proposal")} — economic proposal (use Preview → Print / PDF)`,
-    `• ${attachmentFilename(proposal, "Candidate-CV")} — Zuperio-branded CV from the candidate profile`,
+    "Attachments:",
+    `• ${economicName} — economic proposal (generate from the proposal Preview tab → Download PDF)`,
+    `• ${cvName} — Zuperio-branded CV from the candidate profile (PDF export not implemented yet)`,
+    proposal.proposalPdfExportedAt
+      ? `Last economic PDF export (UTC): ${proposal.proposalPdfExportedAt}`
+      : "Economic PDF has not been exported yet from Zuperio.",
+    "",
+    `Download economic PDF (when logged in): ${pdfDownloadPath}`,
     "",
     `Prepared by: ${ctx.preparedByDisplay}`,
     "",
@@ -94,20 +90,26 @@ export function buildProposalEmailDraft(
     "Zuperio",
   ].join("\n");
 
+  const economicReady = proposal.proposalPdfExportedAt != null;
+
   const attachments: ProposalEmailAttachmentPlaceholder[] = [
     {
       kind: "ECONOMIC_PROPOSAL_PDF",
       label: "Economic proposal (PDF)",
-      filenameSuggestion: attachmentFilename(proposal, "Economic-Proposal"),
+      filenameSuggestion: economicName,
       mimeType: "application/pdf",
-      ready: false,
+      ready: economicReady,
+      lastExportedAt: proposal.proposalPdfExportedAt,
+      downloadHref: pdfDownloadPath,
     },
     {
       kind: "CANDIDATE_CV_PDF",
       label: "Candidate CV (Zuperio format, PDF)",
-      filenameSuggestion: attachmentFilename(proposal, "Candidate-CV"),
+      filenameSuggestion: cvName,
       mimeType: "application/pdf",
       ready: false,
+      lastExportedAt: null,
+      downloadHref: null,
     },
   ];
 

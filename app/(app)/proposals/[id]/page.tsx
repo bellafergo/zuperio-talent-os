@@ -18,6 +18,7 @@ import { ProposalDetailTabs } from "../_components/proposal-detail-tabs";
 import { ProposalDocumentPreview } from "../_components/proposal-document-preview";
 import { ProposalEditDialog } from "../_components/proposal-edit-dialog";
 import { ProposalEmailDraftPanel } from "../_components/proposal-email-draft-panel";
+import { ProposalPdfDownloadButton } from "../_components/proposal-pdf-download-button";
 import {
   ProposalOverviewPanel,
   ProposalPricingPanel,
@@ -97,10 +98,15 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         overview={<ProposalOverviewPanel proposal={proposal} />}
         pricing={<ProposalPricingPanel proposal={proposal} />}
         preview={
-          <ProposalDocumentPreview
-            proposal={proposal}
-            preparedByDisplay={preparedByDisplay}
-          />
+          <div className="space-y-6">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5">
+              <ProposalPdfDownloadButton proposalId={proposal.id} />
+            </div>
+            <ProposalDocumentPreview
+              proposal={proposal}
+              preparedByDisplay={preparedByDisplay}
+            />
+          </div>
         }
         emailDraft={<ProposalEmailDraftPanel draft={emailDraft} />}
       />

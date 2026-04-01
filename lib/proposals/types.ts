@@ -26,6 +26,8 @@ export type ProposalListRowUi = {
   grossMarginPercentLabel: string;
   grossMarginPercentAmount: number | null;
   updatedAtLabel: string;
+  /** ISO-8601 UTC timestamp of last successful economic PDF export, if any. */
+  proposalPdfExportedAt: string | null;
 };
 
 export type ProposalDetailUi = ProposalListRowUi & {

@@ -9,6 +9,8 @@ import "./proposal-document.css";
 type ProposalDocumentPreviewProps = {
   proposal: ProposalDetailUi;
   preparedByDisplay: string;
+  /** Hide the in-app print hint (PDF export and bare print view). */
+  hidePrintHint?: boolean;
 };
 
 const STANDARD_CONDITIONS = [
@@ -20,6 +22,7 @@ const STANDARD_CONDITIONS = [
 export function ProposalDocumentPreview({
   proposal,
   preparedByDisplay,
+  hidePrintHint = false,
 }: ProposalDocumentPreviewProps) {
   const currency = proposal.currency?.trim() || "EUR";
   const isDetailed = proposal.formatValue === "DETAILED";
@@ -33,12 +36,15 @@ export function ProposalDocumentPreview({
 
   return (
     <div className="proposal-print-root space-y-3">
-      <p className="proposal-no-print text-xs text-muted-foreground">
-        Fixed Zuperio layout — use your browser{" "}
-        <span className="font-medium text-foreground">Print</span> →{" "}
-        <span className="font-medium text-foreground">Save as PDF</span> when
-        you are ready to attach the economic proposal.
-      </p>
+      {!hidePrintHint ? (
+        <p className="proposal-no-print text-xs text-muted-foreground">
+          Fixed Zuperio layout — use{" "}
+          <span className="font-medium text-foreground">Download PDF</span> on
+          this page, or your browser{" "}
+          <span className="font-medium text-foreground">Print</span> →{" "}
+          <span className="font-medium text-foreground">Save as PDF</span>.
+        </p>
+      ) : null}
       <article
         className="proposal-print-sheet mx-auto max-w-[720px] px-8 py-10"
         aria-label="Proposal preview"
