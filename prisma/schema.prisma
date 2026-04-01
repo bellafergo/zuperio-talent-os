@@ -71,6 +71,23 @@ enum PlacementStatus {
   CANCELLED
 }
 
+enum VacancyApplicationStage {
+  NEW
+  PRE_SCREEN
+  INTERNAL_INTERVIEW
+  CLIENT_INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
+  WITHDRAWN
+}
+
+/// Pipeline row lifecycle (independent from vacancy record status).
+enum VacancyApplicationStatus {
+  ACTIVE
+  CLOSED
+}
+
 // --- Models -----------------------------------------------------------------
 // Auth/session fields can be added later; this is an internal-directory shape.
 
@@ -168,6 +185,7 @@ model Vacancy {
   candidateMatches   CandidateVacancyMatch[]
   placements         Placement[]
   skillRequirements  VacancyRequirement[]
+  applications       VacancyApplication[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -195,6 +213,7 @@ model Candidate {
   vacancyMatches  CandidateVacancyMatch[]
   placements        Placement[]
   structuredSkills  CandidateSkill[]
+  applications      VacancyApplication[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -202,6 +221,29 @@ model Candidate {
   @@index([seniority])
   @@index([availabilityStatus])
   @@index([email])
+}
+
+/// Recruitment pipeline for a candidate on a vacancy (separate from match scores and placements).
+model VacancyApplication {
+  id          String @id @default(cuid())
+  vacancyId   String
+  vacancy     Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  stage  VacancyApplicationStage
+  status VacancyApplicationStatus @default(ACTIVE)
+  source String?
+  notes  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@index([stage])
+  @@index([status])
+  /// DB-level: partial unique (vacancyId, candidateId) WHERE status = ACTIVE — see migration.
 }
 
 /// Normalized skill catalog for structured profiles and requisitions.

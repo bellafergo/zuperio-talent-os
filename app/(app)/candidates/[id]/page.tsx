@@ -13,8 +13,10 @@ import { getCandidateByIdForUi } from "@/lib/candidates/queries";
 import { listMatchesForCandidateUi } from "@/lib/matching/queries";
 import { getCurrentAssignmentForCandidateUi } from "@/lib/placements/queries";
 import { listCandidateStructuredSkillsForUi } from "@/lib/skills/queries";
+import { listApplicationsForCandidateUi } from "@/lib/vacancy-applications/queries";
 
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
+import { CandidateApplicationsSection } from "./_components/candidate-applications-section";
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
@@ -27,13 +29,19 @@ type PageProps = {
 
 export default async function CandidateDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [candidate, vacancyMatches, currentAssignment, structuredSkills] =
-    await Promise.all([
-      getCandidateByIdForUi(id),
-      listMatchesForCandidateUi(id),
-      getCurrentAssignmentForCandidateUi(id),
-      listCandidateStructuredSkillsForUi(id),
-    ]);
+  const [
+    candidate,
+    vacancyMatches,
+    currentAssignment,
+    structuredSkills,
+    applications,
+  ] = await Promise.all([
+    getCandidateByIdForUi(id),
+    listMatchesForCandidateUi(id),
+    getCurrentAssignmentForCandidateUi(id),
+    listCandidateStructuredSkillsForUi(id),
+    listApplicationsForCandidateUi(id),
+  ]);
 
   if (!candidate) {
     notFound();
@@ -89,6 +97,8 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       </Card>
 
       <CandidateCurrentAssignmentSection assignment={currentAssignment} />
+
+      <CandidateApplicationsSection applications={applications} />
 
       <CandidateVacancyMatchesSection matches={vacancyMatches} />
 

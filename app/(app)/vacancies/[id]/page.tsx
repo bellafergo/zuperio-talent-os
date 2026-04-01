@@ -11,10 +11,12 @@ import {
 } from "@/components/ui/card";
 import { listMatchesForVacancyUi } from "@/lib/matching/queries";
 import { listVacancyRequirementsForUi } from "@/lib/skills/queries";
+import { listApplicationsForVacancyUi } from "@/lib/vacancy-applications/queries";
 import { formatTargetRate } from "@/lib/vacancies/mappers";
 import { getVacancyByIdForUi } from "@/lib/vacancies/queries";
 
 import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
+import { VacancyRecruitmentPipelineSection } from "./_components/vacancy-recruitment-pipeline-section";
 import { VacancyRequirementsSection } from "./_components/vacancy-requirements-section";
 import { VacancyStatusBadge } from "../_components/vacancy-status-badge";
 
@@ -26,11 +28,13 @@ type PageProps = {
 
 export default async function VacancyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [vacancy, candidateMatches, requirements] = await Promise.all([
-    getVacancyByIdForUi(id),
-    listMatchesForVacancyUi(id),
-    listVacancyRequirementsForUi(id),
-  ]);
+  const [vacancy, candidateMatches, requirements, applications] =
+    await Promise.all([
+      getVacancyByIdForUi(id),
+      listMatchesForVacancyUi(id),
+      listVacancyRequirementsForUi(id),
+      listApplicationsForVacancyUi(id),
+    ]);
 
   if (!vacancy) {
     notFound();
@@ -106,6 +110,8 @@ export default async function VacancyDetailPage({ params }: PageProps) {
 
       <VacancyRequirementsSection requirements={requirements} />
 
+      <VacancyRecruitmentPipelineSection applications={applications} />
+
       <Card className="shadow-sm">
         <CardHeader className="border-b border-border pb-4">
           <CardTitle className="text-base font-medium">Responsibilities</CardTitle>
@@ -115,8 +121,8 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         </CardHeader>
         <CardContent className="pt-4">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Structured responsibilities can extend this section later;             Matching uses structured requirements; legacy skill text is for humans
-            only.
+            Structured responsibilities can extend this section later. Matching
+            uses structured requirements; legacy skill text is for humans only.
           </p>
         </CardContent>
       </Card>
