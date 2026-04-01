@@ -20,6 +20,7 @@ function titleForPath(pathname: string): string {
   if (/^\/companies\/.+/.test(pathname)) return "Company";
   if (/^\/contacts\/.+/.test(pathname)) return "Contact";
   if (/^\/opportunities\/.+/.test(pathname)) return "Opportunity";
+  if (/^\/vacancies\/.+/.test(pathname)) return "Vacancy";
   return "Zuperio Talent OS";
 }
 

@@ -33,6 +33,25 @@ enum ContactStatus {
   INACTIVE
 }
 
+enum VacancySeniority {
+  INTERN
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  PRINCIPAL
+}
+
+enum VacancyStatus {
+  DRAFT
+  OPEN
+  ON_HOLD
+  SOURCING
+  INTERVIEWING
+  FILLED
+  CANCELLED
+}
+
 // --- Models -----------------------------------------------------------------
 // Auth/session fields can be added later; this is an internal-directory shape.
 
@@ -100,10 +119,32 @@ model Opportunity {
   ownerId String?
   owner   User?   @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
+  vacancies Vacancy[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([stage])
   @@index([ownerId])
+}
+
+model Vacancy {
+  id        String           @id @default(cuid())
+  title     String
+  seniority VacancySeniority
+  status    VacancyStatus    @default(OPEN)
+  /// Target bill rate (e.g. per hour) in major currency units.
+  targetRate Decimal?        @db.Decimal(14, 2)
+  currency   String?         @default("EUR")
+
+  opportunityId String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([opportunityId])
+  @@index([status])
+  @@index([seniority])
 }

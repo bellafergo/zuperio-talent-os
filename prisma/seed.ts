@@ -8,6 +8,7 @@ import {
   SEED_CONTACTS,
   SEED_OPPORTUNITIES,
   SEED_USERS,
+  SEED_VACANCIES,
 } from "./seed-data";
 
 const url = process.env.DATABASE_URL;
@@ -112,12 +113,35 @@ async function main() {
       },
     });
   }
+
+  for (const v of SEED_VACANCIES) {
+    await prisma.vacancy.upsert({
+      where: { id: v.id },
+      create: {
+        id: v.id,
+        title: v.title,
+        seniority: v.seniority,
+        status: v.status,
+        targetRate: v.targetRate,
+        currency: v.currency ?? "EUR",
+        opportunityId: v.opportunityId,
+      },
+      update: {
+        title: v.title,
+        seniority: v.seniority,
+        status: v.status,
+        targetRate: v.targetRate,
+        currency: v.currency ?? "EUR",
+        opportunityId: v.opportunityId,
+      },
+    });
+  }
 }
 
 main()
   .then(() => {
     console.info(
-      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities.`,
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies.`,
     );
   })
   .catch((e) => {

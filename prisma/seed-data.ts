@@ -392,3 +392,147 @@ export const SEED_OPPORTUNITIES: SeedOpportunity[] = [
     ownerEmail: "joao.silva@zuperio.internal",
   },
 ];
+
+export type SeedVacancySeniority =
+  | "INTERN"
+  | "JUNIOR"
+  | "MID"
+  | "SENIOR"
+  | "LEAD"
+  | "PRINCIPAL";
+
+export type SeedVacancyStatus =
+  | "DRAFT"
+  | "OPEN"
+  | "ON_HOLD"
+  | "SOURCING"
+  | "INTERVIEWING"
+  | "FILLED"
+  | "CANCELLED";
+
+export type SeedVacancy = {
+  id: string;
+  title: string;
+  seniority: SeedVacancySeniority;
+  status: SeedVacancyStatus;
+  targetRate: number;
+  currency?: string;
+  opportunityId: string;
+};
+
+/** Roles tied to seeded opportunities (`opportunityId` matches `SEED_OPPORTUNITIES.id`). */
+export const SEED_VACANCIES: SeedVacancy[] = [
+  {
+    id: "vac_1",
+    title: "Senior Logistics Engineer",
+    seniority: "SENIOR",
+    status: "INTERVIEWING",
+    targetRate: 95,
+    opportunityId: "opp_1",
+  },
+  {
+    id: "vac_2",
+    title: "Operations Analyst",
+    seniority: "JUNIOR",
+    status: "OPEN",
+    targetRate: 52,
+    opportunityId: "opp_1",
+  },
+  {
+    id: "vac_3",
+    title: "Retail Program Manager",
+    seniority: "LEAD",
+    status: "SOURCING",
+    targetRate: 110,
+    opportunityId: "opp_2",
+  },
+  {
+    id: "vac_4",
+    title: "Healthcare Data Engineer",
+    seniority: "MID",
+    status: "OPEN",
+    targetRate: 88,
+    opportunityId: "opp_3",
+  },
+  {
+    id: "vac_5",
+    title: "Clinical SME (part-time)",
+    seniority: "PRINCIPAL",
+    status: "ON_HOLD",
+    targetRate: 140,
+    opportunityId: "opp_3",
+  },
+  {
+    id: "vac_6",
+    title: "Cloud Platform Engineer",
+    seniority: "SENIOR",
+    status: "OPEN",
+    targetRate: 102,
+    opportunityId: "opp_4",
+  },
+  {
+    id: "vac_7",
+    title: "Compliance Automation Developer",
+    seniority: "MID",
+    status: "FILLED",
+    targetRate: 79,
+    opportunityId: "opp_5",
+  },
+  {
+    id: "vac_8",
+    title: "Manufacturing HR Partner",
+    seniority: "MID",
+    status: "INTERVIEWING",
+    targetRate: 68,
+    opportunityId: "opp_6",
+  },
+  {
+    id: "vac_9",
+    title: "Merchandising Coordinator",
+    seniority: "JUNIOR",
+    status: "CANCELLED",
+    targetRate: 45,
+    opportunityId: "opp_7",
+  },
+  {
+    id: "vac_10",
+    title: "Full-stack Engineer (R&D tools)",
+    seniority: "SENIOR",
+    status: "OPEN",
+    targetRate: 98,
+    opportunityId: "opp_8",
+  },
+  {
+    id: "vac_11",
+    title: "Supply Chain Analyst",
+    seniority: "MID",
+    status: "SOURCING",
+    targetRate: 72,
+    opportunityId: "opp_9",
+  },
+  {
+    id: "vac_12",
+    title: "Energy — Payroll Specialist",
+    seniority: "MID",
+    status: "OPEN",
+    targetRate: 65,
+    currency: "USD",
+    opportunityId: "opp_10",
+  },
+  {
+    id: "vac_13",
+    title: "Customs Integration Developer",
+    seniority: "SENIOR",
+    status: "DRAFT",
+    targetRate: 91,
+    opportunityId: "opp_11",
+  },
+  {
+    id: "vac_14",
+    title: "Security & Residency Consultant",
+    seniority: "LEAD",
+    status: "OPEN",
+    targetRate: 125,
+    opportunityId: "opp_12",
+  },
+];
