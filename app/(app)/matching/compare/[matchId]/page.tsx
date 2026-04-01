@@ -21,10 +21,11 @@ export default async function MatchingComparePage({ params }: PageProps) {
         variant="detail"
         backHref="/matching"
         backLabel="Back to matching"
-        title="Candidate vs vacancy matrix"
-        description="Structured comparison for this scored pair — same engine as the match list."
+        eyebrow="Match intelligence"
+        title="Candidate vs vacancy"
+        description="Full structured comparison — same deterministic engine as pipeline scores. Details below."
       />
-      <ComparisonMatrixCard bundle={bundle} />
+      <ComparisonMatrixCard bundle={bundle} layout="focus" />
     </div>
   );
 }

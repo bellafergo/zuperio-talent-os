@@ -1,12 +1,6 @@
 import { MatchRecommendationBadge } from "@/components/match-recommendation-badge";
+import { SectionCard } from "@/components/layout/section-card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -18,6 +12,7 @@ import {
 import type { ComparisonRowMatchLevel } from "@/lib/matching/comparison-matrix";
 import { mapMatchRecommendationToUi } from "@/lib/matching/mappers";
 import type { ComparisonMatrixBundle } from "@/lib/matching/queries";
+import type { MatchRecommendationUi } from "@/lib/matching/types";
 import { cn } from "@/lib/utils";
 
 const LEVEL_LABEL: Record<ComparisonRowMatchLevel, string> = {
@@ -48,50 +43,110 @@ function MatchLevelBadge({ level }: { level: ComparisonRowMatchLevel }) {
   );
 }
 
+function ScoreCluster({
+  score,
+  recommendation,
+  size = "default",
+}: {
+  score: number;
+  recommendation: MatchRecommendationUi;
+  size?: "default" | "hero";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-stretch gap-2 sm:items-end",
+        size === "hero" && "sm:min-w-[200px]",
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-center justify-between gap-3 rounded-xl border border-border/90 bg-muted/35 px-3 py-2 ring-1 ring-foreground/[0.04] sm:justify-end sm:px-4 sm:py-2.5",
+          size === "hero" && "bg-gradient-to-br from-muted/60 to-muted/25",
+        )}
+      >
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Score
+        </span>
+        <span
+          className={cn(
+            "font-semibold tabular-nums tracking-tight text-foreground",
+            size === "hero" ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl",
+          )}
+        >
+          {score}
+        </span>
+      </div>
+      <div className="flex justify-end">
+        <MatchRecommendationBadge recommendation={recommendation} />
+      </div>
+    </div>
+  );
+}
+
 export function ComparisonMatrixCard({
   bundle,
   className,
+  /** `focus` — larger score, tuned for full-page compare. */
+  layout = "default",
 }: {
   bundle: ComparisonMatrixBundle;
   className?: string;
+  layout?: "default" | "focus";
 }) {
   const { rows, computedMatch, candidateName, vacancyTitle, companyName } =
     bundle;
 
+  const recommendationUi = mapMatchRecommendationToUi(
+    computedMatch.recommendation,
+  );
+
+  const title =
+    layout === "focus" ? "Structured fit breakdown" : "Candidate vs vacancy matrix";
+
+  const description =
+    layout === "focus" ? (
+      <span className="text-pretty">
+        <span className="font-medium text-foreground">{candidateName}</span>
+        <span className="text-muted-foreground"> · </span>
+        <span>{vacancyTitle}</span>
+        <span className="text-muted-foreground"> · </span>
+        <span>{companyName}</span>
+      </span>
+    ) : (
+      <span className="text-pretty">
+        {candidateName} · {vacancyTitle} ({companyName}). Same structured inputs
+        as the match score — deterministic, no AI.
+      </span>
+    );
+
   return (
-    <Card
+    <SectionCard
       className={cn(
-        "shadow-sm ring-1 ring-foreground/5 print:shadow-none print:border-border print:ring-0",
+        "print:shadow-none print:ring-0",
+        layout === "focus" && "ring-1 ring-foreground/[0.07]",
         className,
       )}
+      title={title}
+      description={description}
+      headerAction={
+        <ScoreCluster
+          score={computedMatch.score}
+          recommendation={recommendationUi}
+          size={layout === "focus" ? "hero" : "default"}
+        />
+      }
+      contentClassName={cn("space-y-4", layout === "focus" && "pt-5")}
     >
-      <CardHeader className="border-b border-border pb-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-base font-medium">
-              Candidate vs vacancy matrix
-            </CardTitle>
-            <CardDescription className="text-pretty">
-              {candidateName} · {vacancyTitle} ({companyName}). Same structured
-              inputs as the match score — deterministic, no AI.
-            </CardDescription>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-            <span className="tabular-nums text-sm font-medium text-foreground">
-              Score {computedMatch.score}
-            </span>
-            <MatchRecommendationBadge
-              recommendation={mapMatchRecommendationToUi(
-                computedMatch.recommendation,
-              )}
-            />
-          </div>
-        </div>
-        <p className="pt-2 text-xs leading-relaxed text-muted-foreground">
-          {computedMatch.explanation}
-        </p>
-      </CardHeader>
-      <CardContent className="pt-4">
+      <div
+        className={cn(
+          "rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground",
+          layout === "focus" && "border-border/80 bg-muted/25 text-sm",
+        )}
+      >
+        {computedMatch.explanation}
+      </div>
+      <div className="-mx-4 max-w-[calc(100%+2rem)] sm:mx-0 sm:max-w-none">
         <Table>
           <TableHeader>
             <TableRow>
@@ -124,7 +179,7 @@ export function ComparisonMatrixCard({
             ))}
           </TableBody>
         </Table>
-      </CardContent>
-    </Card>
+      </div>
+    </SectionCard>
   );
 }

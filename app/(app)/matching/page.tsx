@@ -11,8 +11,8 @@ export default async function MatchingPage() {
 
   return (
     <div className="space-y-8">
-      <MatchingHeader />
-      <DataTableShell>
+      <MatchingHeader pairCount={rows.length} />
+      <DataTableShell className="ring-1 ring-foreground/[0.06]">
         <MatchingDataTable rows={rows} />
       </DataTableShell>
     </div>

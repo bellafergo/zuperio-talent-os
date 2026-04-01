@@ -76,7 +76,7 @@ export function CandidateVacancyMatchesSection({
                       href={`/matching/compare/${m.matchId}`}
                       className="text-sm text-foreground underline-offset-4 hover:underline"
                     >
-                      Compare
+                      Matrix
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">

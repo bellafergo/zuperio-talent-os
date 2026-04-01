@@ -81,64 +81,69 @@ export default async function CommercialDashboardPage() {
         variant="list"
         eyebrow="Commercial"
         title="Dashboard"
-        description="Proposal pipeline, follow-up risk, and monthly rate totals from saved pricing (deterministic). Amounts are summed numerically; mixed currencies are not normalised."
+        description="Live proposal pipeline and monthly-rate economics from saved pricing. Figures are deterministic; mixed currencies are not normalised."
       />
 
-      <section className="space-y-4">
-        <SectionHeading title="Pipeline counts" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          <KPIStatCard label="Total" value={String(d.counts.total)} />
-          <KPIStatCard label="Draft" value={String(d.counts.draft)} />
-          <KPIStatCard label="Sent" value={String(d.counts.sent)} />
-          <KPIStatCard
-            label="Follow-up due"
-            value={String(d.counts.followUpPending)}
+      <div className="space-y-10 rounded-2xl border border-border/70 bg-gradient-to-b from-muted/40 via-muted/15 to-transparent p-5 ring-1 ring-foreground/[0.04] sm:p-6">
+        <section className="space-y-4">
+          <SectionHeading
+            title="Pipeline counts"
+            prominence="lead"
+            description="Volume by stage — same definitions as the proposals list."
           />
-          <KPIStatCard
-            label="In negotiation"
-            value={String(d.counts.inNegotiation)}
-          />
-          <KPIStatCard label="Won" value={String(d.counts.won)} />
-          <KPIStatCard label="Lost" value={String(d.counts.lost)} />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Viewed: {d.counts.viewed} · Follow-up rule: Sent + sentAt older than 2
-          days (same as proposals list).
-        </p>
-      </section>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            <KPIStatCard label="Total" value={String(d.counts.total)} />
+            <KPIStatCard label="Draft" value={String(d.counts.draft)} />
+            <KPIStatCard label="Sent" value={String(d.counts.sent)} />
+            <KPIStatCard
+              label="Follow-up due"
+              value={String(d.counts.followUpPending)}
+              emphasis={d.counts.followUpPending > 0}
+            />
+            <KPIStatCard
+              label="In negotiation"
+              value={String(d.counts.inNegotiation)}
+            />
+            <KPIStatCard label="Won" value={String(d.counts.won)} emphasis />
+            <KPIStatCard label="Lost" value={String(d.counts.lost)} />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Viewed: {d.counts.viewed} · Follow-up rule: Sent + sentAt older than 2
+            days (same as proposals list).
+          </p>
+        </section>
 
-      <section className="space-y-4">
-        <SectionHeading title="Revenue (monthly rate)" />
-        <p className="text-xs text-muted-foreground">
-          Sums use <span className="font-medium text-foreground">finalMonthlyRate</span>{" "}
-          where pricing exists.{" "}
-          <span className="font-medium text-foreground">Pipeline (non-lost)</span>{" "}
-          includes Draft, Sent, Viewed, In negotiation, and Won. Lost is excluded
-          from that total but shown separately below.
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <KPIStatCard
-            label="Pipeline (non-lost)"
-            value={fmt(d.revenue.pipelineNonLost)}
+        <section className="space-y-4 border-t border-border/60 pt-10">
+          <SectionHeading
+            title="Revenue (monthly rate)"
+            prominence="lead"
+            description="Sums use finalMonthlyRate where pricing exists. Pipeline (non-lost) includes Draft, Sent, Viewed, In negotiation, and Won. Lost is excluded from that subtotal."
           />
-          <KPIStatCard label="Sent (value)" value={fmt(d.revenue.pipelineSent)} />
-          <KPIStatCard
-            label="Negotiation (value)"
-            value={fmt(d.revenue.pipelineNegotiation)}
-          />
-          <KPIStatCard label="Won (value)" value={fmt(d.revenue.won)} />
-          <KPIStatCard label="Lost (value)" value={fmt(d.revenue.lost)} />
-          <KPIStatCard label="Avg margin %" value={pct(d.revenue.avgMarginPercent)} />
-          <KPIStatCard
-            label="Avg proposal value"
-            value={
-              d.revenue.avgProposalValue == null
-                ? "—"
-                : fmt(Math.round(d.revenue.avgProposalValue * 100) / 100)
-            }
-          />
-        </div>
-      </section>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <KPIStatCard
+              label="Pipeline (non-lost)"
+              value={fmt(d.revenue.pipelineNonLost)}
+              emphasis
+            />
+            <KPIStatCard label="Sent (value)" value={fmt(d.revenue.pipelineSent)} />
+            <KPIStatCard
+              label="Negotiation (value)"
+              value={fmt(d.revenue.pipelineNegotiation)}
+            />
+            <KPIStatCard label="Won (value)" value={fmt(d.revenue.won)} emphasis />
+            <KPIStatCard label="Lost (value)" value={fmt(d.revenue.lost)} />
+            <KPIStatCard label="Avg margin %" value={pct(d.revenue.avgMarginPercent)} />
+            <KPIStatCard
+              label="Avg proposal value"
+              value={
+                d.revenue.avgProposalValue == null
+                  ? "—"
+                  : fmt(Math.round(d.revenue.avgProposalValue * 100) / 100)
+              }
+            />
+          </div>
+        </section>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionCard

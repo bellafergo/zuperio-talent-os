@@ -74,17 +74,24 @@ export default async function ProposalDetailPage({ params }: PageProps) {
     <div className="space-y-8">
       <PageHeader
         variant="detail"
+        eyebrow="Client proposal"
         backHref="/proposals"
         backLabel="Back to proposals"
-        title={`Proposal · ${proposal.companyName}`}
-        description="Template-based proposal with deterministic pricing and PDF-ready preview."
+        title={proposal.companyName}
+        description="Deterministic pricing, PDF-ready document, structured candidate fit, and commercial tracking — built for delivery and review."
         meta={
-          <>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <ProposalStatusBadge label={proposal.status} value={proposal.statusValue} />
+            <span
+              className="hidden h-4 w-px bg-border sm:block"
+              aria-hidden
+            />
             <span className="text-sm text-muted-foreground">
-              {proposal.currency} · valid {proposal.validityDays}d · {proposal.format}
+              <span className="font-medium text-foreground">{proposal.currency}</span>
+              {" · "}
+              valid {proposal.validityDays}d · {proposal.format}
             </span>
-          </>
+          </div>
         }
         actions={
           canManage ? (

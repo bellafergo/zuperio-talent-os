@@ -2,10 +2,12 @@ import { ComparisonMatrixCard } from "@/components/comparison-matrix-card";
 import {
   DetailGrid,
   EmptyState,
+  KPIStatCard,
   SectionCard,
 } from "@/components/layout";
 import type { ComparisonMatrixBundle } from "@/lib/matching/queries";
 import type { ProposalDetailUi } from "@/lib/proposals/types";
+import { cn } from "@/lib/utils";
 
 export function ProposalOverviewPanel({
   proposal,
@@ -14,7 +16,7 @@ export function ProposalOverviewPanel({
   proposal: ProposalDetailUi;
   comparisonMatrix?: ComparisonMatrixBundle | null;
 }) {
-  const detailItems = [
+  const contextItems = [
     {
       label: "Company",
       value: proposal.companyName,
@@ -37,22 +39,39 @@ export function ProposalOverviewPanel({
       value: proposal.candidateName,
       href: proposal.candidateId ? `/candidates/${proposal.candidateId}` : undefined,
     },
-    {
-      label: "Monthly (client)",
-      value: proposal.finalMonthlyRateLabel,
-    },
-    {
-      label: "Gross margin",
-      value: proposal.grossMarginPercentLabel,
-    },
   ];
 
   return (
-    <div className="space-y-6">
-      <DetailGrid items={detailItems} />
+    <div className="space-y-8">
+      <div className="space-y-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Commercial snapshot
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <KPIStatCard
+            label="Monthly rate (client)"
+            value={proposal.finalMonthlyRateLabel}
+            emphasis
+          />
+          <KPIStatCard
+            label="Gross margin"
+            value={proposal.grossMarginPercentLabel}
+            emphasis
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Deal context
+        </p>
+        <DetailGrid items={contextItems} />
+      </div>
+
       {comparisonMatrix ? (
         <ComparisonMatrixCard bundle={comparisonMatrix} />
       ) : null}
+
       <TextSection title="Executive summary" value={proposal.executiveSummary} />
       <TextSection title="Profile summary" value={proposal.profileSummary} />
       <TextSection title="Scope notes" value={proposal.scopeNotes} />
@@ -65,10 +84,10 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
   return (
     <SectionCard
       title="Pricing summary"
-      description="Inputs are editable; outputs are computed deterministically on save."
+      description="Computed outputs from saved inputs — auditable and reproducible."
     >
       {proposal.pricing ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Kpi label="Scheme" value={proposal.pricing.scheme} />
           <Kpi label="Monthly hours" value={String(proposal.pricing.monthlyHours)} />
           <Kpi
@@ -134,6 +153,7 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
                 ? "—"
                 : String(proposal.pricing.finalMonthlyRate)
             }
+            highlight
           />
           <Kpi
             label="Monthly + VAT"
@@ -142,11 +162,13 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
                 ? "—"
                 : String(proposal.pricing.finalMonthlyRateWithVAT)
             }
+            highlight
           />
           <Kpi label="Gross margin" value={String(proposal.pricing.grossMarginAmount)} />
           <Kpi
             label="Margin %"
             value={`${proposal.pricing.grossMarginPercent.toFixed(1)}%`}
+            highlight
           />
           <Kpi
             label="Duration (months)"
@@ -164,13 +186,34 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
   );
 }
 
-function Kpi({ label, value }: { label: string; value: string }) {
+function Kpi({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
-    <div className="rounded-lg border border-border/80 bg-muted/15 px-3 py-2.5">
+    <div
+      className={cn(
+        "rounded-lg border border-border/80 bg-muted/15 px-3 py-2.5",
+        highlight &&
+          "border-primary/20 bg-gradient-to-br from-primary/[0.08] to-transparent",
+      )}
+    >
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 text-sm font-medium tabular-nums text-foreground">{value}</p>
+      <p
+        className={cn(
+          "mt-1 font-medium tabular-nums text-foreground",
+          highlight ? "text-base font-semibold" : "text-sm",
+        )}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -179,7 +222,7 @@ function TextSection({ title, value }: { title: string; value: string | null }) 
   return (
     <SectionCard
       title={title}
-      description="Manual-first narrative fields for client-facing copy."
+      description="Narrative fields for client-ready copy."
     >
       {value ? (
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">

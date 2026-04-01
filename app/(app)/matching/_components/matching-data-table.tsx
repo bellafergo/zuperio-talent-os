@@ -32,7 +32,7 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
           <TableHead className="max-w-[140px]">Candidate</TableHead>
           <TableHead className="max-w-[160px]">Vacancy</TableHead>
           <TableHead>Company</TableHead>
-          <TableHead className="w-[56px] text-right">Score</TableHead>
+          <TableHead className="w-[72px] text-right">Score</TableHead>
           <TableHead className="w-[108px]">Match</TableHead>
           <TableHead className="w-[88px]">Matrix</TableHead>
           <TableHead className="min-w-[200px]">Explanation</TableHead>
@@ -60,7 +60,7 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
             <TableCell className="text-muted-foreground">
               {r.companyName}
             </TableCell>
-            <TableCell className="text-right tabular-nums text-muted-foreground">
+            <TableCell className="bg-muted/15 text-right tabular-nums font-semibold text-foreground">
               {r.score}
             </TableCell>
             <TableCell>
@@ -69,9 +69,9 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
             <TableCell>
               <Link
                 href={`/matching/compare/${r.matchId}`}
-                className="text-sm text-foreground underline-offset-4 hover:underline"
+                className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
               >
-                Compare
+                Matrix
               </Link>
             </TableCell>
             <TableCell className="text-muted-foreground">
