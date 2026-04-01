@@ -30,33 +30,33 @@ export function CandidatesToolbar({
   return (
     <div className="space-y-4">
       <Input
-        placeholder="Search name, role, skills, seniority, or availability…"
+        placeholder="Buscar por nombre, rol, skills, senioridad o disponibilidad…"
         value={filters.query}
         onChange={(e) => patch({ query: e.target.value })}
         type="search"
-        aria-label="Search candidates"
+        aria-label="Buscar candidatos"
         className="max-w-md"
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <FilterSelect
-          label="Seniority"
+          label="Senioridad"
           value={filters.seniority}
           onValueChange={(seniority) => patch({ seniority })}
-          placeholder="All levels"
+          placeholder="Todos los niveles"
           options={[
-            { value: "all", label: "All levels" },
+            { value: "all", label: "Todos los niveles" },
             ...CANDIDATE_SENIORITIES.map((s) => ({ value: s, label: s })),
           ]}
         />
         <FilterSelect
-          label="Availability"
+          label="Disponibilidad"
           value={filters.availabilityStatus}
           onValueChange={(availabilityStatus) =>
             patch({ availabilityStatus })
           }
-          placeholder="All statuses"
+          placeholder="Todos los estados"
           options={[
-            { value: "all", label: "All statuses" },
+            { value: "all", label: "Todos los estados" },
             ...CANDIDATE_AVAILABILITY.map((s) => ({ value: s, label: s })),
           ]}
         />

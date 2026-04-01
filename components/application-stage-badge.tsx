@@ -5,14 +5,14 @@ const variantByStage: Record<
   VacancyApplicationStageUi,
   "default" | "secondary" | "outline" | "destructive"
 > = {
-  New: "outline",
-  "Pre-screen": "secondary",
-  "Internal interview": "secondary",
-  "Client interview": "default",
-  Offer: "default",
-  Hired: "default",
-  Rejected: "destructive",
-  Withdrawn: "outline",
+  Nueva: "outline",
+  "Pre-filtro": "secondary",
+  "Entrevista interna": "secondary",
+  "Entrevista cliente": "default",
+  Oferta: "default",
+  Contratado: "default",
+  Rechazado: "destructive",
+  Retirado: "outline",
 };
 
 export function ApplicationStageBadge({ stage }: { stage: VacancyApplicationStageUi }) {

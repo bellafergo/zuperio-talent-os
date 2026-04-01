@@ -44,9 +44,9 @@ export default async function CompanyDetailPage({ params }: PageProps) {
       <PageHeader
         variant="detail"
         backHref="/companies"
-        backLabel="Back to companies"
+        backLabel="Volver a empresas"
         title={company.name}
-        description="Account record, placements, and future CRM roll-ups — core fields from PostgreSQL."
+        description="Cuenta, colocaciones y futuros roll-ups de CRM: campos principales en PostgreSQL."
         meta={<CompanyStatusBadge status={company.status} />}
         actions={
           canManage ? <CompanyEditDialog company={company} users={users} /> : null
@@ -55,35 +55,36 @@ export default async function CompanyDetailPage({ params }: PageProps) {
 
       <DetailGrid
         items={[
-          { label: "Industry", value: company.industry || "—" },
-          { label: "Location", value: company.location || "—" },
-          { label: "Owner", value: company.owner },
+          { label: "Industria", value: company.industry || "—" },
+          { label: "Ubicación", value: company.location || "—" },
+          { label: "Responsable", value: company.owner },
         ]}
       />
 
       <SectionCard
-        title="Notes"
-        description="Internal context and handoff details for this account."
+        title="Notas"
+        description="Contexto interno y detalles de handoff de la cuenta."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Rich notes and activity summaries will appear here as the workspace
-          grows. The core company record above is stored in PostgreSQL.
+          Notas enriquecidas y resúmenes de actividad aparecerán aquí a medida
+          crezca el workspace. El registro principal de la empresa arriba está en
+          PostgreSQL.
         </p>
       </SectionCard>
 
       <CompanyPlacementsSection placements={placements} />
 
       <PlaceholderSection
-        title="Contacts"
-        description="People associated with this company."
+        title="Contactos"
+        description="Personas asociadas a esta empresa."
       />
       <PlaceholderSection
-        title="Opportunities"
-        description="Deals and pursuits linked to this account."
+        title="Oportunidades"
+        description="Negocios y seguimientos ligados a esta cuenta."
       />
       <PlaceholderSection
-        title="Activity"
-        description="Calls, meetings, and timeline events."
+        title="Actividad"
+        description="Llamadas, reuniones y eventos de línea de tiempo."
       />
     </div>
   );

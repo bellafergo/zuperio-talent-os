@@ -19,8 +19,8 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
     return (
       <EmptyState
         variant="embedded"
-        title="No scored matches"
-        description="Seed the app or run a match sync to populate candidate–vacancy scores."
+        title="Sin matches puntuados"
+        description="Ejecuta el seed o una sincronización de matching para llenar puntuaciones candidato–vacante."
       />
     );
   }
@@ -29,13 +29,13 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="max-w-[140px]">Candidate</TableHead>
-          <TableHead className="max-w-[160px]">Vacancy</TableHead>
-          <TableHead>Company</TableHead>
+          <TableHead className="max-w-[140px]">Candidato</TableHead>
+          <TableHead className="max-w-[160px]">Vacante</TableHead>
+          <TableHead>Empresa</TableHead>
           <TableHead className="w-[72px] text-right">Score</TableHead>
           <TableHead className="w-[108px]">Match</TableHead>
-          <TableHead className="w-[88px]">Matrix</TableHead>
-          <TableHead className="min-w-[200px]">Explanation</TableHead>
+          <TableHead className="w-[88px]">Matriz</TableHead>
+          <TableHead className="min-w-[200px]">Explicación</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -71,7 +71,7 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
                 href={`/matching/compare/${r.matchId}`}
                 className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
               >
-                Matrix
+                Matriz
               </Link>
             </TableCell>
             <TableCell className="text-muted-foreground">

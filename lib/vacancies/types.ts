@@ -4,16 +4,16 @@ import type {
 } from "@/generated/prisma/enums";
 
 export type VacancyStatusUi =
-  | "Draft"
-  | "Open"
-  | "On hold"
+  | "Borrador"
+  | "Abierta"
+  | "En pausa"
   | "Sourcing"
-  | "Interviewing"
-  | "Filled"
-  | "Cancelled";
+  | "En entrevistas"
+  | "Cubiertas"
+  | "Cancelada";
 
 export type VacancySeniorityUi =
-  | "Intern"
+  | "Interno"
   | "Junior"
   | "Mid"
   | "Senior"

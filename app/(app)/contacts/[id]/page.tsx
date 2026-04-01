@@ -2,10 +2,15 @@ import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { DetailGrid, PageHeader, SectionCard } from "@/components/layout";
-import { canManageContacts } from "@/lib/auth/contact-access";
+import {
+  canManageContactMethodDirectory,
+  canManageContacts,
+} from "@/lib/auth/contact-access";
 import { getContactByIdForUi, listCompaniesForContactForm } from "@/lib/contacts/queries";
 
+import { ContactAddMethodDialog } from "../_components/contact-add-method-dialog";
 import { ContactEditDialog } from "../_components/contact-edit-dialog";
+import { ContactMethodsDirectorSection } from "../_components/contact-methods-director-section";
 import { ContactStatusBadge } from "../_components/contact-status-badge";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +23,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();
   const canManage = canManageContacts(session?.user?.role);
+  const isDirector = canManageContactMethodDirectory(session?.user?.role);
 
   const [contact, companies] = await Promise.all([
     getContactByIdForUi(id),
@@ -33,24 +39,34 @@ export default async function ContactDetailPage({ params }: PageProps) {
       <PageHeader
         variant="detail"
         backHref="/contacts"
-        backLabel="Back to contacts"
+        backLabel="Volver a contactos"
         title={contact.displayName}
-        description="Person record linked to an account — fields from PostgreSQL."
+        description="Persona ligada a una cuenta: campos desde PostgreSQL."
         meta={<ContactStatusBadge status={contact.status} />}
         actions={
           canManage ? (
-            <ContactEditDialog contact={contact} companies={companies} />
+            <div className="flex flex-wrap items-center gap-2">
+              <ContactAddMethodDialog contactId={contact.id} />
+              <ContactEditDialog contact={contact} companies={companies} />
+            </div>
           ) : null
         }
       />
 
+      <p className="text-sm text-muted-foreground">
+        Última actualización del registro:{" "}
+        <span className="font-medium tabular-nums text-foreground">
+          {contact.updatedAtLabel}
+        </span>
+      </p>
+
       <DetailGrid
         items={[
-          { label: "Title / role", value: contact.title },
-          { label: "Email", value: contact.email },
-          { label: "Phone", value: contact.phone },
+          { label: "Puesto / rol", value: contact.title },
+          { label: "Correo", value: contact.email },
+          { label: "Teléfono", value: contact.phone },
           {
-            label: "Company",
+            label: "Empresa",
             value: contact.companyName,
             href: `/companies/${contact.companyId}`,
           },
@@ -58,14 +74,16 @@ export default async function ContactDetailPage({ params }: PageProps) {
       />
 
       <SectionCard
-        title="Notes"
-        description="Context, preferences, and conversation history."
+        title="Notas"
+        description="Contexto, preferencias e historial de conversación."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Notes and timeline entries will live here as the CRM layer grows. Core
-          contact fields above are stored in PostgreSQL.
+          Notas y entradas de línea de tiempo vivirán aquí a medida crezca la capa
+          CRM. Los campos principales del contacto arriba están en PostgreSQL.
         </p>
       </SectionCard>
+
+      {isDirector ? <ContactMethodsDirectorSection contactId={contact.id} /> : null}
     </div>
   );
 }

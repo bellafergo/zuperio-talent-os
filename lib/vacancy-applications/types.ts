@@ -1,14 +1,14 @@
 export type VacancyApplicationStageUi =
-  | "New"
-  | "Pre-screen"
-  | "Internal interview"
-  | "Client interview"
-  | "Offer"
-  | "Hired"
-  | "Rejected"
-  | "Withdrawn";
+  | "Nueva"
+  | "Pre-filtro"
+  | "Entrevista interna"
+  | "Entrevista cliente"
+  | "Oferta"
+  | "Contratado"
+  | "Rechazado"
+  | "Retirado";
 
-export type VacancyApplicationStatusUi = "Active" | "Closed";
+export type VacancyApplicationStatusUi = "Activa" | "Cerrada";
 
 export type VacancyPipelineRowUi = {
   applicationId: string;

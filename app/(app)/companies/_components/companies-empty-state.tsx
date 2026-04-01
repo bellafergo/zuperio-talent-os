@@ -27,11 +27,11 @@ export function CompaniesEmptyState({
           <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
             <Building2Icon className="size-5 text-muted-foreground" />
           </div>
-          <CardTitle className="text-base">No companies yet</CardTitle>
+          <CardTitle className="text-base">Aún no hay empresas</CardTitle>
           <CardDescription>
-            When you connect data, your accounts will appear here. Use{" "}
-            <span className="font-medium text-foreground">New Company</span> to
-            add the first record once workflows are ready.
+            Cuando conectes datos, tus cuentas aparecerán aquí. Usa{" "}
+            <span className="font-medium text-foreground">Nueva empresa</span> para
+            agregar el primer registro cuando los flujos estén listos.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -44,14 +44,14 @@ export function CompaniesEmptyState({
         <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
           <SearchXIcon className="size-5 text-muted-foreground" />
         </div>
-        <CardTitle className="text-base">No matching companies</CardTitle>
+        <CardTitle className="text-base">Sin empresas que coincidan</CardTitle>
         <CardDescription>
-          Try another search or reset filters to see the full list.
+          Prueba otra búsqueda o restablece filtros para ver la lista completa.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center pb-6">
         <Button type="button" variant="secondary" onClick={onClearFilters}>
-          Clear filters
+          Limpiar filtros
         </Button>
       </CardContent>
     </Card>

@@ -5,12 +5,12 @@ import { DEFAULT_CURRENCY, formatMoney } from "@/lib/currency";
 import type { OpportunityListRow, OpportunityStageUi } from "./types";
 
 const prismaStageToUi: Record<PrismaOpportunityStage, OpportunityStageUi> = {
-  PROSPECTING: "Prospecting",
-  QUALIFICATION: "Qualification",
-  PROPOSAL: "Proposal",
-  NEGOTIATION: "Negotiation",
-  CLOSED_WON: "Closed won",
-  CLOSED_LOST: "Closed lost",
+  PROSPECTING: "Prospección",
+  QUALIFICATION: "Calificación",
+  PROPOSAL: "Propuesta",
+  NEGOTIATION: "Negociación",
+  CLOSED_WON: "Cerrada ganada",
+  CLOSED_LOST: "Cerrada perdida",
 };
 
 function formatUpdatedAt(d: Date) {

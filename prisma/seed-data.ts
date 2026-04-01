@@ -298,7 +298,7 @@ export type SeedOpportunity = {
   id: string;
   title: string;
   stage: SeedOpportunityStage;
-  /** Major currency units (e.g. EUR). */
+  /** Major currency units (MXN / USD). */
   value: number;
   currency?: string;
   companyId: string;
@@ -375,7 +375,7 @@ export const SEED_OPPORTUNITIES: SeedOpportunity[] = [
     title: "Private-label sourcing deal",
     stage: "NEGOTIATION",
     value: 88000,
-    currency: "EUR",
+    currency: "MXN",
     companyId: "9",
     ownerEmail: "maria.santos@zuperio.internal",
   },

@@ -1,10 +1,10 @@
 import type { VacancySeniorityUi } from "@/lib/vacancies/types";
 
 export type CandidateAvailabilityUi =
-  | "Available"
-  | "In process"
-  | "Assigned"
-  | "Not available";
+  | "Disponible"
+  | "En proceso"
+  | "Asignado"
+  | "No disponible";
 
 export type CandidateUi = {
   id: string;

@@ -38,41 +38,41 @@ export function VacanciesToolbar({
   return (
     <div className="space-y-4">
       <Input
-        placeholder="Search vacancy, company, opportunity, seniority, or status…"
+        placeholder="Buscar vacante, empresa, oportunidad, senioridad o estado…"
         value={filters.query}
         onChange={(e) => patch({ query: e.target.value })}
         type="search"
-        aria-label="Search vacancies"
+        aria-label="Buscar vacantes"
         className="max-w-md"
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <FilterSelect
-          label="Status"
+          label="Estado"
           value={filters.status}
           onValueChange={(status) => patch({ status })}
-          placeholder="All statuses"
+          placeholder="Todos los estados"
           options={[
-            { value: "all", label: "All statuses" },
+            { value: "all", label: "Todos los estados" },
             ...VACANCY_STATUSES.map((s) => ({ value: s, label: s })),
           ]}
         />
         <FilterSelect
-          label="Company"
+          label="Empresa"
           value={filters.companyId}
           onValueChange={(companyId) => patch({ companyId })}
-          placeholder="All companies"
+          placeholder="Todas las empresas"
           options={[
-            { value: "all", label: "All companies" },
+            { value: "all", label: "Todas las empresas" },
             ...companies.map((c) => ({ value: c.id, label: c.name })),
           ]}
         />
         <FilterSelect
-          label="Opportunity"
+          label="Oportunidad"
           value={filters.opportunityId}
           onValueChange={(opportunityId) => patch({ opportunityId })}
-          placeholder="All opportunities"
+          placeholder="Todas las oportunidades"
           options={[
-            { value: "all", label: "All opportunities" },
+            { value: "all", label: "Todas las oportunidades" },
             ...opportunities.map((o) => ({
               value: o.id,
               label: o.title,
@@ -80,12 +80,12 @@ export function VacanciesToolbar({
           ]}
         />
         <FilterSelect
-          label="Seniority"
+          label="Senioridad"
           value={filters.seniority}
           onValueChange={(seniority) => patch({ seniority })}
-          placeholder="All levels"
+          placeholder="Todos los niveles"
           options={[
-            { value: "all", label: "All levels" },
+            { value: "all", label: "Todos los niveles" },
             ...VACANCY_SENIORITIES.map((s) => ({ value: s, label: s })),
           ]}
         />

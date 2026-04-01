@@ -27,17 +27,17 @@ const selectClass = cn(
 );
 
 const STATUS_LABELS: Record<VacancyStatus, string> = {
-  DRAFT: "Draft",
-  OPEN: "Open",
-  ON_HOLD: "On hold",
+  DRAFT: "Borrador",
+  OPEN: "Abierta",
+  ON_HOLD: "En pausa",
   SOURCING: "Sourcing",
-  INTERVIEWING: "Interviewing",
-  FILLED: "Filled",
-  CANCELLED: "Cancelled",
+  INTERVIEWING: "En entrevistas",
+  FILLED: "Cubiertas",
+  CANCELLED: "Cancelada",
 };
 
 const SENIORITY_LABELS: Record<VacancySeniority, string> = {
-  INTERN: "Intern",
+  INTERN: "Interno",
   JUNIOR: "Junior",
   MID: "Mid",
   SENIOR: "Senior",
@@ -100,7 +100,7 @@ export function VacancyRecordFormFields({
           htmlFor={vacancyId ? `edit-title-${vacancyId}` : "new-title"}
           className="text-sm font-medium"
         >
-          Title <span className="text-destructive">*</span>
+          Título <span className="text-destructive">*</span>
         </label>
         <Input
           id={vacancyId ? `edit-title-${vacancyId}` : "new-title"}
@@ -122,7 +122,7 @@ export function VacancyRecordFormFields({
           htmlFor={vacancyId ? `edit-opportunity-${vacancyId}` : "new-opportunity"}
           className="text-sm font-medium"
         >
-          Opportunity <span className="text-destructive">*</span>
+          Oportunidad <span className="text-destructive">*</span>
         </label>
         <select
           id={vacancyId ? `edit-opportunity-${vacancyId}` : "new-opportunity"}
@@ -133,7 +133,7 @@ export function VacancyRecordFormFields({
           aria-invalid={Boolean(fieldErrors?.opportunityId)}
         >
           <option value="" disabled>
-            Select an opportunity…
+            Selecciona una oportunidad…
           </option>
           {opportunities.map((o) => (
             <option key={o.id} value={o.id}>
@@ -154,7 +154,7 @@ export function VacancyRecordFormFields({
             htmlFor={vacancyId ? `edit-seniority-${vacancyId}` : "new-seniority"}
             className="text-sm font-medium"
           >
-            Seniority <span className="text-destructive">*</span>
+            Senioridad <span className="text-destructive">*</span>
           </label>
           <select
             id={vacancyId ? `edit-seniority-${vacancyId}` : "new-seniority"}
@@ -182,7 +182,7 @@ export function VacancyRecordFormFields({
             htmlFor={vacancyId ? `edit-status-${vacancyId}` : "new-status"}
             className="text-sm font-medium"
           >
-            Status <span className="text-destructive">*</span>
+            Estado <span className="text-destructive">*</span>
           </label>
           <select
             id={vacancyId ? `edit-status-${vacancyId}` : "new-status"}
@@ -212,7 +212,7 @@ export function VacancyRecordFormFields({
             htmlFor={vacancyId ? `edit-rate-${vacancyId}` : "new-rate"}
             className="text-sm font-medium"
           >
-            Target rate
+            Tarifa objetivo
           </label>
           <Input
             id={vacancyId ? `edit-rate-${vacancyId}` : "new-rate"}
@@ -258,7 +258,7 @@ export function VacancyRecordFormFields({
           htmlFor={vacancyId ? `edit-roleSummary-${vacancyId}` : "new-roleSummary"}
           className="text-sm font-medium"
         >
-          Role scope (placeholder)
+          Alcance del rol (provisional)
         </label>
         <Input
           id={vacancyId ? `edit-roleSummary-${vacancyId}` : "new-roleSummary"}

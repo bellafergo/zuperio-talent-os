@@ -27,10 +27,10 @@ export function CandidatesEmptyState({
           <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
             <UserCircleIcon className="size-5 text-muted-foreground" />
           </div>
-          <CardTitle className="text-base">No candidates yet</CardTitle>
+          <CardTitle className="text-base">Aún no hay candidatos</CardTitle>
           <CardDescription>
-            Add people to the talent pool via seed or future workflows to see
-            them listed here.
+            Agrega personas al banco de talento con seed o flujos futuros para
+            verlas aquí.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -43,14 +43,14 @@ export function CandidatesEmptyState({
         <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
           <SearchXIcon className="size-5 text-muted-foreground" />
         </div>
-        <CardTitle className="text-base">No matching candidates</CardTitle>
+        <CardTitle className="text-base">Sin candidatos que coincidan</CardTitle>
         <CardDescription>
-          Try clearing filters or a broader search.
+          Prueba limpiar filtros o ampliar la búsqueda.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center pb-6">
         <Button type="button" variant="secondary" onClick={onClearFilters}>
-          Clear filters
+          Limpiar filtros
         </Button>
       </CardContent>
     </Card>

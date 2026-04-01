@@ -62,9 +62,9 @@ export default async function VacancyDetailPage({ params }: PageProps) {
       <PageHeader
         variant="detail"
         backHref="/vacancies"
-        backLabel="Back to vacancies"
+        backLabel="Volver a vacantes"
         title={vacancy.title}
-        description="Requisition record, structured requirements, pipeline, and scored candidate matches."
+        description="Requisición, requisitos estructurados, embudo de reclutamiento y matches puntuados."
         meta={
           <div className="shrink-0">
             <VacancyStatusBadge status={vacancy.status} />
@@ -84,36 +84,36 @@ export default async function VacancyDetailPage({ params }: PageProps) {
       <DetailGrid
         items={[
           {
-            label: "Company",
+            label: "Empresa",
             value: vacancy.companyName,
             href: `/companies/${vacancy.companyId}`,
           },
           {
-            label: "Opportunity",
+            label: "Oportunidad",
             value: vacancy.opportunityTitle,
             href: `/opportunities/${vacancy.opportunityId}`,
           },
-          { label: "Seniority", value: vacancy.seniority },
-          { label: "Target rate", value: rateDisplay },
+          { label: "Senioridad", value: vacancy.seniority },
+          { label: "Tarifa objetivo", value: rateDisplay },
           {
-            label: "Skills (legacy text)",
+            label: "Skills (texto heredado)",
             value: vacancy.skillsLine ?? "—",
           },
           {
-            label: "Role scope",
+            label: "Alcance del rol",
             value: vacancy.roleSummaryLine ?? "—",
           },
         ]}
       />
 
       <SectionCard
-        title="Work mode"
-        description="Onsite, hybrid, or remote expectations for this role."
+        title="Modalidad de trabajo"
+        description="Expectativas de presencial, híbrido o remoto para el rol."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Work location and schedule policies will be stored here when the hiring
-          workflow is extended. The financial target above is in{" "}
-          {vacancy.currency} per hour (bill rate).
+          Ubicación y políticas de horario se guardarán aquí cuando se extienda
+          el flujo de contratación. La tarifa objetivo arriba está en{" "}
+          {vacancy.currency} por hora (facturación al cliente).
         </p>
       </SectionCard>
 
@@ -125,20 +125,21 @@ export default async function VacancyDetailPage({ params }: PageProps) {
       />
 
       <SectionCard
-        title="Responsibilities"
-        description="Scope, deliverables, and success criteria for the position."
+        title="Responsabilidades"
+        description="Alcance, entregables y criterios de éxito del puesto."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Structured responsibilities can extend this section later. Matching uses
-          structured requirements; legacy skill text is for humans only.
+          Más adelante se pueden añadir responsabilidades estructuradas. El
+          matching usa requisitos estructurados; el texto libre de skills es solo
+          para lectura humana.
         </p>
       </SectionCard>
 
       <VacancyCandidateMatchesSection matches={candidateMatches} />
 
       <PlaceholderSection
-        title="Activity"
-        description="Notes, interviews, and status changes."
+        title="Actividad"
+        description="Notas, entrevistas y cambios de estado."
       />
     </div>
   );

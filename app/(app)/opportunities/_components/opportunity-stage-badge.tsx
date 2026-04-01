@@ -5,12 +5,12 @@ const toneByStage: Record<
   OpportunityStageUi,
   "neutral" | "info" | "warning" | "success" | "danger"
 > = {
-  Prospecting: "neutral",
-  Qualification: "info",
-  Proposal: "info",
-  Negotiation: "warning",
-  "Closed won": "success",
-  "Closed lost": "danger",
+  Prospección: "neutral",
+  Calificación: "info",
+  Propuesta: "info",
+  Negociación: "warning",
+  "Cerrada ganada": "success",
+  "Cerrada perdida": "danger",
 };
 
 export function OpportunityStageBadge({ stage }: { stage: OpportunityStageUi }) {

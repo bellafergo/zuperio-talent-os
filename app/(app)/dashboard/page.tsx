@@ -117,11 +117,11 @@ export default async function CommercialDashboardPage() {
           <SectionHeading
             title="Ingresos (tarifa mensual)"
             prominence="lead"
-            description="Suma de tarifa final donde hay precios. Pipeline (no perdidas) incluye borrador, enviada, vista, negociación y ganada. Perdidas aparte."
+            description="Suma de tarifa final donde hay precios. Embudo (no perdidas) incluye borrador, enviada, vista, negociación y ganada. Perdidas aparte."
           />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <KPIStatCard
-              label="Pipeline (no perdidas)"
+              label="Embudo (no perdidas)"
               value={fmtSum(d.revenue.pipelineNonLost)}
               emphasis
             />

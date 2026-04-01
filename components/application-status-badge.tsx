@@ -5,8 +5,8 @@ const variantByStatus: Record<
   VacancyApplicationStatusUi,
   "default" | "secondary" | "outline"
 > = {
-  Active: "default",
-  Closed: "secondary",
+  Activa: "default",
+  Cerrada: "secondary",
 };
 
 export function ApplicationStatusBadge({

@@ -1,7 +1,7 @@
 export type MatchRecommendationUi =
-  | "Strong match"
-  | "Partial match"
-  | "Low match";
+  | "Match fuerte"
+  | "Match parcial"
+  | "Match bajo";
 
 /** Row for vacancy detail — matched candidates. */
 export type VacancyMatchRowUi = {

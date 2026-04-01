@@ -1,6 +1,6 @@
 import type { CompanyStatus as PrismaCompanyStatus } from "@/generated/prisma/enums";
 
-export type CompanyStatus = "Active" | "Prospect" | "Paused" | "Churned";
+export type CompanyStatus = "Activa" | "Prospecto" | "En pausa" | "Baja";
 
 export type Company = {
   id: string;

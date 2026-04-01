@@ -31,25 +31,25 @@ export function VacancyRecruitmentPipelineSection({
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Recruitment pipeline</CardTitle>
+        <CardTitle className="text-base font-medium">Embudo de reclutamiento</CardTitle>
         <CardDescription>
-          Candidates in this vacancy’s process. Separate from match scores and
-          placements.
+          Candidatos en el proceso de esta vacante. Independiente de scores de
+          match y colocaciones.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {applications.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No applications on file for this vacancy.
+            No hay postulaciones registradas para esta vacante.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[200px]">Candidate</TableHead>
-                <TableHead className="w-[160px]">Stage</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead>Source</TableHead>
+                <TableHead className="max-w-[200px]">Candidato</TableHead>
+                <TableHead className="w-[160px]">Etapa</TableHead>
+                <TableHead className="w-[100px]">Estado</TableHead>
+                <TableHead>Origen</TableHead>
                 {canManage ? <TableHead className="w-[110px]" /> : null}
               </TableRow>
             </TableHeader>

@@ -78,7 +78,7 @@ export function CandidateCvDocument({
             </div>
             <div>
               <dt className="text-xs font-medium text-muted-foreground">
-                Seniority
+                Senioridad
               </dt>
               <dd className="font-medium text-foreground">
                 {data.seniorityLabel}

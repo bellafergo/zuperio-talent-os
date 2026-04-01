@@ -5,10 +5,10 @@ const toneByStatus: Record<
   CompanyStatus,
   "success" | "neutral" | "warning" | "danger"
 > = {
-  Active: "success",
-  Prospect: "neutral",
-  Paused: "warning",
-  Churned: "danger",
+  Activa: "success",
+  Prospecto: "neutral",
+  "En pausa": "warning",
+  Baja: "danger",
 };
 
 export function CompanyStatusBadge({ status }: { status: CompanyStatus }) {

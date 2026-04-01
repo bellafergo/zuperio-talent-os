@@ -35,31 +35,31 @@ export function OpportunitiesToolbar({
   return (
     <div className="space-y-4">
       <Input
-        placeholder="Search opportunity, company, owner, stage, or value…"
+        placeholder="Buscar oportunidad, empresa, responsable, etapa o valor…"
         value={filters.query}
         onChange={(e) => patch({ query: e.target.value })}
         type="search"
-        aria-label="Search opportunities"
+        aria-label="Buscar oportunidades"
         className="max-w-md"
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <FilterSelect
-          label="Stage"
+          label="Etapa"
           value={filters.stage}
           onValueChange={(stage) => patch({ stage })}
-          placeholder="All stages"
+          placeholder="Todas las etapas"
           options={[
-            { value: "all", label: "All stages" },
+            { value: "all", label: "Todas las etapas" },
             ...OPPORTUNITY_STAGES.map((s) => ({ value: s, label: s })),
           ]}
         />
         <FilterSelect
-          label="Company"
+          label="Empresa"
           value={filters.companyId}
           onValueChange={(companyId) => patch({ companyId })}
-          placeholder="All companies"
+          placeholder="Todas las empresas"
           options={[
-            { value: "all", label: "All companies" },
+            { value: "all", label: "Todas las empresas" },
             ...companies.map((co) => ({
               value: co.id,
               label: co.name,
@@ -67,12 +67,12 @@ export function OpportunitiesToolbar({
           ]}
         />
         <FilterSelect
-          label="Owner"
+          label="Responsable"
           value={filters.ownerId}
           onValueChange={(ownerId) => patch({ ownerId })}
-          placeholder="All owners"
+          placeholder="Todos los responsables"
           options={[
-            { value: "all", label: "All owners" },
+            { value: "all", label: "Todos los responsables" },
             ...owners.map((o) => ({
               value: o.id,
               label: o.name,

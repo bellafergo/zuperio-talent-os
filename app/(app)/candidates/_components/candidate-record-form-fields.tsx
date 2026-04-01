@@ -24,14 +24,14 @@ const selectClass = cn(
 );
 
 const AVAILABILITY_LABELS: Record<CandidateAvailabilityStatus, string> = {
-  AVAILABLE: "Available",
-  IN_PROCESS: "In process",
-  ASSIGNED: "Assigned",
-  NOT_AVAILABLE: "Not available",
+  AVAILABLE: "Disponible",
+  IN_PROCESS: "En proceso",
+  ASSIGNED: "Asignado",
+  NOT_AVAILABLE: "No disponible",
 };
 
 const SENIORITY_LABELS: Record<VacancySeniority, string> = {
-  INTERN: "Intern",
+  INTERN: "Interno",
   JUNIOR: "Junior",
   MID: "Mid",
   SENIOR: "Senior",
@@ -93,7 +93,7 @@ export function CandidateRecordFormFields({
 
         <div className="space-y-2">
           <label htmlFor={candidateId ? `edit-last-${candidateId}` : "new-last"} className="text-sm font-medium">
-            Last name
+            Apellido
           </label>
           <Input
             id={candidateId ? `edit-last-${candidateId}` : "new-last"}
@@ -112,7 +112,7 @@ export function CandidateRecordFormFields({
 
       <div className="space-y-2">
         <label htmlFor={candidateId ? `edit-role-${candidateId}` : "new-role"} className="text-sm font-medium">
-          Role <span className="text-destructive">*</span>
+          Rol <span className="text-destructive">*</span>
         </label>
         <Input
           id={candidateId ? `edit-role-${candidateId}` : "new-role"}
@@ -135,7 +135,7 @@ export function CandidateRecordFormFields({
             htmlFor={candidateId ? `edit-seniority-${candidateId}` : "new-seniority"}
             className="text-sm font-medium"
           >
-            Seniority <span className="text-destructive">*</span>
+            Senioridad <span className="text-destructive">*</span>
           </label>
           <select
             id={candidateId ? `edit-seniority-${candidateId}` : "new-seniority"}
@@ -163,7 +163,7 @@ export function CandidateRecordFormFields({
             htmlFor={candidateId ? `edit-availability-${candidateId}` : "new-availability"}
             className="text-sm font-medium"
           >
-            Availability <span className="text-destructive">*</span>
+            Disponibilidad <span className="text-destructive">*</span>
           </label>
           <select
             id={candidateId ? `edit-availability-${candidateId}` : "new-availability"}
@@ -190,7 +190,7 @@ export function CandidateRecordFormFields({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor={candidateId ? `edit-email-${candidateId}` : "new-email"} className="text-sm font-medium">
-            Email
+            Correo
           </label>
           <Input
             id={candidateId ? `edit-email-${candidateId}` : "new-email"}
@@ -209,7 +209,7 @@ export function CandidateRecordFormFields({
 
         <div className="space-y-2">
           <label htmlFor={candidateId ? `edit-phone-${candidateId}` : "new-phone"} className="text-sm font-medium">
-            Phone
+            Teléfono
           </label>
           <Input
             id={candidateId ? `edit-phone-${candidateId}` : "new-phone"}
@@ -230,7 +230,7 @@ export function CandidateRecordFormFields({
           htmlFor={candidateId ? `edit-currentCompany-${candidateId}` : "new-currentCompany"}
           className="text-sm font-medium"
         >
-          Current company
+          Empresa actual
         </label>
         <Input
           id={candidateId ? `edit-currentCompany-${candidateId}` : "new-currentCompany"}
@@ -247,7 +247,7 @@ export function CandidateRecordFormFields({
 
       <div className="space-y-2">
         <label htmlFor={candidateId ? `edit-notes-${candidateId}` : "new-notes"} className="text-sm font-medium">
-          Notes
+          Notas
         </label>
         <textarea
           id={candidateId ? `edit-notes-${candidateId}` : "new-notes"}

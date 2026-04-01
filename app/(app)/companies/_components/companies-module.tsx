@@ -43,7 +43,7 @@ export function CompaniesModule({ companies }: { companies: Company[] }) {
   return (
     <div className="space-y-8">
       {!catalogEmpty && (
-        <SectionCard title="Filters" contentClassName="pt-6">
+        <SectionCard title="Filtros" contentClassName="pt-6">
           <CompaniesToolbar
             filters={filters}
             onFiltersChange={setFilters}
@@ -53,7 +53,7 @@ export function CompaniesModule({ companies }: { companies: Company[] }) {
         </SectionCard>
       )}
 
-      <SectionCard title="Directory" contentClassName="pt-0">
+      <SectionCard title="Directorio" contentClassName="pt-0">
           {catalogEmpty ? (
             <div className="pt-6">
               <CompaniesEmptyState variant="no-catalog" />

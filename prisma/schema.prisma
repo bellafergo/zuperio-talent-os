@@ -33,6 +33,13 @@ enum ContactStatus {
   INACTIVE
 }
 
+enum ContactMethodType {
+  PHONE
+  EMAIL
+  WHATSAPP
+  LINKEDIN
+}
+
 enum VacancySeniority {
   INTERN
   JUNIOR
@@ -143,6 +150,8 @@ model User {
   opportunitiesAsOwner Opportunity[] @relation("OpportunityOwner")
 
   proposalsCreated Proposal[] @relation("ProposalCreatedBy")
+
+  contactMethodsCreated ContactMethod[] @relation("ContactMethodCreatedBy")
 }
 
 model Company {
@@ -171,13 +180,17 @@ model Contact {
   id        String        @id @default(cuid())
   firstName String
   lastName  String?
+  /// Cached primary email (mirrors primary active ContactMethod of type EMAIL).
   email     String?
+  /// Cached primary phone / WhatsApp (mirrors primary active PHONE or WHATSAPP method).
   phone     String?
   title     String?
   status    ContactStatus @default(ACTIVE)
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  methods ContactMethod[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -186,13 +199,33 @@ model Contact {
   @@index([email])
 }
 
+/// Historical and alternate contact channels; primaries sync to Contact.email / Contact.phone.
+model ContactMethod {
+  id        String            @id @default(cuid())
+  contactId String
+  contact   Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type      ContactMethodType
+  value     String
+  label     String?
+  isPrimary Boolean           @default(false)
+  isActive  Boolean           @default(true)
+  notes     String?
+
+  createdAt   DateTime @default(now())
+  createdById String?
+  createdBy   User?    @relation("ContactMethodCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([contactId, type])
+}
+
 model Opportunity {
   id    String             @id @default(cuid())
   title String
   stage OpportunityStage   @default(PROSPECTING)
-  /// Monetary value in major currency units (e.g. euros); refine precision later if needed.
+  /// Monetary value in major currency units (MXN/USD); refine precision later if needed.
   value Decimal?           @db.Decimal(14, 2)
-  currency String?         @default("EUR")
+  currency String?         @default("MXN")
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -218,7 +251,7 @@ model Vacancy {
   status    VacancyStatus    @default(OPEN)
   /// Target bill rate (e.g. per hour) in major currency units.
   targetRate Decimal?        @db.Decimal(14, 2)
-  currency   String?         @default("EUR")
+  currency   String?         @default("MXN")
   /// Legacy free-text skills (temporary; matching v1 still uses this until migrated).
   skills       String?
   /// Short role scope for matching and future JD text.
@@ -420,7 +453,7 @@ model Proposal {
   type        ProposalType
   format      ProposalFormat @default(SIMPLE)
   status      ProposalStatus @default(DRAFT)
-  currency    String @default("EUR")
+  currency    String @default("MXN")
   validityDays Int @default(14)
 
   executiveSummary String?

@@ -12,19 +12,19 @@ import type {
 } from "./types";
 
 const prismaStageToUi: Record<PrismaStage, VacancyApplicationStageUi> = {
-  NEW: "New",
-  PRE_SCREEN: "Pre-screen",
-  INTERNAL_INTERVIEW: "Internal interview",
-  CLIENT_INTERVIEW: "Client interview",
-  OFFER: "Offer",
-  HIRED: "Hired",
-  REJECTED: "Rejected",
-  WITHDRAWN: "Withdrawn",
+  NEW: "Nueva",
+  PRE_SCREEN: "Pre-filtro",
+  INTERNAL_INTERVIEW: "Entrevista interna",
+  CLIENT_INTERVIEW: "Entrevista cliente",
+  OFFER: "Oferta",
+  HIRED: "Contratado",
+  REJECTED: "Rechazado",
+  WITHDRAWN: "Retirado",
 };
 
 const prismaStatusToUi: Record<PrismaStatus, VacancyApplicationStatusUi> = {
-  ACTIVE: "Active",
-  CLOSED: "Closed",
+  ACTIVE: "Activa",
+  CLOSED: "Cerrada",
 };
 
 export function mapApplicationStageToUi(s: PrismaStage): VacancyApplicationStageUi {

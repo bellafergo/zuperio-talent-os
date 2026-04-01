@@ -5,9 +5,9 @@ const variantByRecommendation: Record<
   MatchRecommendationUi,
   "default" | "secondary" | "outline"
 > = {
-  "Strong match": "default",
-  "Partial match": "secondary",
-  "Low match": "outline",
+  "Match fuerte": "default",
+  "Match parcial": "secondary",
+  "Match bajo": "outline",
 };
 
 export function MatchRecommendationBadge({

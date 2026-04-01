@@ -58,9 +58,9 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       <PageHeader
         variant="detail"
         backHref="/candidates"
-        backLabel="Back to candidates"
+        backLabel="Volver a candidatos"
         title={candidate.displayName}
-        description="Talent profile, structured skills, applications, and deterministic vacancy matches."
+        description="Perfil de talento, skills estructurados, postulaciones y matches deterministas con vacantes."
         meta={<CandidateAvailabilityBadge status={candidate.availabilityStatus} />}
         actions={
           canManage && editData ? (
@@ -71,11 +71,11 @@ export default async function CandidateDetailPage({ params }: PageProps) {
 
       <DetailGrid
         items={[
-          { label: "Role", value: candidate.role },
-          { label: "Seniority", value: candidate.seniority },
-          { label: "Current company", value: candidate.currentCompany },
-          { label: "Email", value: candidate.email },
-          { label: "Phone", value: candidate.phone },
+          { label: "Rol", value: candidate.role },
+          { label: "Senioridad", value: candidate.seniority },
+          { label: "Empresa actual", value: candidate.currentCompany },
+          { label: "Correo", value: candidate.email },
+          { label: "Teléfono", value: candidate.phone },
         ]}
       />
 
@@ -85,8 +85,8 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       />
 
       <SectionCard
-        title="Notes"
-        description="Internal context, preferences, and vetting notes."
+        title="Notas"
+        description="Contexto interno, preferencias y notas de evaluación."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">{candidate.notes}</p>
       </SectionCard>
@@ -98,8 +98,8 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       <CandidateVacancyMatchesSection matches={vacancyMatches} />
 
       <PlaceholderSection
-        title="Activity"
-        description="Submissions, interviews, and placement history."
+        title="Actividad"
+        description="Postulaciones, entrevistas e historial de colocación."
       />
     </div>
   );

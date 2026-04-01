@@ -7,7 +7,7 @@ import type { VacancySeniorityUi } from "@/lib/vacancies/types";
 import type { CandidateAvailabilityUi, CandidateUi } from "./types";
 
 const prismaSeniorityToUi: Record<PrismaSeniority, VacancySeniorityUi> = {
-  INTERN: "Intern",
+  INTERN: "Interno",
   JUNIOR: "Junior",
   MID: "Mid",
   SENIOR: "Senior",
@@ -19,10 +19,10 @@ const prismaAvailabilityToUi: Record<
   PrismaAvailability,
   CandidateAvailabilityUi
 > = {
-  AVAILABLE: "Available",
-  IN_PROCESS: "In process",
-  ASSIGNED: "Assigned",
-  NOT_AVAILABLE: "Not available",
+  AVAILABLE: "Disponible",
+  IN_PROCESS: "En proceso",
+  ASSIGNED: "Asignado",
+  NOT_AVAILABLE: "No disponible",
 };
 
 export function parseSkillTags(skills: string): string[] {
@@ -33,7 +33,7 @@ export function parseSkillTags(skills: string): string[] {
 }
 
 function formatUpdatedAt(d: Date) {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-MX", {
     day: "numeric",
     month: "short",
     year: "numeric",

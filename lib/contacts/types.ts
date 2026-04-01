@@ -1,4 +1,4 @@
-export type ContactStatusUi = "Active" | "Inactive";
+export type ContactStatusUi = "Activo" | "Inactivo";
 
 export type ContactListRow = {
   id: string;
@@ -16,6 +16,27 @@ export type ContactListRow = {
   emailValue: string;
   phoneValue: string;
   statusValue: "ACTIVE" | "INACTIVE";
+  /** Contact row `updatedAt` (also moves when primaries sync from methods). */
+  updatedAtLabel: string;
+};
+
+export type ContactMethodTypeUi =
+  | "Teléfono"
+  | "Correo"
+  | "WhatsApp"
+  | "LinkedIn";
+
+export type ContactMethodRowUi = {
+  id: string;
+  type: ContactMethodTypeUi;
+  typeValue: "PHONE" | "EMAIL" | "WHATSAPP" | "LINKEDIN";
+  value: string;
+  label: string | null;
+  isPrimary: boolean;
+  isActive: boolean;
+  notes: string | null;
+  createdAtLabel: string;
+  createdByLabel: string;
 };
 
 export type ContactFilterState = {

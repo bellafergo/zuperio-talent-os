@@ -39,12 +39,12 @@ export function CandidatesDataTable({ candidates }: { candidates: CandidateUi[] 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Candidate</TableHead>
-          <TableHead>Role</TableHead>
+          <TableHead>Candidato</TableHead>
+          <TableHead>Rol</TableHead>
           <TableHead className="max-w-[280px]">Skills</TableHead>
-          <TableHead className="w-[90px]">Seniority</TableHead>
-          <TableHead className="w-[120px]">Status</TableHead>
-          <TableHead className="w-[100px]">Updated</TableHead>
+          <TableHead className="w-[90px]">Senioridad</TableHead>
+          <TableHead className="w-[120px]">Estado</TableHead>
+          <TableHead className="w-[100px]">Actualizado</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -56,7 +56,7 @@ export function CandidatesDataTable({ candidates }: { candidates: CandidateUi[] 
             className="cursor-pointer hover:bg-muted/50"
             onClick={() => goToCandidate(row.id)}
             onKeyDown={(e) => onRowKeyDown(e, row.id)}
-            aria-label={`View ${row.displayName} details`}
+            aria-label={`Ver detalle de ${row.displayName}`}
           >
             <TableCell className="font-medium">{row.displayName}</TableCell>
             <TableCell className="text-muted-foreground">{row.role}</TableCell>

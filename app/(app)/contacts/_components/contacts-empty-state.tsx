@@ -27,10 +27,10 @@ export function ContactsEmptyState({
           <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
             <UsersIcon className="size-5 text-muted-foreground" />
           </div>
-          <CardTitle className="text-base">No contacts yet</CardTitle>
+          <CardTitle className="text-base">Aún no hay contactos</CardTitle>
           <CardDescription>
-            Contacts linked to companies will appear here after seeding or
-            importing data.
+            Los contactos ligados a empresas aparecerán aquí tras el seed o al
+            importar datos.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -43,14 +43,15 @@ export function ContactsEmptyState({
         <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
           <SearchXIcon className="size-5 text-muted-foreground" />
         </div>
-        <CardTitle className="text-base">No matching contacts</CardTitle>
+        <CardTitle className="text-base">Sin contactos que coincidan</CardTitle>
         <CardDescription>
-          Try another search or reset filters to see the full directory.
+          Prueba otra búsqueda o restablece filtros para ver el directorio
+          completo.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center pb-6">
         <Button type="button" variant="secondary" onClick={onClearFilters}>
-          Clear filters
+          Limpiar filtros
         </Button>
       </CardContent>
     </Card>

@@ -27,10 +27,10 @@ export function VacanciesEmptyState({
           <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
             <BriefcaseIcon className="size-5 text-muted-foreground" />
           </div>
-          <CardTitle className="text-base">No vacancies yet</CardTitle>
+          <CardTitle className="text-base">Aún no hay vacantes</CardTitle>
           <CardDescription>
-            Roles linked to opportunities will appear here after migration and
-            seeding.
+            Los roles ligados a oportunidades aparecerán aquí tras migrar y
+            ejecutar el seed.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -43,14 +43,14 @@ export function VacanciesEmptyState({
         <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-muted">
           <SearchXIcon className="size-5 text-muted-foreground" />
         </div>
-        <CardTitle className="text-base">No matching vacancies</CardTitle>
+        <CardTitle className="text-base">Sin vacantes que coincidan</CardTitle>
         <CardDescription>
-          Adjust search or filters to see more roles.
+          Ajusta la búsqueda o los filtros para ver más roles.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center pb-6">
         <Button type="button" variant="secondary" onClick={onClearFilters}>
-          Clear filters
+          Limpiar filtros
         </Button>
       </CardContent>
     </Card>

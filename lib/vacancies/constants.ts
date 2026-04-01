@@ -1,17 +1,17 @@
 import type { VacancySeniorityUi, VacancyStatusUi } from "./types";
 
 export const VACANCY_STATUSES: VacancyStatusUi[] = [
-  "Draft",
-  "Open",
-  "On hold",
+  "Borrador",
+  "Abierta",
+  "En pausa",
   "Sourcing",
-  "Interviewing",
-  "Filled",
-  "Cancelled",
+  "En entrevistas",
+  "Cubiertas",
+  "Cancelada",
 ];
 
 export const VACANCY_SENIORITIES: VacancySeniorityUi[] = [
-  "Intern",
+  "Interno",
   "Junior",
   "Mid",
   "Senior",

@@ -20,10 +20,10 @@ export default async function MatchingComparePage({ params }: PageProps) {
       <PageHeader
         variant="detail"
         backHref="/matching"
-        backLabel="Back to matching"
-        eyebrow="Match intelligence"
+        backLabel="Volver a matching"
+        eyebrow="Inteligencia de match"
         title="Candidato vs vacante"
-        description="Full structured comparison — same deterministic engine as pipeline scores. Details below."
+        description="Comparación estructurada completa: mismo motor determinista que los scores del embudo. Detalle abajo."
       />
       <ComparisonMatrixCard bundle={bundle} layout="focus" />
     </div>

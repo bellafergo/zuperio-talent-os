@@ -39,7 +39,7 @@ export function addToCurrencySum(
 
 /**
  * Format monetary amounts for proposals, tables, and PDFs.
- * Pass the stored ISO code (MXN, USD, or legacy e.g. EUR) so existing data still displays correctly.
+ * Pass the stored ISO code (MXN or USD). Legacy rows may still carry other codes until migrated.
  */
 export function formatMoney(
   amount: number | null | undefined,

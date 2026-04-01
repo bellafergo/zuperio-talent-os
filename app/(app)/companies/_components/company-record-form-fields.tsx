@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const STATUS_LABELS: Record<CompanyStatusEnum, string> = {
-  ACTIVE: "Active",
-  PROSPECT: "Prospect",
-  PAUSED: "Paused",
-  CHURNED: "Churned",
+  ACTIVE: "Activa",
+  PROSPECT: "Prospecto",
+  PAUSED: "En pausa",
+  CHURNED: "Baja",
 };
 
 const selectClass = cn(
@@ -50,7 +50,7 @@ export function CompanyRecordFormFields({
 
       <div className="space-y-2">
         <label htmlFor={companyId ? `edit-name-${companyId}` : "new-name"} className="text-sm font-medium">
-          Name <span className="text-destructive">*</span>
+          Nombre <span className="text-destructive">*</span>
         </label>
         <Input
           id={companyId ? `edit-name-${companyId}` : "new-name"}
@@ -72,7 +72,7 @@ export function CompanyRecordFormFields({
           htmlFor={companyId ? `edit-industry-${companyId}` : "new-industry"}
           className="text-sm font-medium"
         >
-          Industry
+          Industria
         </label>
         <Input
           id={companyId ? `edit-industry-${companyId}` : "new-industry"}
@@ -93,7 +93,7 @@ export function CompanyRecordFormFields({
           htmlFor={companyId ? `edit-location-${companyId}` : "new-location"}
           className="text-sm font-medium"
         >
-          Location
+          Ubicación
         </label>
         <Input
           id={companyId ? `edit-location-${companyId}` : "new-location"}
@@ -114,7 +114,7 @@ export function CompanyRecordFormFields({
           htmlFor={companyId ? `edit-status-${companyId}` : "new-status"}
           className="text-sm font-medium"
         >
-          Status <span className="text-destructive">*</span>
+          Estado <span className="text-destructive">*</span>
         </label>
         <select
           id={companyId ? `edit-status-${companyId}` : "new-status"}
@@ -151,7 +151,7 @@ export function CompanyRecordFormFields({
           defaultValue={defaults?.ownerId ?? ""}
           aria-invalid={Boolean(fieldErrors?.ownerId)}
         >
-          <option value="">No owner</option>
+          <option value="">Sin responsable</option>
           {users.map((u) => (
             <option key={u.id} value={u.id}>
               {u.name?.trim() || u.email}

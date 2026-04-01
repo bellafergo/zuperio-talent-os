@@ -5,10 +5,10 @@ const variantByStatus: Record<
   CandidateAvailabilityUi,
   "default" | "secondary" | "outline" | "destructive"
 > = {
-  Available: "default",
-  "In process": "secondary",
-  Assigned: "outline",
-  "Not available": "destructive",
+  Disponible: "default",
+  "En proceso": "secondary",
+  Asignado: "outline",
+  "No disponible": "destructive",
 };
 
 export function CandidateAvailabilityBadge({

@@ -1,10 +1,10 @@
 export type OpportunityStageUi =
-  | "Prospecting"
-  | "Qualification"
-  | "Proposal"
-  | "Negotiation"
-  | "Closed won"
-  | "Closed lost";
+  | "Prospección"
+  | "Calificación"
+  | "Propuesta"
+  | "Negociación"
+  | "Cerrada ganada"
+  | "Cerrada perdida";
 
 export type OpportunityListRow = {
   id: string;

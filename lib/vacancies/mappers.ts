@@ -12,20 +12,20 @@ import type {
 } from "./types";
 
 const prismaStatusToUi: Record<PrismaVacancyStatus, VacancyStatusUi> = {
-  DRAFT: "Draft",
-  OPEN: "Open",
-  ON_HOLD: "On hold",
+  DRAFT: "Borrador",
+  OPEN: "Abierta",
+  ON_HOLD: "En pausa",
   SOURCING: "Sourcing",
-  INTERVIEWING: "Interviewing",
-  FILLED: "Filled",
-  CANCELLED: "Cancelled",
+  INTERVIEWING: "En entrevistas",
+  FILLED: "Cubiertas",
+  CANCELLED: "Cancelada",
 };
 
 export const prismaSeniorityToUi: Record<
   PrismaVacancySeniority,
   VacancySeniorityUi
 > = {
-  INTERN: "Intern",
+  INTERN: "Interno",
   JUNIOR: "Junior",
   MID: "Mid",
   SENIOR: "Senior",

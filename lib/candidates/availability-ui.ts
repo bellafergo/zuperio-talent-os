@@ -1,10 +1,10 @@
 import type { CandidateAvailabilityStatus } from "@/generated/prisma/enums";
 
 const LABELS: Record<CandidateAvailabilityStatus, string> = {
-  AVAILABLE: "Available",
-  IN_PROCESS: "In process",
-  ASSIGNED: "Assigned",
-  NOT_AVAILABLE: "Not available",
+  AVAILABLE: "Disponible",
+  IN_PROCESS: "En proceso",
+  ASSIGNED: "Asignado",
+  NOT_AVAILABLE: "No disponible",
 };
 
 export function candidateAvailabilityLabel(s: CandidateAvailabilityStatus): string {

@@ -49,9 +49,9 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       <PageHeader
         variant="detail"
         backHref="/opportunities"
-        backLabel="Back to opportunities"
+        backLabel="Volver a oportunidades"
         title={opportunity.title}
-        description={`Deal record · estimate in ${opportunity.currency} · stored in PostgreSQL.`}
+        description={`Registro del negocio · estimación en ${opportunity.currency} · almacenado en PostgreSQL.`}
         meta={
           <div className="shrink-0">
             <OpportunityStageBadge stage={opportunity.stage} />
@@ -71,33 +71,33 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       <DetailGrid
         items={[
           {
-            label: "Company",
+            label: "Empresa",
             value: opportunity.companyName,
             href: `/companies/${opportunity.companyId}`,
           },
-          { label: "Owner", value: opportunity.ownerName },
-          { label: "Estimated value", value: valueDisplay },
+          { label: "Responsable", value: opportunity.ownerName },
+          { label: "Valor estimado", value: valueDisplay },
         ]}
       />
 
       <SectionCard
-        title="Description"
-        description="Scope, stakeholders, and commercial framing for this opportunity."
+        title="Descripción"
+        description="Alcance, stakeholders y encuadre comercial de la oportunidad."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
-          A structured description and win criteria will live here as the deal
-          evolves. Financials above reflect the current estimate in{" "}
-          {opportunity.currency}.
+          Aquí vivirá la descripción estructurada y los criterios de cierre a
+          medida que evolucione el negocio. Lo financiero arriba refleja la
+          estimación actual en {opportunity.currency}.
         </p>
       </SectionCard>
 
       <PlaceholderSection
-        title="Vacancies"
-        description="Open roles or hiring tracks tied to this deal."
+        title="Vacantes"
+        description="Roles abiertos o líneas de contratación ligadas a este negocio."
       />
       <PlaceholderSection
-        title="Activity"
-        description="Meetings, emails, and stage changes."
+        title="Actividad"
+        description="Reuniones, correos y cambios de etapa."
       />
     </div>
   );

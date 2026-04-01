@@ -31,21 +31,21 @@ export function CompaniesToolbar({
   return (
     <div className="space-y-4">
       <Input
-        placeholder="Search companies, location, or industry…"
+        placeholder="Buscar empresas, ubicación o industria…"
         value={filters.query}
         onChange={(e) => patch({ query: e.target.value })}
         type="search"
-        aria-label="Search companies"
+        aria-label="Buscar empresas"
         className="max-w-md"
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <FilterSelect
-          label="Status"
+          label="Estado"
           value={filters.status}
           onValueChange={(status) => patch({ status })}
-          placeholder="All statuses"
+          placeholder="Todos los estados"
           options={[
-            { value: "all", label: "All statuses" },
+            { value: "all", label: "Todos los estados" },
             ...COMPANY_STATUSES.map((s) => ({
               value: s,
               label: s,
@@ -53,22 +53,22 @@ export function CompaniesToolbar({
           ]}
         />
         <FilterSelect
-          label="Industry"
+          label="Industria"
           value={filters.industry}
           onValueChange={(industry) => patch({ industry })}
-          placeholder="All industries"
+          placeholder="Todas las industrias"
           options={[
-            { value: "all", label: "All industries" },
+            { value: "all", label: "Todas las industrias" },
             ...industries.map((i) => ({ value: i, label: i })),
           ]}
         />
         <FilterSelect
-          label="Owner"
+          label="Responsable"
           value={filters.owner}
           onValueChange={(owner) => patch({ owner })}
-          placeholder="All owners"
+          placeholder="Todos los responsables"
           options={[
-            { value: "all", label: "All owners" },
+            { value: "all", label: "Todos los responsables" },
             ...owners.map((o) => ({ value: o, label: o })),
           ]}
         />

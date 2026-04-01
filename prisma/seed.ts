@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
+import { syncContactPrimaryFields } from "../lib/contacts/sync-primary-methods";
 import { syncAllCandidateVacancyMatches } from "../lib/matching/service";
 
 import {
@@ -105,6 +106,67 @@ async function main() {
         companyId: c.companyId,
       },
     });
+
+    const email = c.email?.trim().toLowerCase() || null;
+    const phone = c.phone?.trim() || null;
+
+    if (email) {
+      await prisma.contactMethod.updateMany({
+        where: { contactId: c.id, type: "EMAIL", isActive: true },
+        data: { isPrimary: false },
+      });
+      await prisma.contactMethod.upsert({
+        where: { id: `cm_email_${c.id}` },
+        create: {
+          id: `cm_email_${c.id}`,
+          contactId: c.id,
+          type: "EMAIL",
+          value: email,
+          isPrimary: true,
+          isActive: true,
+        },
+        update: {
+          value: email,
+          isActive: true,
+          isPrimary: true,
+          contactId: c.id,
+        },
+      });
+    } else {
+      await prisma.contactMethod.deleteMany({ where: { id: `cm_email_${c.id}` } });
+    }
+
+    if (phone) {
+      await prisma.contactMethod.updateMany({
+        where: {
+          contactId: c.id,
+          type: { in: ["PHONE", "WHATSAPP"] },
+          isActive: true,
+        },
+        data: { isPrimary: false },
+      });
+      await prisma.contactMethod.upsert({
+        where: { id: `cm_phone_${c.id}` },
+        create: {
+          id: `cm_phone_${c.id}`,
+          contactId: c.id,
+          type: "PHONE",
+          value: phone,
+          isPrimary: true,
+          isActive: true,
+        },
+        update: {
+          value: phone,
+          isActive: true,
+          isPrimary: true,
+          contactId: c.id,
+        },
+      });
+    } else {
+      await prisma.contactMethod.deleteMany({ where: { id: `cm_phone_${c.id}` } });
+    }
+
+    await syncContactPrimaryFields(c.id);
   }
 
   for (const o of SEED_OPPORTUNITIES) {
