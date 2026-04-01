@@ -56,7 +56,14 @@ export async function listApplicationsForVacancyUi(
     await prisma.vacancyApplication.findMany({
       where: { vacancyId },
       orderBy: { updatedAt: "desc" },
-      include: { candidate: { select: candidateSelect } },
+      select: {
+        id: true,
+        stage: true,
+        status: true,
+        source: true,
+        notes: true,
+        candidate: { select: candidateSelect },
+      },
     }),
   );
   return rows.map((row) =>

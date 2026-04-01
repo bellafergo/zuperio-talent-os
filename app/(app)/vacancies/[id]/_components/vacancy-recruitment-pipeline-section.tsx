@@ -19,10 +19,14 @@ import {
 } from "@/components/ui/table";
 import type { VacancyPipelineRowUi } from "@/lib/vacancy-applications/types";
 
+import { VacancyApplicationEditDialog } from "./vacancy-application-edit-dialog";
+
 export function VacancyRecruitmentPipelineSection({
   applications,
+  canManage,
 }: {
   applications: VacancyPipelineRowUi[];
+  canManage: boolean;
 }) {
   return (
     <Card className="shadow-sm">
@@ -46,6 +50,7 @@ export function VacancyRecruitmentPipelineSection({
                 <TableHead className="w-[160px]">Stage</TableHead>
                 <TableHead className="w-[100px]">Status</TableHead>
                 <TableHead>Source</TableHead>
+                {canManage ? <TableHead className="w-[110px]" /> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -68,6 +73,11 @@ export function VacancyRecruitmentPipelineSection({
                   <TableCell className="text-muted-foreground">
                     {a.sourceLabel}
                   </TableCell>
+                  {canManage ? (
+                    <TableCell className="text-right">
+                      <VacancyApplicationEditDialog row={a} />
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>

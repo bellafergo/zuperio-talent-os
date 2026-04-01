@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
+import { canManageApplications } from "@/lib/auth/application-access";
 import {
   Card,
   CardContent,
@@ -37,6 +38,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();
   const canManage = canManageVacancies(session?.user?.role);
+  const canManageApps = canManageApplications(session?.user?.role);
 
   const [vacancy, candidateMatches, requirements, applications, editData, opportunities, skills] =
     await Promise.all([
@@ -132,7 +134,10 @@ export default async function VacancyDetailPage({ params }: PageProps) {
 
       <VacancyRequirementsSection requirements={requirements} />
 
-      <VacancyRecruitmentPipelineSection applications={applications} />
+      <VacancyRecruitmentPipelineSection
+        applications={applications}
+        canManage={canManageApps}
+      />
 
       <Card className="shadow-sm">
         <CardHeader className="border-b border-border pb-4">

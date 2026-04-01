@@ -53,6 +53,7 @@ export type ApplicationWithCandidate = {
   stage: PrismaStage;
   status: PrismaStatus;
   source: string | null;
+  notes: string | null;
   candidate: CandidateMini;
 };
 
@@ -84,6 +85,8 @@ export function mapToVacancyPipelineRowUi(row: ApplicationWithCandidate): Vacanc
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
     sourceLabel: sourceLabel(row.source),
+    source: row.source?.trim() || null,
+    notes: row.notes?.trim() || null,
   };
 }
 

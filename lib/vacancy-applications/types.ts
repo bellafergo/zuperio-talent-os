@@ -17,6 +17,8 @@ export type VacancyPipelineRowUi = {
   stage: VacancyApplicationStageUi;
   status: VacancyApplicationStatusUi;
   sourceLabel: string;
+  source: string | null;
+  notes: string | null;
 };
 
 export type CandidateApplicationRowUi = {
