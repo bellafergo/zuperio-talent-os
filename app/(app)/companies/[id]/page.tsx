@@ -2,6 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import {
   Card,
   CardContent,
@@ -9,10 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCompanyByIdForUi } from "@/lib/companies/queries";
+import { canManageCompanies } from "@/lib/auth/company-access";
+import {
+  getCompanyByIdForUi,
+  listUsersForCompanyForm,
+} from "@/lib/companies/queries";
 import { listPlacementsForCompanyUi } from "@/lib/placements/queries";
 
 import { CompanyPlacementsSection } from "./_components/company-placements-section";
+import { CompanyEditDialog } from "../_components/company-edit-dialog";
 import { CompanyStatusBadge } from "../_components/company-status-badge";
 
 export const dynamic = "force-dynamic";
@@ -23,9 +29,13 @@ type PageProps = {
 
 export default async function CompanyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [company, placements] = await Promise.all([
+  const session = await auth();
+  const canManage = canManageCompanies(session?.user?.role);
+
+  const [company, placements, users] = await Promise.all([
     getCompanyByIdForUi(id),
     listPlacementsForCompanyUi(id),
+    canManage ? listUsersForCompanyForm() : Promise.resolve([]),
   ]);
 
   if (!company) {
@@ -43,11 +53,16 @@ export default async function CompanyDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {company.name}
-          </h1>
-          <CompanyStatusBadge status={company.status} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              {company.name}
+            </h1>
+            <CompanyStatusBadge status={company.status} />
+          </div>
+          {canManage ? (
+            <CompanyEditDialog company={company} users={users} />
+          ) : null}
         </div>
         <p className="text-sm text-muted-foreground">
           Account overview · loaded from database

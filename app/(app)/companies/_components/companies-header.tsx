@@ -1,6 +1,14 @@
+import type { CompanyOwnerOption } from "@/lib/companies/queries";
+
 import { CompaniesNewCompanyDialog } from "./companies-new-company-dialog";
 
-export function CompaniesHeader() {
+export function CompaniesHeader({
+  canManage,
+  users,
+}: {
+  canManage: boolean;
+  users: CompanyOwnerOption[];
+}) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0 space-y-1">
@@ -9,10 +17,10 @@ export function CompaniesHeader() {
         </h1>
         <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Accounts and relationships across your pipeline. Search and filter
-          are local only until data is connected.
+          the directory below.
         </p>
       </div>
-      <CompaniesNewCompanyDialog />
+      {canManage ? <CompaniesNewCompanyDialog users={users} /> : null}
     </div>
   );
 }

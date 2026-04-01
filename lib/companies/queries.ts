@@ -18,3 +18,17 @@ export async function getCompanyByIdForUi(id: string): Promise<Company | null> {
   });
   return row ? mapCompanyToUi(row) : null;
 }
+
+export type CompanyOwnerOption = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
+/** Users eligible as company owner in forms (internal directory). */
+export async function listUsersForCompanyForm(): Promise<CompanyOwnerOption[]> {
+  return prisma.user.findMany({
+    select: { id: true, name: true, email: true },
+    orderBy: [{ name: "asc" }, { email: "asc" }],
+  });
+}

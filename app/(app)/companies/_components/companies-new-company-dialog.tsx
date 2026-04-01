@@ -1,6 +1,8 @@
 "use client";
 
 import { PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +15,48 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { createCompany, type CompanyActionState } from "@/lib/companies/actions";
+import type { CompanyOwnerOption } from "@/lib/companies/queries";
 
-export function CompaniesNewCompanyDialog() {
+import { CompanyRecordFormFields } from "./company-record-form-fields";
+
+export function CompaniesNewCompanyDialog({
+  users,
+}: {
+  users: CompanyOwnerOption[];
+}) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [formKey, setFormKey] = useState(0);
+  const [state, setState] = useState<CompanyActionState | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    startTransition(async () => {
+      const result = await createCompany(null, fd);
+      setState(result);
+      if (result.ok) {
+        setOpen(false);
+        form.reset();
+        router.refresh();
+      }
+    });
+  }
+
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) {
+          setFormKey((k) => k + 1);
+          setState(null);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button type="button" className="shrink-0 gap-1.5">
           <PlusIcon className="size-4" aria-hidden />
@@ -27,20 +67,30 @@ export function CompaniesNewCompanyDialog() {
         <DialogHeader>
           <DialogTitle>New company</DialogTitle>
           <DialogDescription>
-            This dialog is a UI placeholder. Saving and validation will be wired
-            when the backend is ready.
+            Add an account to the directory. Name and status are required.
           </DialogDescription>
         </DialogHeader>
-        <div className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
-          Form fields for name, industry, and ownership will appear here.
-        </div>
-        <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end">
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Close
+        <form key={formKey} onSubmit={onSubmit} className="space-y-4">
+          <CompanyRecordFormFields
+            users={users}
+            fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
+          />
+          {state?.ok === false && state.message ? (
+            <p className="text-sm text-destructive" role="alert">
+              {state.message}
+            </p>
+          ) : null}
+          <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary" disabled={pending}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" disabled={pending}>
+              {pending ? "Saving…" : "Create company"}
             </Button>
-          </DialogClose>
-        </DialogFooter>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

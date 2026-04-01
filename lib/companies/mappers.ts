@@ -15,6 +15,7 @@ export type CompanyWithOwner = {
   industry: string | null;
   location: string | null;
   status: PrismaCompanyStatus;
+  ownerId: string | null;
   owner: { name: string | null } | null;
 };
 
@@ -25,6 +26,8 @@ export function mapCompanyToUi(row: CompanyWithOwner): Company {
     industry: row.industry ?? "",
     location: row.location ?? "",
     owner: row.owner?.name?.trim() || "—",
+    ownerId: row.ownerId,
     status: prismaStatusToUi[row.status],
+    statusValue: row.status,
   };
 }

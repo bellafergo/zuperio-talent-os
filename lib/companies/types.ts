@@ -1,3 +1,5 @@
+import type { CompanyStatus as PrismaCompanyStatus } from "@/generated/prisma/enums";
+
 export type CompanyStatus = "Active" | "Prospect" | "Paused" | "Churned";
 
 export type Company = {
@@ -6,7 +8,11 @@ export type Company = {
   industry: string;
   location: string;
   owner: string;
+  /** For owner select in create/edit forms */
+  ownerId: string | null;
   status: CompanyStatus;
+  /** Prisma enum value for form defaults */
+  statusValue: PrismaCompanyStatus;
 };
 
 export type CompanyFilterState = {
