@@ -11,8 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCandidateByIdForUi } from "@/lib/candidates/queries";
+import { listMatchesForCandidateUi } from "@/lib/matching/queries";
+import { getCurrentAssignmentForCandidateUi } from "@/lib/placements/queries";
 
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
+import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
+import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +26,11 @@ type PageProps = {
 
 export default async function CandidateDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const candidate = await getCandidateByIdForUi(id);
+  const [candidate, vacancyMatches, currentAssignment] = await Promise.all([
+    getCandidateByIdForUi(id),
+    listMatchesForCandidateUi(id),
+    getCurrentAssignmentForCandidateUi(id),
+  ]);
 
   if (!candidate) {
     notFound();
@@ -98,10 +106,10 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         </CardContent>
       </Card>
 
-      <PlaceholderSection
-        title="Matching vacancies"
-        description="Open roles that fit this profile (matching not implemented yet)."
-      />
+      <CandidateCurrentAssignmentSection assignment={currentAssignment} />
+
+      <CandidateVacancyMatchesSection matches={vacancyMatches} />
+
       <PlaceholderSection
         title="Activity"
         description="Submissions, interviews, and placement history."

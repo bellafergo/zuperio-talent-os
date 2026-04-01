@@ -418,6 +418,9 @@ export type SeedVacancy = {
   targetRate: number;
   currency?: string;
   opportunityId: string;
+  /** Comma-separated; used by matching v1. */
+  skills: string;
+  roleSummary: string;
 };
 
 /** Roles tied to seeded opportunities (`opportunityId` matches `SEED_OPPORTUNITIES.id`). */
@@ -429,6 +432,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "INTERVIEWING",
     targetRate: 95,
     opportunityId: "opp_1",
+    skills: "Java, Spring Boot, PostgreSQL, REST APIs, Docker, Kafka",
+    roleSummary:
+      "Backend services for TMS and warehouse integrations; event-driven logistics.",
   },
   {
     id: "vac_2",
@@ -437,6 +443,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "OPEN",
     targetRate: 52,
     opportunityId: "opp_1",
+    skills: "SQL, Excel, Python, Power BI, Process mapping",
+    roleSummary:
+      "Reporting and process analysis for operations and customs workflows.",
   },
   {
     id: "vac_3",
@@ -445,6 +454,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "SOURCING",
     targetRate: 110,
     opportunityId: "opp_2",
+    skills: "Agile, Jira, Stakeholder management, Risk, Retail operations",
+    roleSummary:
+      "Cross-functional programs for store networks and supplier onboarding.",
   },
   {
     id: "vac_4",
@@ -453,6 +465,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "OPEN",
     targetRate: 88,
     opportunityId: "opp_3",
+    skills: "SQL, Python, dbt, Snowflake, Airflow, HL7, FHIR",
+    roleSummary:
+      "Pipelines for clinical and claims data; strong compliance awareness.",
   },
   {
     id: "vac_5",
@@ -461,6 +476,10 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "ON_HOLD",
     targetRate: 140,
     opportunityId: "opp_3",
+    skills:
+      "Clinical workflows, Healthcare interoperability, HL7, FHIR, Regulatory",
+    roleSummary:
+      "Senior clinical subject matter expert for product and integration design.",
   },
   {
     id: "vac_6",
@@ -469,6 +488,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "OPEN",
     targetRate: 102,
     opportunityId: "opp_4",
+    skills: "Kubernetes, Terraform, AWS, Docker, CI/CD, Prometheus",
+    roleSummary:
+      "Platform reliability and IaC for multi-tenant SaaS infrastructure.",
   },
   {
     id: "vac_7",
@@ -477,6 +499,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "FILLED",
     targetRate: 79,
     opportunityId: "opp_5",
+    skills: "Java, Selenium, REST APIs, CI/CD, Test automation",
+    roleSummary:
+      "Automate compliance checks and regression suites for insurance workflows.",
   },
   {
     id: "vac_8",
@@ -485,6 +510,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "INTERVIEWING",
     targetRate: 68,
     opportunityId: "opp_6",
+    skills: "HRIS, Payroll, Excel, SQL, Stakeholder management",
+    roleSummary:
+      "HR business partner for plant workforce planning and payroll cycles.",
   },
   {
     id: "vac_9",
@@ -493,6 +521,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "CANCELLED",
     targetRate: 45,
     opportunityId: "opp_7",
+    skills: "Excel, Retail analytics, SQL basics, Communication",
+    roleSummary:
+      "Coordinate assortment and promotional data across store channels.",
   },
   {
     id: "vac_10",
@@ -501,6 +532,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "OPEN",
     targetRate: 98,
     opportunityId: "opp_8",
+    skills: "React, Node.js, TypeScript, PostgreSQL, GraphQL, AWS",
+    roleSummary:
+      "Internal tools for R&D; modern web stack and API design.",
   },
   {
     id: "vac_11",
@@ -509,6 +543,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "SOURCING",
     targetRate: 72,
     opportunityId: "opp_9",
+    skills: "SQL, Python, Excel, Forecasting, Logistics",
+    roleSummary:
+      "Analyst supporting private-label sourcing and inventory planning.",
   },
   {
     id: "vac_12",
@@ -518,6 +555,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     targetRate: 65,
     currency: "USD",
     opportunityId: "opp_10",
+    skills: "Payroll, HRIS, Excel, SQL, Compliance",
+    roleSummary:
+      "Payroll operations for distributed energy workforce (US entity).",
   },
   {
     id: "vac_13",
@@ -526,6 +566,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "DRAFT",
     targetRate: 91,
     opportunityId: "opp_11",
+    skills: "Java, Spring Boot, REST APIs, PostgreSQL, Docker, XML",
+    roleSummary:
+      "Integrations with customs and trade systems for logistics clients.",
   },
   {
     id: "vac_14",
@@ -534,6 +577,9 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "OPEN",
     targetRate: 125,
     opportunityId: "opp_12",
+    skills: "Cloud security, Kubernetes, Java, Compliance, Risk, AWS",
+    roleSummary:
+      "Lead technical assessments for data residency and security posture.",
   },
 ];
 
@@ -715,5 +761,99 @@ export const SEED_CANDIDATES: SeedCandidate[] = [
     skills: "Python, Git, REST basics, Linux",
     availabilityStatus: "AVAILABLE",
     notes: "University final year; part-time possible.",
+  },
+];
+
+export type SeedPlacementStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
+
+export type SeedPlacement = {
+  id: string;
+  candidateId: string;
+  vacancyId: string;
+  companyId: string;
+  /** ISO date (calendar day). */
+  startDate: string;
+  endDate?: string | null;
+  status: SeedPlacementStatus;
+  rateClient?: number;
+  rateCandidate?: number;
+};
+
+/**
+ * Sample assignments (`companyId` must match the vacancy’s opportunity’s company).
+ */
+export const SEED_PLACEMENTS: SeedPlacement[] = [
+  {
+    id: "pl_1",
+    candidateId: "cand_4",
+    vacancyId: "vac_3",
+    companyId: "2",
+    startDate: "2024-09-02",
+    status: "ACTIVE",
+    rateClient: 118,
+    rateCandidate: 88,
+  },
+  {
+    id: "pl_2",
+    candidateId: "cand_1",
+    vacancyId: "vac_1",
+    companyId: "1",
+    startDate: "2025-02-01",
+    status: "ACTIVE",
+    rateClient: 102,
+    rateCandidate: 76,
+  },
+  {
+    id: "pl_3",
+    candidateId: "cand_6",
+    vacancyId: "vac_10",
+    companyId: "8",
+    startDate: "2025-01-13",
+    status: "ACTIVE",
+    rateClient: 105,
+    rateCandidate: 79,
+  },
+  {
+    id: "pl_4",
+    candidateId: "cand_10",
+    vacancyId: "vac_6",
+    companyId: "4",
+    startDate: "2024-11-04",
+    status: "ACTIVE",
+    rateClient: 112,
+    rateCandidate: 84,
+  },
+  {
+    id: "pl_5",
+    candidateId: "cand_5",
+    vacancyId: "vac_4",
+    companyId: "3",
+    startDate: "2023-04-10",
+    endDate: "2024-11-29",
+    status: "COMPLETED",
+    rateClient: 95,
+    rateCandidate: 71,
+  },
+  {
+    id: "pl_6",
+    candidateId: "cand_3",
+    vacancyId: "vac_7",
+    companyId: "5",
+    startDate: "2023-08-21",
+    endDate: "2024-07-15",
+    status: "COMPLETED",
+    rateClient: 82,
+    rateCandidate: 61,
+  },
+  {
+    id: "pl_7",
+    candidateId: "cand_2",
+    vacancyId: "vac_2",
+    companyId: "1",
+    startDate: "2022-02-14",
+    endDate: "2023-12-20",
+    status: "COMPLETED",
+    rateClient: 58,
+    rateCandidate: 44,
   },
 ];

@@ -19,15 +19,17 @@ const prismaStatusToUi: Record<PrismaVacancyStatus, VacancyStatusUi> = {
   CANCELLED: "Cancelled",
 };
 
-const prismaSeniorityToUi: Record<PrismaVacancySeniority, VacancySeniorityUi> =
-  {
-    INTERN: "Intern",
-    JUNIOR: "Junior",
-    MID: "Mid",
-    SENIOR: "Senior",
-    LEAD: "Lead",
-    PRINCIPAL: "Principal",
-  };
+export const prismaSeniorityToUi: Record<
+  PrismaVacancySeniority,
+  VacancySeniorityUi
+> = {
+  INTERN: "Intern",
+  JUNIOR: "Junior",
+  MID: "Mid",
+  SENIOR: "Senior",
+  LEAD: "Lead",
+  PRINCIPAL: "Principal",
+};
 
 function parseDecimal(
   value: { toNumber?: () => number } | number | string | null | undefined,
@@ -74,6 +76,8 @@ export type VacancyWithRelations = {
   status: PrismaVacancyStatus;
   targetRate: { toNumber?: () => number } | number | string | null;
   currency: string | null;
+  skills: string | null;
+  roleSummary: string | null;
   updatedAt: Date;
   opportunity: {
     id: string;
@@ -85,6 +89,8 @@ export type VacancyWithRelations = {
 export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
   const currency = row.currency?.trim() || "EUR";
   const amount = parseDecimal(row.targetRate);
+  const skillsLine = row.skills?.trim() || null;
+  const roleSummaryLine = row.roleSummary?.trim() || null;
   return {
     id: row.id,
     title: row.title,
@@ -97,6 +103,8 @@ export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
     targetRateLabel: formatTargetRate(amount, currency),
     targetRateAmount: amount,
     currency,
+    skillsLine,
+    roleSummaryLine,
     updatedAtLabel: formatUpdatedAt(row.updatedAt),
   };
 }

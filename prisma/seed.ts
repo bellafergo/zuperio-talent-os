@@ -3,11 +3,14 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
+import { syncAllCandidateVacancyMatches } from "../lib/matching/sync";
+
 import {
   SEED_CANDIDATES,
   SEED_COMPANIES,
   SEED_CONTACTS,
   SEED_OPPORTUNITIES,
+  SEED_PLACEMENTS,
   SEED_USERS,
   SEED_VACANCIES,
 } from "./seed-data";
@@ -126,6 +129,8 @@ async function main() {
         targetRate: v.targetRate,
         currency: v.currency ?? "EUR",
         opportunityId: v.opportunityId,
+        skills: v.skills,
+        roleSummary: v.roleSummary,
       },
       update: {
         title: v.title,
@@ -134,6 +139,8 @@ async function main() {
         targetRate: v.targetRate,
         currency: v.currency ?? "EUR",
         opportunityId: v.opportunityId,
+        skills: v.skills,
+        roleSummary: v.roleSummary,
       },
     });
   }
@@ -168,12 +175,42 @@ async function main() {
       },
     });
   }
+
+  for (const p of SEED_PLACEMENTS) {
+    await prisma.placement.upsert({
+      where: { id: p.id },
+      create: {
+        id: p.id,
+        candidateId: p.candidateId,
+        vacancyId: p.vacancyId,
+        companyId: p.companyId,
+        startDate: new Date(p.startDate),
+        endDate: p.endDate ? new Date(p.endDate) : null,
+        status: p.status,
+        rateClient: p.rateClient ?? null,
+        rateCandidate: p.rateCandidate ?? null,
+      },
+      update: {
+        candidateId: p.candidateId,
+        vacancyId: p.vacancyId,
+        companyId: p.companyId,
+        startDate: new Date(p.startDate),
+        endDate: p.endDate ? new Date(p.endDate) : null,
+        status: p.status,
+        rateClient: p.rateClient ?? null,
+        rateCandidate: p.rateCandidate ?? null,
+      },
+    });
+  }
+
+  const matchCount = await syncAllCandidateVacancyMatches();
+  console.info(`Synced ${matchCount} candidate–vacancy match rows (score > 0).`);
 }
 
 main()
   .then(() => {
     console.info(
-      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates.`,
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates, ${SEED_PLACEMENTS.length} placements.`,
     );
   })
   .catch((e) => {

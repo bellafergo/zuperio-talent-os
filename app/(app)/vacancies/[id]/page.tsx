@@ -9,9 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { listMatchesForVacancyUi } from "@/lib/matching/queries";
 import { formatTargetRate } from "@/lib/vacancies/mappers";
 import { getVacancyByIdForUi } from "@/lib/vacancies/queries";
 
+import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
 import { VacancyStatusBadge } from "../_components/vacancy-status-badge";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +24,10 @@ type PageProps = {
 
 export default async function VacancyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const vacancy = await getVacancyByIdForUi(id);
+  const [vacancy, candidateMatches] = await Promise.all([
+    getVacancyByIdForUi(id),
+    listMatchesForVacancyUi(id),
+  ]);
 
   if (!vacancy) {
     notFound();
@@ -70,6 +75,14 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         />
         <DetailField label="Seniority" value={vacancy.seniority} />
         <DetailField label="Target rate" value={rateDisplay} />
+        <DetailField
+          label="Skills (requisition)"
+          value={vacancy.skillsLine ?? "—"}
+        />
+        <DetailField
+          label="Role scope"
+          value={vacancy.roleSummaryLine ?? "—"}
+        />
       </div>
 
       <Card className="shadow-sm">
@@ -97,16 +110,14 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         </CardHeader>
         <CardContent className="pt-4">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            A structured responsibilities list and must-have skills will replace
-            this placeholder as the requisition matures.
+            Structured responsibilities can extend this section later; skill tags
+            and role scope above already feed matching v1.
           </p>
         </CardContent>
       </Card>
 
-      <PlaceholderSection
-        title="Candidates"
-        description="Applicants and pipeline stages for this vacancy."
-      />
+      <VacancyCandidateMatchesSection matches={candidateMatches} />
+
       <PlaceholderSection
         title="Activity"
         description="Notes, interviews, and status changes."

@@ -10,7 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCompanyByIdForUi } from "@/lib/companies/queries";
+import { listPlacementsForCompanyUi } from "@/lib/placements/queries";
 
+import { CompanyPlacementsSection } from "./_components/company-placements-section";
 import { CompanyStatusBadge } from "../_components/company-status-badge";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +23,10 @@ type PageProps = {
 
 export default async function CompanyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const company = await getCompanyByIdForUi(id);
+  const [company, placements] = await Promise.all([
+    getCompanyByIdForUi(id),
+    listPlacementsForCompanyUi(id),
+  ]);
 
   if (!company) {
     notFound();
@@ -69,6 +74,8 @@ export default async function CompanyDetailPage({ params }: PageProps) {
           </p>
         </CardContent>
       </Card>
+
+      <CompanyPlacementsSection placements={placements} />
 
       <PlaceholderSection
         title="Contacts"

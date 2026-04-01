@@ -14,7 +14,7 @@ export function filterVacancies(
   return rows.filter((r) => {
     if (q) {
       const haystack =
-        `${r.title} ${r.companyName} ${r.opportunityTitle} ${r.seniority} ${r.status} ${r.targetRateLabel}`.toLowerCase();
+        `${r.title} ${r.companyName} ${r.opportunityTitle} ${r.seniority} ${r.status} ${r.targetRateLabel} ${r.skillsLine ?? ""} ${r.roleSummaryLine ?? ""}`.toLowerCase();
       if (!haystack.includes(q)) return false;
     }
     if (filters.status !== "all" && r.status !== filters.status) return false;

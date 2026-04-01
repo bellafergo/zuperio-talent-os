@@ -59,6 +59,18 @@ enum CandidateAvailabilityStatus {
   NOT_AVAILABLE
 }
 
+enum MatchRecommendation {
+  STRONG_MATCH
+  PARTIAL_MATCH
+  LOW_MATCH
+}
+
+enum PlacementStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
 // --- Models -----------------------------------------------------------------
 // Auth/session fields can be added later; this is an internal-directory shape.
 
@@ -85,6 +97,7 @@ model Company {
 
   contacts      Contact[]
   opportunities Opportunity[]
+  placements    Placement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,9 +157,16 @@ model Vacancy {
   /// Target bill rate (e.g. per hour) in major currency units.
   targetRate Decimal?        @db.Decimal(14, 2)
   currency   String?         @default("EUR")
+  /// Comma-separated must-have / nice-to-have skills (matching v1).
+  skills       String?
+  /// Short role scope for matching and future JD text.
+  roleSummary  String?
 
   opportunityId String
   opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  candidateMatches CandidateVacancyMatch[]
+  placements       Placement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -156,7 +176,7 @@ model Vacancy {
   @@index([seniority])
 }
 
-/// Staff-augmentation talent pool member (no Vacancy relation yet).
+/// Staff-augmentation talent pool member.
 model Candidate {
   id                   String                      @id @default(cuid())
   firstName            String
@@ -171,10 +191,64 @@ model Candidate {
   currentCompany       String?
   notes                String?
 
+  vacancyMatches CandidateVacancyMatch[]
+  placements     Placement[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([seniority])
   @@index([availabilityStatus])
   @@index([email])
+}
+
+/// Staff augmentation assignment: candidate delivering work for a client via a vacancy.
+model Placement {
+  id        String @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId   String
+  vacancy     Vacancy   @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  /// Client account (denormalized for fast lookups; should match vacancy.opportunity.company).
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  startDate DateTime
+  endDate   DateTime?
+  status    PlacementStatus
+
+  /// Bill rate to client (major currency units, e.g. per hour).
+  rateClient    Decimal? @db.Decimal(14, 2)
+  /// Pay rate to candidate (major currency units, e.g. per hour).
+  rateCandidate Decimal? @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([candidateId])
+  @@index([vacancyId])
+  @@index([status])
+}
+
+/// Deterministic staff-augmentation match (v1); recomputed from rules + seed sync.
+model CandidateVacancyMatch {
+  id                  String              @id @default(cuid())
+  candidateId         String
+  candidate           Candidate           @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId           String
+  vacancy             Vacancy             @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  score               Int
+  seniorityMatch      Boolean
+  availabilityMatch   Boolean
+  skillsMatchNotes    String?
+  recommendation      MatchRecommendation
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([candidateId, vacancyId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@index([score])
 }

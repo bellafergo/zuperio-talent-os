@@ -27,6 +27,9 @@ export type VacancyListRow = {
   targetRateLabel: string;
   targetRateAmount: number | null;
   currency: string;
+  /** Comma-separated skills from DB; null when unset. */
+  skillsLine: string | null;
+  roleSummaryLine: string | null;
   updatedAtLabel: string;
 };
 
