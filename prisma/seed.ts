@@ -3,7 +3,12 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
-import { SEED_COMPANIES, SEED_CONTACTS, SEED_USERS } from "./seed-data";
+import {
+  SEED_COMPANIES,
+  SEED_CONTACTS,
+  SEED_OPPORTUNITIES,
+  SEED_USERS,
+} from "./seed-data";
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -79,12 +84,40 @@ async function main() {
       },
     });
   }
+
+  for (const o of SEED_OPPORTUNITIES) {
+    const owner = await prisma.user.findUniqueOrThrow({
+      where: { email: o.ownerEmail },
+      select: { id: true },
+    });
+
+    await prisma.opportunity.upsert({
+      where: { id: o.id },
+      create: {
+        id: o.id,
+        title: o.title,
+        stage: o.stage,
+        value: o.value,
+        currency: o.currency ?? "EUR",
+        companyId: o.companyId,
+        ownerId: owner.id,
+      },
+      update: {
+        title: o.title,
+        stage: o.stage,
+        value: o.value,
+        currency: o.currency ?? "EUR",
+        companyId: o.companyId,
+        ownerId: owner.id,
+      },
+    });
+  }
 }
 
 main()
   .then(() => {
     console.info(
-      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts.`,
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities.`,
     );
   })
   .catch((e) => {

@@ -19,6 +19,7 @@ function titleForPath(pathname: string): string {
   if (exact) return exact.label;
   if (/^\/companies\/.+/.test(pathname)) return "Company";
   if (/^\/contacts\/.+/.test(pathname)) return "Contact";
+  if (/^\/opportunities\/.+/.test(pathname)) return "Opportunity";
   return "Zuperio Talent OS";
 }
 

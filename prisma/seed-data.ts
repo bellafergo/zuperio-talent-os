@@ -272,3 +272,123 @@ export const SEED_CONTACTS: SeedContact[] = [
     companyId: "10",
   },
 ];
+
+export type SeedOpportunityStage =
+  | "PROSPECTING"
+  | "QUALIFICATION"
+  | "PROPOSAL"
+  | "NEGOTIATION"
+  | "CLOSED_WON"
+  | "CLOSED_LOST";
+
+export type SeedOpportunity = {
+  id: string;
+  title: string;
+  stage: SeedOpportunityStage;
+  /** Major currency units (e.g. EUR). */
+  value: number;
+  currency?: string;
+  companyId: string;
+  ownerEmail: string;
+};
+
+export const SEED_OPPORTUNITIES: SeedOpportunity[] = [
+  {
+    id: "opp_1",
+    title: "National logistics retainer — Acme",
+    stage: "NEGOTIATION",
+    value: 420000,
+    companyId: "1",
+    ownerEmail: "fernanda.costa@zuperio.internal",
+  },
+  {
+    id: "opp_2",
+    title: "Iberia retail expansion",
+    stage: "QUALIFICATION",
+    value: 185000,
+    companyId: "2",
+    ownerEmail: "joao.silva@zuperio.internal",
+  },
+  {
+    id: "opp_3",
+    title: "Healthcare analytics pilot",
+    stage: "PROPOSAL",
+    value: 96000,
+    companyId: "3",
+    ownerEmail: "fernanda.costa@zuperio.internal",
+  },
+  {
+    id: "opp_4",
+    title: "Cloud migration phase 2",
+    stage: "PROSPECTING",
+    value: 310000,
+    companyId: "4",
+    ownerEmail: "maria.santos@zuperio.internal",
+  },
+  {
+    id: "opp_5",
+    title: "Compliance automation suite",
+    stage: "CLOSED_WON",
+    value: 275000,
+    companyId: "5",
+    ownerEmail: "joao.silva@zuperio.internal",
+  },
+  {
+    id: "opp_6",
+    title: "Manufacturing workforce program",
+    stage: "QUALIFICATION",
+    value: 142000,
+    companyId: "6",
+    ownerEmail: "maria.santos@zuperio.internal",
+  },
+  {
+    id: "opp_7",
+    title: "Toy category relaunch consulting",
+    stage: "CLOSED_LOST",
+    value: 48000,
+    companyId: "7",
+    ownerEmail: "fernanda.costa@zuperio.internal",
+  },
+  {
+    id: "opp_8",
+    title: "R&D platform subscription",
+    stage: "PROPOSAL",
+    value: 198000,
+    companyId: "8",
+    ownerEmail: "joao.silva@zuperio.internal",
+  },
+  {
+    id: "opp_9",
+    title: "Private-label sourcing deal",
+    stage: "NEGOTIATION",
+    value: 88000,
+    currency: "EUR",
+    companyId: "9",
+    ownerEmail: "maria.santos@zuperio.internal",
+  },
+  {
+    id: "opp_10",
+    title: "Energy HR shared services",
+    stage: "PROSPECTING",
+    value: 520000,
+    currency: "USD",
+    companyId: "10",
+    ownerEmail: "joao.silva@zuperio.internal",
+  },
+  {
+    id: "opp_11",
+    title: "Acme — customs integration",
+    stage: "QUALIFICATION",
+    value: 67000,
+    companyId: "1",
+    ownerEmail: "maria.santos@zuperio.internal",
+  },
+  {
+    id: "opp_12",
+    title: "Contoso — data residency review",
+    stage: "PROPOSAL",
+    value: 54000,
+    companyId: "3",
+    ownerEmail: "joao.silva@zuperio.internal",
+  },
+];
