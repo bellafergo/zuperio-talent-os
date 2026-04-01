@@ -81,6 +81,8 @@ export async function createProposal(
     benefits: data.benefits,
     operatingExpenses: data.operatingExpenses,
     discountPercent: data.discountPercent,
+    fullImssGrossFactor: data.fullImssGrossFactor,
+    vatPercent: data.vatPercent,
   });
 
   try {
@@ -117,6 +119,8 @@ export async function createProposal(
           benefits: data.benefits,
           operatingExpenses: data.operatingExpenses,
           discountPercent: data.discountPercent,
+          fullImssGrossFactor: data.fullImssGrossFactor,
+          vatPercent: data.vatPercent,
 
           grossSalary: computed.grossSalary,
           employerCost: computed.employerCost,
@@ -124,6 +128,7 @@ export async function createProposal(
           totalEmployerLoad: computed.totalEmployerLoad,
           totalOperatingExpenses: computed.totalOperatingExpenses,
           subtotal: computed.subtotal,
+          baseMonthlyRateBeforeDiscount: computed.baseMonthlyRateBeforeDiscount,
           grossMarginAmount: computed.grossMarginAmount,
           grossMarginPercent: computed.grossMarginPercent,
           finalMonthlyRate: computed.finalMonthlyRate,
@@ -205,6 +210,8 @@ export async function updateProposal(
     benefits: data.benefits,
     operatingExpenses: data.operatingExpenses,
     discountPercent: data.discountPercent,
+    fullImssGrossFactor: data.fullImssGrossFactor,
+    vatPercent: data.vatPercent,
   });
 
   try {
@@ -241,6 +248,8 @@ export async function updateProposal(
           benefits: data.benefits,
           operatingExpenses: data.operatingExpenses,
           discountPercent: data.discountPercent,
+          fullImssGrossFactor: data.fullImssGrossFactor,
+          vatPercent: data.vatPercent,
 
           grossSalary: computed.grossSalary,
           employerCost: computed.employerCost,
@@ -248,6 +257,7 @@ export async function updateProposal(
           totalEmployerLoad: computed.totalEmployerLoad,
           totalOperatingExpenses: computed.totalOperatingExpenses,
           subtotal: computed.subtotal,
+          baseMonthlyRateBeforeDiscount: computed.baseMonthlyRateBeforeDiscount,
           grossMarginAmount: computed.grossMarginAmount,
           grossMarginPercent: computed.grossMarginPercent,
           finalMonthlyRate: computed.finalMonthlyRate,
@@ -264,6 +274,8 @@ export async function updateProposal(
           benefits: data.benefits,
           operatingExpenses: data.operatingExpenses,
           discountPercent: data.discountPercent,
+          fullImssGrossFactor: data.fullImssGrossFactor,
+          vatPercent: data.vatPercent,
 
           grossSalary: computed.grossSalary,
           employerCost: computed.employerCost,
@@ -271,6 +283,7 @@ export async function updateProposal(
           totalEmployerLoad: computed.totalEmployerLoad,
           totalOperatingExpenses: computed.totalOperatingExpenses,
           subtotal: computed.subtotal,
+          baseMonthlyRateBeforeDiscount: computed.baseMonthlyRateBeforeDiscount,
           grossMarginAmount: computed.grossMarginAmount,
           grossMarginPercent: computed.grossMarginPercent,
           finalMonthlyRate: computed.finalMonthlyRate,

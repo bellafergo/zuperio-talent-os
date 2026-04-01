@@ -68,6 +68,10 @@ export type ProposalDetailUi = ProposalListRowUi & {
     benefits: number | null;
     operatingExpenses: number | null;
     discountPercent: number | null;
+    /** Stored override; null → engine uses `pricingConfig.defaultFullImssGrossFactor` for FULL_IMSS. */
+    fullImssGrossFactor: number | null;
+    /** Stored override; null → engine uses `pricingConfig.defaultVatPercent`. */
+    vatPercent: number | null;
 
     grossSalary: number | null;
     employerCost: number | null;
@@ -75,8 +79,10 @@ export type ProposalDetailUi = ProposalListRowUi & {
     totalEmployerLoad: number | null;
     totalOperatingExpenses: number | null;
     subtotal: number | null;
-    grossMarginAmount: number;
-    grossMarginPercent: number;
+    /** Client rate before discount: subtotal / (1 − target margin). */
+    baseMonthlyRateBeforeDiscount: number | null;
+    grossMarginAmount: number | null;
+    grossMarginPercent: number | null;
     finalMonthlyRate: number | null;
     finalMonthlyRateWithVAT: number | null;
     estimatedDurationMonths: number;

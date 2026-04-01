@@ -119,6 +119,8 @@ export function ProposalEditDialog({
                 operatingExpenses: proposal.pricing?.operatingExpenses ?? null,
                 discountPercent: proposal.pricing?.discountPercent ?? null,
                 estimatedDurationMonths: proposal.pricing?.estimatedDurationMonths ?? 6,
+                vatPercent: proposal.pricing?.vatPercent ?? null,
+                fullImssGrossFactor: proposal.pricing?.fullImssGrossFactor ?? null,
               }}
               fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
             />

@@ -26,7 +26,7 @@ export type ProposalFormParsed = {
   commercialNotes: string | null;
 
   monthlyHours: number;
-  candidateNetSalary: number | null;
+  candidateNetSalary: number;
   scheme: "MIXED" | "FULL_IMSS";
   marginPercent: number | null;
   employerLoadPercent: number | null;
@@ -35,6 +35,10 @@ export type ProposalFormParsed = {
   operatingExpenses: number | null;
   discountPercent: number | null;
   estimatedDurationMonths: number;
+  /** Null → engine uses `pricingConfig.defaultVatPercent`. */
+  vatPercent: number | null;
+  /** Null → engine uses `pricingConfig.defaultFullImssGrossFactor` for FULL_IMSS. */
+  fullImssGrossFactor: number | null;
 };
 
 export type ProposalFormValidationResult =
@@ -99,10 +103,15 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
     fieldErrors.monthlyHours = "Monthly hours must be greater than 0.";
   }
 
-  const candidateNetSalaryVal = parseOptionalNumber(opt(formData, "candidateNetSalary"));
+  const netSalaryRaw = opt(formData, "candidateNetSalary");
+  if (!netSalaryRaw) {
+    fieldErrors.candidateNetSalary = "Candidate net salary is required.";
+  }
+  const candidateNetSalaryVal = parseOptionalNumber(netSalaryRaw);
   if (
-    candidateNetSalaryVal === "invalid" ||
-    (typeof candidateNetSalaryVal === "number" && candidateNetSalaryVal < 0)
+    !fieldErrors.candidateNetSalary &&
+    (candidateNetSalaryVal === "invalid" ||
+      (typeof candidateNetSalaryVal === "number" && candidateNetSalaryVal < 0))
   ) {
     fieldErrors.candidateNetSalary = "Candidate net salary must be 0 or higher.";
   }
@@ -149,8 +158,28 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
     fieldErrors.estimatedDurationMonths = "Duration must be between 1 and 60 months.";
   }
 
+  const vatVal = parseOptionalNumber(opt(formData, "vatPercent"));
+  if (vatVal === "invalid" || (typeof vatVal === "number" && (vatVal < 0 || vatVal > 50))) {
+    fieldErrors.vatPercent = "VAT percent must be between 0 and 50.";
+  }
+
+  const factorVal = parseOptionalNumber(opt(formData, "fullImssGrossFactor"));
+  if (
+    factorVal === "invalid" ||
+    (typeof factorVal === "number" && (factorVal < 1 || factorVal > 3))
+  ) {
+    fieldErrors.fullImssGrossFactor = "Full IMSS gross factor must be between 1 and 3.";
+  }
+
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, fieldErrors };
+  }
+
+  if (typeof candidateNetSalaryVal !== "number") {
+    return {
+      ok: false,
+      fieldErrors: { candidateNetSalary: "Candidate net salary is required." },
+    };
   }
 
   return {
@@ -170,7 +199,7 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
       scopeNotes,
       commercialNotes,
       monthlyHours: Math.floor(monthlyHoursN),
-      candidateNetSalary: typeof candidateNetSalaryVal === "number" ? candidateNetSalaryVal : null,
+      candidateNetSalary: candidateNetSalaryVal,
       scheme: schemeRaw as ProposalFormParsed["scheme"],
       marginPercent: typeof marginVal === "number" ? marginVal : null,
       employerLoadPercent: typeof loadVal === "number" ? loadVal : null,
@@ -179,6 +208,8 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
       operatingExpenses: typeof opexVal === "number" ? opexVal : null,
       discountPercent: typeof discountVal === "number" ? discountVal : null,
       estimatedDurationMonths: Math.floor(estMonthsN),
+      vatPercent: typeof vatVal === "number" ? vatVal : null,
+      fullImssGrossFactor: typeof factorVal === "number" ? factorVal : null,
     },
   };
 }

@@ -473,6 +473,10 @@ model ProposalPricing {
   benefits           Decimal? @db.Decimal(14, 2)
   operatingExpenses  Decimal? @db.Decimal(14, 2)
   discountPercent    Decimal? @db.Decimal(6, 2)
+  /** FULL_IMSS: gross = net × factor. Null → use `pricingConfig.defaultFullImssGrossFactor` on compute. */
+  fullImssGrossFactor Decimal? @db.Decimal(8, 4)
+  /** VAT % on final client rate. Null → use `pricingConfig.defaultVatPercent`. */
+  vatPercent         Decimal? @db.Decimal(6, 2)
 
   // Outputs (deterministic)
   grossSalary            Decimal? @db.Decimal(14, 2)
@@ -481,6 +485,8 @@ model ProposalPricing {
   totalEmployerLoad      Decimal? @db.Decimal(14, 2)
   totalOperatingExpenses Decimal? @db.Decimal(14, 2)
   subtotal               Decimal? @db.Decimal(14, 2)
+  /** Client rate before discount: subtotal / (1 − margin). */
+  baseMonthlyRateBeforeDiscount Decimal? @db.Decimal(14, 2)
   grossMarginAmount      Decimal? @db.Decimal(14, 2)
   grossMarginPercent     Decimal? @db.Decimal(6, 2)
   finalMonthlyRate       Decimal? @db.Decimal(14, 2)

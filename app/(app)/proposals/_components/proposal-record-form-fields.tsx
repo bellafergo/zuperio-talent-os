@@ -85,6 +85,10 @@ export type ProposalFormDefaults = {
   operatingExpenses: number | null;
   discountPercent: number | null;
   estimatedDurationMonths: number;
+  /** Null/omit → server uses `pricingConfig.defaultVatPercent`. */
+  vatPercent?: number | null;
+  /** Null/omit → server uses `pricingConfig.defaultFullImssGrossFactor` when scheme is FULL_IMSS. */
+  fullImssGrossFactor?: number | null;
 };
 
 export function ProposalRecordFormFields({
@@ -538,6 +542,23 @@ export function ProposalRecordFormFields({
           </div>
         </div>
       </div>
+
+      <input
+        type="hidden"
+        name="vatPercent"
+        defaultValue={
+          defaults?.vatPercent != null ? String(defaults.vatPercent) : ""
+        }
+      />
+      <input
+        type="hidden"
+        name="fullImssGrossFactor"
+        defaultValue={
+          defaults?.fullImssGrossFactor != null
+            ? String(defaults.fullImssGrossFactor)
+            : ""
+        }
+      />
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Executive summary</label>

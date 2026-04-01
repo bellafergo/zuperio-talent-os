@@ -135,6 +135,8 @@ export type ProposalWithRelations = {
     benefits: DecimalSource;
     operatingExpenses: DecimalSource;
     discountPercent: DecimalSource;
+    fullImssGrossFactor: DecimalSource;
+    vatPercent: DecimalSource;
 
     grossSalary: DecimalSource;
     employerCost: DecimalSource;
@@ -142,6 +144,7 @@ export type ProposalWithRelations = {
     totalEmployerLoad: DecimalSource;
     totalOperatingExpenses: DecimalSource;
     subtotal: DecimalSource;
+    baseMonthlyRateBeforeDiscount: DecimalSource;
     grossMarginAmount: DecimalSource;
     grossMarginPercent: DecimalSource;
     finalMonthlyRate: DecimalSource;
@@ -223,6 +226,8 @@ export function mapProposalToDetailUi(row: ProposalWithRelations): ProposalDetai
           benefits: parseDecimal(p.benefits),
           operatingExpenses: parseDecimal(p.operatingExpenses),
           discountPercent: parseDecimal(p.discountPercent),
+          fullImssGrossFactor: parseDecimal(p.fullImssGrossFactor),
+          vatPercent: parseDecimal(p.vatPercent),
 
           grossSalary: parseDecimal(p.grossSalary),
           employerCost: parseDecimal(p.employerCost),
@@ -230,8 +235,9 @@ export function mapProposalToDetailUi(row: ProposalWithRelations): ProposalDetai
           totalEmployerLoad: parseDecimal(p.totalEmployerLoad),
           totalOperatingExpenses: parseDecimal(p.totalOperatingExpenses),
           subtotal: parseDecimal(p.subtotal),
-          grossMarginAmount: parseDecimal(p.grossMarginAmount) ?? 0,
-          grossMarginPercent: parseDecimal(p.grossMarginPercent) ?? 0,
+          baseMonthlyRateBeforeDiscount: parseDecimal(p.baseMonthlyRateBeforeDiscount),
+          grossMarginAmount: parseDecimal(p.grossMarginAmount),
+          grossMarginPercent: parseDecimal(p.grossMarginPercent),
           finalMonthlyRate: parseDecimal(p.finalMonthlyRate),
           finalMonthlyRateWithVAT: parseDecimal(p.finalMonthlyRateWithVAT),
           estimatedDurationMonths: p.estimatedDurationMonths,

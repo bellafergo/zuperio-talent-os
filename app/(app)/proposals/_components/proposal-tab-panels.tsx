@@ -6,6 +6,10 @@ import {
   SectionCard,
 } from "@/components/layout";
 import type { ComparisonMatrixBundle } from "@/lib/matching/queries";
+import {
+  formatProposalCurrencyAmount,
+  formatProposalPercent,
+} from "@/lib/proposals/presentation";
 import type { ProposalDetailUi } from "@/lib/proposals/types";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +85,7 @@ export function ProposalOverviewPanel({
 }
 
 export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi }) {
+  const currency = proposal.currency?.trim() || "EUR";
   return (
     <SectionCard
       title="Pricing summary"
@@ -92,82 +97,93 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
           <Kpi label="Monthly hours" value={String(proposal.pricing.monthlyHours)} />
           <Kpi
             label="Net salary"
-            value={
-              proposal.pricing.candidateNetSalary == null
-                ? "—"
-                : String(proposal.pricing.candidateNetSalary)
-            }
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.candidateNetSalary,
+              currency,
+            )}
           />
           <Kpi
             label="Gross salary"
+            value={formatProposalCurrencyAmount(proposal.pricing.grossSalary, currency)}
+          />
+          <Kpi
+            label="Full IMSS factor (stored)"
             value={
-              proposal.pricing.grossSalary == null
+              proposal.pricing.fullImssGrossFactor == null
                 ? "—"
-                : String(proposal.pricing.grossSalary)
+                : String(proposal.pricing.fullImssGrossFactor)
             }
           />
           <Kpi
             label="Employer cost"
-            value={
-              proposal.pricing.employerCost == null
-                ? "—"
-                : String(proposal.pricing.employerCost)
-            }
+            value={formatProposalCurrencyAmount(proposal.pricing.employerCost, currency)}
           />
           <Kpi
             label="Employer load"
-            value={
-              proposal.pricing.totalEmployerLoad == null
-                ? "—"
-                : String(proposal.pricing.totalEmployerLoad)
-            }
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.totalEmployerLoad,
+              currency,
+            )}
           />
           <Kpi
             label="Benefits"
-            value={
-              proposal.pricing.totalBenefits == null
-                ? "—"
-                : String(proposal.pricing.totalBenefits)
-            }
+            value={formatProposalCurrencyAmount(proposal.pricing.totalBenefits, currency)}
+          />
+          <Kpi
+            label="Bonuses (monthly)"
+            value={formatProposalCurrencyAmount(proposal.pricing.bonuses, currency)}
           />
           <Kpi
             label="Opex"
-            value={
-              proposal.pricing.totalOperatingExpenses == null
-                ? "—"
-                : String(proposal.pricing.totalOperatingExpenses)
-            }
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.totalOperatingExpenses,
+              currency,
+            )}
           />
           <Kpi
             label="Subtotal"
-            value={
-              proposal.pricing.subtotal == null
-                ? "—"
-                : String(proposal.pricing.subtotal)
-            }
+            value={formatProposalCurrencyAmount(proposal.pricing.subtotal, currency)}
+          />
+          <Kpi
+            label="Base rate (before discount)"
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.baseMonthlyRateBeforeDiscount,
+              currency,
+              0,
+            )}
           />
           <Kpi
             label="Final monthly rate"
-            value={
-              proposal.pricing.finalMonthlyRate == null
-                ? "—"
-                : String(proposal.pricing.finalMonthlyRate)
-            }
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.finalMonthlyRate,
+              currency,
+              0,
+            )}
             highlight
           />
           <Kpi
             label="Monthly + VAT"
-            value={
-              proposal.pricing.finalMonthlyRateWithVAT == null
-                ? "—"
-                : String(proposal.pricing.finalMonthlyRateWithVAT)
-            }
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.finalMonthlyRateWithVAT,
+              currency,
+              0,
+            )}
             highlight
           />
-          <Kpi label="Gross margin" value={String(proposal.pricing.grossMarginAmount)} />
+          <Kpi
+            label="VAT % (stored)"
+            value={formatProposalPercent(proposal.pricing.vatPercent)}
+          />
+          <Kpi
+            label="Gross margin"
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.grossMarginAmount,
+              currency,
+            )}
+          />
           <Kpi
             label="Margin %"
-            value={`${proposal.pricing.grossMarginPercent.toFixed(1)}%`}
+            value={formatProposalPercent(proposal.pricing.grossMarginPercent)}
             highlight
           />
           <Kpi

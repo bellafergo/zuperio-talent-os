@@ -54,6 +54,8 @@ const proposalSelect = {
       benefits: true,
       operatingExpenses: true,
       discountPercent: true,
+      fullImssGrossFactor: true,
+      vatPercent: true,
 
       grossSalary: true,
       employerCost: true,
@@ -61,6 +63,7 @@ const proposalSelect = {
       totalEmployerLoad: true,
       totalOperatingExpenses: true,
       subtotal: true,
+      baseMonthlyRateBeforeDiscount: true,
       grossMarginAmount: true,
       grossMarginPercent: true,
       finalMonthlyRate: true,

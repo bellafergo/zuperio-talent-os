@@ -253,12 +253,12 @@ function DetailedPricingTable({
   const p = proposal.pricing!;
   const breakdown: { label: string; value: string }[] = [
     {
-      label: "Gross salary (monthly)",
-      value: formatProposalCurrencyAmount(p.grossSalary, currency),
-    },
-    {
       label: "Net salary (candidate)",
       value: formatProposalCurrencyAmount(p.candidateNetSalary, currency),
+    },
+    {
+      label: "Gross salary (monthly)",
+      value: formatProposalCurrencyAmount(p.grossSalary, currency),
     },
     {
       label: "Bonuses (monthly)",
@@ -285,8 +285,16 @@ function DetailedPricingTable({
       value: formatProposalCurrencyAmount(p.totalOperatingExpenses, currency),
     },
     {
-      label: "Subtotal (before margin)",
+      label: "Subtotal (internal cost stack)",
       value: formatProposalCurrencyAmount(p.subtotal, currency),
+    },
+    {
+      label: "Base monthly rate (before discount)",
+      value: formatProposalCurrencyAmount(p.baseMonthlyRateBeforeDiscount, currency, 0),
+    },
+    {
+      label: "VAT % (stored override)",
+      value: formatProposalPercent(p.vatPercent),
     },
     {
       label: "Gross margin (amount)",
