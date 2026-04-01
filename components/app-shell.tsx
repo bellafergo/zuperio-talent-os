@@ -2,23 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { LogOutIcon } from "lucide-react";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Dashboard" },
-  { href: "/companies", label: "Companies" },
-  { href: "/contacts", label: "Contacts" },
-  { href: "/opportunities", label: "Opportunities" },
-  { href: "/vacancies", label: "Vacancies" },
-  { href: "/candidates", label: "Candidates" },
-  { href: "/skills", label: "Skills" },
-  { href: "/matching", label: "Matching" },
-  { href: "/applications", label: "Applications" },
-  { href: "/active-employees", label: "Active Employees" },
-  { href: "/weekly-logs", label: "Weekly Logs" },
-] as const;
+import { Button } from "@/components/ui/button";
+import {
+  navItemsForRole,
+  roleLabel,
+  type NavItemDef,
+} from "@/lib/auth/access";
+import type { UserRole } from "@/generated/prisma/enums";
 
-function titleForPath(pathname: string): string {
-  const exact = NAV_ITEMS.find((item) => item.href === pathname);
+function titleForPath(pathname: string, navItems: NavItemDef[]): string {
+  const exact = navItems.find((item) => item.href === pathname);
   if (exact) return exact.label;
   if (/^\/companies\/.+/.test(pathname)) return "Company";
   if (/^\/contacts\/.+/.test(pathname)) return "Contact";
@@ -33,7 +29,10 @@ function titleForPath(pathname: string): string {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const title = titleForPath(pathname);
+  const { data: session, status } = useSession();
+  const role = session?.user?.role as UserRole | undefined;
+  const navItems = navItemsForRole(role);
+  const title = titleForPath(pathname, navItems);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -47,29 +46,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </p>
         </div>
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <ul className="space-y-0.5">
-            {NAV_ITEMS.map((item) => {
-              const active =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname === item.href ||
-                    pathname.startsWith(`${item.href}/`);
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                      active
-                        ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          {status === "loading" ? (
+            <p className="px-3 text-sm text-muted-foreground">Loading…</p>
+          ) : (
+            <ul className="space-y-0.5">
+              {navItems.map((item) => {
+                const active =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        active
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                          : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </nav>
       </aside>
 
@@ -82,8 +85,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {title}
               </h1>
             </div>
-            <div className="shrink-0 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
-              Admin
+            <div className="flex shrink-0 items-center gap-2">
+              {session?.user ? (
+                <>
+                  <div className="hidden rounded-full border border-border bg-muted px-3 py-1.5 text-xs sm:block">
+                    <span className="font-medium text-foreground">
+                      {session.user.name ?? session.user.email}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {roleLabel(session.user.role)}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() =>
+                      signOut({ callbackUrl: "/login", redirect: true })
+                    }
+                  >
+                    <LogOutIcon className="size-3.5" aria-hidden />
+                    Sign out
+                  </Button>
+                </>
+              ) : null}
             </div>
           </div>
         </header>

@@ -3,23 +3,36 @@
  * Matches the former UI mock list for stable IDs and URLs (`/companies/1`, etc.).
  */
 
-export const SEED_USERS = [
+export type SeedUserRole = "SALES" | "RECRUITER" | "DIRECTOR";
+
+export type SeedUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: SeedUserRole;
+};
+
+/** Dev password for all accounts unless AUTH_SEED_PASSWORD is set when seeding. */
+export const SEED_USERS: SeedUser[] = [
   {
     id: "usr_seed_fernanda",
     email: "fernanda.costa@zuperio.internal",
     name: "Fernanda Costa",
+    role: "DIRECTOR",
   },
   {
     id: "usr_seed_joao",
     email: "joao.silva@zuperio.internal",
     name: "João Silva",
+    role: "SALES",
   },
   {
     id: "usr_seed_maria",
     email: "maria.santos@zuperio.internal",
     name: "Maria Santos",
+    role: "RECRUITER",
   },
-] as const;
+];
 
 export type SeedCompanyStatus =
   | "ACTIVE"

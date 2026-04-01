@@ -88,6 +88,12 @@ enum VacancyApplicationStatus {
   CLOSED
 }
 
+enum UserRole {
+  SALES
+  RECRUITER
+  DIRECTOR
+}
+
 // --- Models -----------------------------------------------------------------
 // Auth/session fields can be added later; this is an internal-directory shape.
 
@@ -95,6 +101,10 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  role      UserRole @default(RECRUITER)
+  /// Bcrypt hash for credentials sign-in (null = cannot use password login).
+  passwordHash String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
