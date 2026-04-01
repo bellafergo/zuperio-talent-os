@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/layout";
 import type {
   ProposalCandidateOption,
   ProposalCompanyOption,
@@ -21,25 +22,21 @@ export function ProposalsHeader({
   candidates: ProposalCandidateOption[];
 }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div className="min-w-0 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Proposals
-        </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Commercial proposals built from company, opportunity, vacancy, and candidate
-          data. Pricing is deterministic and auditable; text is manual-first.
-        </p>
-      </div>
-      {canManage ? (
-        <ProposalsNewProposalDialog
-          companies={companies}
-          opportunities={opportunities}
-          vacancies={vacancies}
-          candidates={candidates}
-        />
-      ) : null}
-    </div>
+    <PageHeader
+      variant="list"
+      title="Proposals"
+      description="Commercial proposals built from company, opportunity, vacancy, and candidate data. Pricing is deterministic and auditable; text is manual-first."
+      actions={
+        canManage ? (
+          <ProposalsNewProposalDialog
+            companies={companies}
+            opportunities={opportunities}
+            vacancies={vacancies}
+            candidates={candidates}
+          />
+        ) : null
+      }
+    />
   );
 }
 

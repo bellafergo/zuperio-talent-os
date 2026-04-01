@@ -21,7 +21,7 @@ export default async function VacanciesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <VacanciesHeader
         canManage={canManage}
         opportunities={opportunities}

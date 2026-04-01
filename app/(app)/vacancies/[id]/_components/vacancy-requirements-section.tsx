@@ -1,11 +1,5 @@
+import { SectionCard } from "@/components/layout/section-card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { VacancyRequirementUi } from "@/lib/skills/types";
 
 function RequirementChip({ req }: { req: VacancyRequirementUi }) {
@@ -45,15 +39,11 @@ export function VacancyRequirementsSection({
   const optional = requirements.filter((r) => !r.required);
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Requirements</CardTitle>
-        <CardDescription>
-          Structured skills from the catalog. Required vs nice-to-have informs
-          future matching; legacy requisition text remains in the summary fields.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 pt-4">
+    <SectionCard
+      title="Requirements"
+      description="Structured skills from the catalog. Required vs nice-to-have informs matching; legacy requisition text remains in the summary fields."
+      contentClassName="space-y-6 pt-4"
+    >
         {requirements.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No structured requirements yet.
@@ -86,7 +76,6 @@ export function VacancyRequirementsSection({
             ) : null}
           </>
         )}
-      </CardContent>
-    </Card>
+    </SectionCard>
   );
 }

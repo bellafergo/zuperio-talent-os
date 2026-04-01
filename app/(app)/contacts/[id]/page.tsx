@@ -37,7 +37,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <Link
         href="/contacts"
         className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

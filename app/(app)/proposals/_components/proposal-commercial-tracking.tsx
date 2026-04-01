@@ -9,14 +9,8 @@ import {
 } from "@/lib/proposals/tracking-actions";
 import type { ProposalStatusValue } from "@/lib/proposals/types";
 
+import { SectionCard } from "@/components/layout/section-card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export function ProposalCommercialTracking({
   proposalId,
@@ -51,14 +45,11 @@ export function ProposalCommercialTracking({
   }
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Commercial tracking</CardTitle>
-        <CardDescription>
-          Pipeline status and follow-up log (no email automation in v1).
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 pt-4">
+    <SectionCard
+      title="Commercial tracking"
+      description="Pipeline status and follow-up log (no email automation in v1)."
+      contentClassName="space-y-4 pt-4"
+    >
         <dl className="grid gap-3 sm:grid-cols-2">
           <div>
             <dt className="text-xs font-medium text-muted-foreground">Sent to client</dt>
@@ -142,7 +133,6 @@ export function ProposalCommercialTracking({
             Only Sales and Director can change pipeline status or log follow-ups.
           </p>
         )}
-      </CardContent>
-    </Card>
+    </SectionCard>
   );
 }

@@ -1,3 +1,4 @@
+import { DataTableShell } from "@/components/layout";
 import { listAllMatchesForUi } from "@/lib/matching/queries";
 
 import { MatchingDataTable } from "./_components/matching-data-table";
@@ -9,11 +10,11 @@ export default async function MatchingPage() {
   const rows = await listAllMatchesForUi();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <MatchingHeader />
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5 sm:p-5">
+      <DataTableShell>
         <MatchingDataTable rows={rows} />
-      </div>
+      </DataTableShell>
     </div>
   );
 }

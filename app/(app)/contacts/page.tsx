@@ -17,7 +17,7 @@ export default async function ContactsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <ContactsHeader canManage={canManage} companies={companies} />
       <ContactsModule contacts={contacts} />
     </div>

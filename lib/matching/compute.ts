@@ -108,7 +108,8 @@ export type ComputedMatch = {
   explanation: string;
 };
 
-function candidateSkillMap(skills: CandidateSkillForMatch[]) {
+/** Lookup used by structured scoring and the comparison matrix (same shape). */
+export function mapCandidateSkillsForMatch(skills: CandidateSkillForMatch[]) {
   const m = new Map<string, { years: number | null; name: string }>();
   for (const s of skills) {
     m.set(s.skillId, { years: s.yearsExperience, name: s.skillName });
@@ -123,7 +124,7 @@ function scoreSkillsStructured(
   requirements: VacancyRequirementForMatch[],
   skills: CandidateSkillForMatch[],
 ): { points: number; parts: string[] } {
-  const map = candidateSkillMap(skills);
+  const map = mapCandidateSkillsForMatch(skills);
   const required = requirements.filter((r) => r.required);
   const optional = requirements.filter((r) => !r.required);
   const parts: string[] = [];
@@ -282,4 +283,39 @@ export function computeStructuredCandidateVacancyMatch(
     recommendation: recommendationFromScore(score),
     explanation: truncateExplanation(explParts.join(" ")),
   };
+}
+
+/** Same availability points/phrases as `computeStructuredCandidateVacancyMatch` (incl. placement cap). */
+export function structuredAvailabilityContribution(
+  status: CandidateAvailabilityStatus,
+  busyOnOtherVacancy: boolean,
+): { points: number; phrase: string; max: number } {
+  let a = scoreAvailability(status);
+  if (busyOnOtherVacancy) {
+    a = {
+      points: Math.min(a.points, MATCH_AVAILABILITY_CAP_WHEN_BUSY_ELSEWHERE),
+      phrase: `${a.phrase} Active placement on another account — availability capped.`,
+    };
+  }
+  return { ...a, max: MATCH_WEIGHTS.availabilityMax };
+}
+
+/** Same seniority points/phrases as structured match. */
+export function structuredSeniorityContribution(
+  candidateSeniority: VacancySeniority,
+  vacancySeniority: VacancySeniority,
+): { points: number; phrase: string; max: number } {
+  const s = scoreSeniority(candidateSeniority, vacancySeniority);
+  return { ...s, max: MATCH_WEIGHTS.seniorityMax };
+}
+
+/** Same role overlap points/phrases as structured match. */
+export function structuredRoleOverlapContribution(
+  candidateRole: string,
+  skillNames: string[],
+  vacTitle: string,
+  vacSummary: string | null,
+): { points: number; phrase: string; max: number } {
+  const r = scoreRoleOverlap(candidateRole, skillNames, vacTitle, vacSummary);
+  return { ...r, max: MATCH_WEIGHTS.roleOverlapMax };
 }

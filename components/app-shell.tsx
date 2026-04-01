@@ -21,6 +21,8 @@ function titleForPath(pathname: string, navItems: NavItemDef[]): string {
   if (/^\/opportunities\/.+/.test(pathname)) return "Opportunity";
   if (/^\/vacancies\/.+/.test(pathname)) return "Vacancy";
   if (/^\/candidates\/.+/.test(pathname)) return "Candidate";
+  if (/^\/proposals\/.+/.test(pathname)) return "Proposal";
+  if (/^\/matching\/compare\/.+/.test(pathname)) return "Match comparison";
   if (pathname === "/matching") return "Matching";
   if (pathname === "/skills") return "Skills";
   if (pathname === "/applications") return "Applications";
@@ -77,11 +79,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-5 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
-          <div className="flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-10 border-b border-border/80 bg-background/85 px-5 py-3.5 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+          <div className="mx-auto flex w-full max-w-[min(100%,90rem)] items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Internal platform</p>
-              <h1 className="truncate text-lg font-semibold tracking-tight">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                Internal
+              </p>
+              <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">
                 {title}
               </h1>
             </div>

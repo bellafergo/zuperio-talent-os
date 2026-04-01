@@ -1,16 +1,13 @@
-import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
-import { canManageApplications } from "@/lib/auth/application-access";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  DetailGrid,
+  PageHeader,
+  PlaceholderSection,
+  SectionCard,
+} from "@/components/layout";
+import { canManageApplications } from "@/lib/auth/application-access";
 import { canManageVacancies } from "@/lib/auth/vacancy-access";
 import { listMatchesForVacancyUi } from "@/lib/matching/queries";
 import { listSkillsForVacancyForm, listVacancyRequirementsForUi } from "@/lib/skills/queries";
@@ -61,76 +58,64 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   );
 
   return (
-    <div className="space-y-6">
-      <Link
-        href="/vacancies"
-        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeftIcon className="size-4 shrink-0" aria-hidden />
-        Back to vacancies
-      </Link>
-
-      <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {vacancy.title}
-            </h1>
-            <div className="shrink-0">
-              <VacancyStatusBadge status={vacancy.status} />
-            </div>
+    <div className="space-y-8">
+      <PageHeader
+        variant="detail"
+        backHref="/vacancies"
+        backLabel="Back to vacancies"
+        title={vacancy.title}
+        description="Requisition record, structured requirements, pipeline, and scored candidate matches."
+        meta={
+          <div className="shrink-0">
+            <VacancyStatusBadge status={vacancy.status} />
           </div>
-          {canManage && editData ? (
+        }
+        actions={
+          canManage && editData ? (
             <VacancyEditDialog
               vacancy={editData}
               opportunities={opportunities}
               skills={skills}
             />
-          ) : null}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Role record · loaded from database
+          ) : null
+        }
+      />
+
+      <DetailGrid
+        items={[
+          {
+            label: "Company",
+            value: vacancy.companyName,
+            href: `/companies/${vacancy.companyId}`,
+          },
+          {
+            label: "Opportunity",
+            value: vacancy.opportunityTitle,
+            href: `/opportunities/${vacancy.opportunityId}`,
+          },
+          { label: "Seniority", value: vacancy.seniority },
+          { label: "Target rate", value: rateDisplay },
+          {
+            label: "Skills (legacy text)",
+            value: vacancy.skillsLine ?? "—",
+          },
+          {
+            label: "Role scope",
+            value: vacancy.roleSummaryLine ?? "—",
+          },
+        ]}
+      />
+
+      <SectionCard
+        title="Work mode"
+        description="Onsite, hybrid, or remote expectations for this role."
+      >
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Work location and schedule policies will be stored here when the hiring
+          workflow is extended. The financial target above is in{" "}
+          {vacancy.currency} per hour (bill rate).
         </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <DetailField
-          label="Company"
-          value={vacancy.companyName}
-          href={`/companies/${vacancy.companyId}`}
-        />
-        <DetailField
-          label="Opportunity"
-          value={vacancy.opportunityTitle}
-          href={`/opportunities/${vacancy.opportunityId}`}
-        />
-        <DetailField label="Seniority" value={vacancy.seniority} />
-        <DetailField label="Target rate" value={rateDisplay} />
-        <DetailField
-          label="Skills (legacy text)"
-          value={vacancy.skillsLine ?? "—"}
-        />
-        <DetailField
-          label="Role scope"
-          value={vacancy.roleSummaryLine ?? "—"}
-        />
-      </div>
-
-      <Card className="shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-base font-medium">Work mode</CardTitle>
-          <CardDescription>
-            Onsite, hybrid, or remote expectations for this role.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Work location and schedule policies will be stored here when the
-            hiring workflow is extended. The financial target above is in{" "}
-            {vacancy.currency} per hour (bill rate).
-          </p>
-        </CardContent>
-      </Card>
+      </SectionCard>
 
       <VacancyRequirementsSection requirements={requirements} />
 
@@ -139,20 +124,15 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         canManage={canManageApps}
       />
 
-      <Card className="shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-base font-medium">Responsibilities</CardTitle>
-          <CardDescription>
-            Scope, deliverables, and success criteria for the position.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Structured responsibilities can extend this section later. Matching
-            uses structured requirements; legacy skill text is for humans only.
-          </p>
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Responsibilities"
+        description="Scope, deliverables, and success criteria for the position."
+      >
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Structured responsibilities can extend this section later. Matching uses
+          structured requirements; legacy skill text is for humans only.
+        </p>
+      </SectionCard>
 
       <VacancyCandidateMatchesSection matches={candidateMatches} />
 
@@ -161,53 +141,5 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         description="Notes, interviews, and status changes."
       />
     </div>
-  );
-}
-
-function DetailField({
-  label,
-  value,
-  href,
-}: {
-  label: string;
-  value: string;
-  href?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-medium text-foreground">
-        {href ? (
-          <Link
-            href={href}
-            className="text-foreground underline-offset-4 hover:underline"
-          >
-            {value}
-          </Link>
-        ) : (
-          value
-        )}
-      </p>
-    </div>
-  );
-}
-
-function PlaceholderSection({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="py-10 text-center text-sm text-muted-foreground">
-        No {title.toLowerCase()} to show yet. This section is a placeholder.
-      </CardContent>
-    </Card>
   );
 }

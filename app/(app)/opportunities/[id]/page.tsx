@@ -48,7 +48,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <Link
         href="/opportunities"
         className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

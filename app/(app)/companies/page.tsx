@@ -19,7 +19,7 @@ export default async function CompaniesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <CompaniesHeader canManage={canManage} users={users} />
       <CompaniesModule companies={companies} />
     </div>

@@ -17,7 +17,7 @@ export default async function CandidatesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <CandidatesHeader canManage={canManage} skillsCatalog={skillsCatalog} />
       <CandidatesModule candidates={candidates} />
     </div>

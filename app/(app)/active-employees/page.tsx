@@ -22,7 +22,7 @@ export default async function ActiveEmployeesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <ActiveEmployeesHeader
         canManage={canManage}
         candidates={candidates}

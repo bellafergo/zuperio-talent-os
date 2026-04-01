@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { EmptyState } from "@/components/layout";
 import { MatchRecommendationBadge } from "@/components/match-recommendation-badge";
 import {
   Table,
@@ -16,9 +17,11 @@ import type { MatchMatrixRowUi } from "@/lib/matching/types";
 export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center text-sm text-muted-foreground">
-        No match rows in the database. Seed the app or run a match sync.
-      </div>
+      <EmptyState
+        variant="embedded"
+        title="No scored matches"
+        description="Seed the app or run a match sync to populate candidate–vacancy scores."
+      />
     );
   }
 
@@ -31,6 +34,7 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
           <TableHead>Company</TableHead>
           <TableHead className="w-[56px] text-right">Score</TableHead>
           <TableHead className="w-[108px]">Match</TableHead>
+          <TableHead className="w-[88px]">Matrix</TableHead>
           <TableHead className="min-w-[200px]">Explanation</TableHead>
         </TableRow>
       </TableHeader>
@@ -61,6 +65,14 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
             </TableCell>
             <TableCell>
               <MatchRecommendationBadge recommendation={r.recommendation} />
+            </TableCell>
+            <TableCell>
+              <Link
+                href={`/matching/compare/${r.matchId}`}
+                className="text-sm text-foreground underline-offset-4 hover:underline"
+              >
+                Compare
+              </Link>
             </TableCell>
             <TableCell className="text-muted-foreground">
               <span

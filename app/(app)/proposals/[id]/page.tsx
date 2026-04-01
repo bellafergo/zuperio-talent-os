@@ -1,12 +1,12 @@
-import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
+import { PageHeader, SectionCard } from "@/components/layout";
 import {
   canManageProposals,
   canSendProposalClientEmail,
 } from "@/lib/auth/proposal-access";
+import { getComparisonMatrixForPair } from "@/lib/matching/queries";
 import { buildProposalEmailDraft } from "@/lib/proposals/email-draft";
 import {
   listCandidatesForProposalForm,
@@ -47,13 +47,16 @@ export default async function ProposalDetailPage({ params }: PageProps) {
 
   const hasCandidate = proposal.candidateId != null;
 
-  const [companies, opportunities, vacancies, candidates, contact] =
+  const [companies, opportunities, vacancies, candidates, contact, comparisonMatrix] =
     await Promise.all([
       canManage ? listCompaniesForProposalForm() : Promise.resolve([]),
       canManage ? listOpportunitiesForProposalForm() : Promise.resolve([]),
       canManage ? listVacanciesForProposalForm() : Promise.resolve([]),
       canManage ? listCandidatesForProposalForm() : Promise.resolve([]),
       getCompanyPreferredContactForProposalEmail(proposal.companyId),
+      proposal.candidateId && proposal.vacancyId
+        ? getComparisonMatrixForPair(proposal.candidateId, proposal.vacancyId)
+        : Promise.resolve(null),
     ]);
 
   const preparedByDisplay =
@@ -68,30 +71,23 @@ export default async function ProposalDetailPage({ params }: PageProps) {
   });
 
   return (
-    <div className="space-y-6">
-      <Link
-        href="/proposals"
-        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeftIcon className="size-4 shrink-0" aria-hidden />
-        Back to proposals
-      </Link>
-
-      <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Proposal · {proposal.companyName}
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <ProposalStatusBadge label={proposal.status} value={proposal.statusValue} />
-              <span aria-hidden>·</span>
-              <span>
-                {proposal.currency} · valid {proposal.validityDays}d · {proposal.format}
-              </span>
-            </div>
-          </div>
-          {canManage ? (
+    <div className="space-y-8">
+      <PageHeader
+        variant="detail"
+        backHref="/proposals"
+        backLabel="Back to proposals"
+        title={`Proposal · ${proposal.companyName}`}
+        description="Template-based proposal with deterministic pricing and PDF-ready preview."
+        meta={
+          <>
+            <ProposalStatusBadge label={proposal.status} value={proposal.statusValue} />
+            <span className="text-sm text-muted-foreground">
+              {proposal.currency} · valid {proposal.validityDays}d · {proposal.format}
+            </span>
+          </>
+        }
+        actions={
+          canManage ? (
             <ProposalEditDialog
               proposal={proposal}
               companies={companies}
@@ -99,12 +95,9 @@ export default async function ProposalDetailPage({ params }: PageProps) {
               vacancies={vacancies}
               candidates={candidates}
             />
-          ) : null}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Template-based proposal · deterministic pricing · preview ready for PDF
-        </p>
-      </div>
+          ) : null
+        }
+      />
 
       <ProposalCommercialTracking
         proposalId={proposal.id}
@@ -117,16 +110,26 @@ export default async function ProposalDetailPage({ params }: PageProps) {
       />
 
       <ProposalDetailTabs
-        overview={<ProposalOverviewPanel proposal={proposal} />}
+        overview={
+          <ProposalOverviewPanel
+            proposal={proposal}
+            comparisonMatrix={comparisonMatrix}
+          />
+        }
         pricing={<ProposalPricingPanel proposal={proposal} />}
         preview={
           <div className="space-y-6">
-            <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5">
-              <ProposalPdfDownloadButton proposalId={proposal.id} />
-              {proposal.candidateId ? (
-                <ProposalCvDownloadButton candidateId={proposal.candidateId} />
-              ) : null}
-            </div>
+            <SectionCard
+              title="Exports"
+              description="Download PDF and candidate CV for client delivery."
+            >
+              <div className="flex flex-wrap gap-3">
+                <ProposalPdfDownloadButton proposalId={proposal.id} />
+                {proposal.candidateId ? (
+                  <ProposalCvDownloadButton candidateId={proposal.candidateId} />
+                ) : null}
+              </div>
+            </SectionCard>
             <ProposalDocumentPreview
               proposal={proposal}
               preparedByDisplay={preparedByDisplay}

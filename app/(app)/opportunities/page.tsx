@@ -22,7 +22,7 @@ export default async function OpportunitiesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <OpportunitiesHeader canManage={canManage} companies={companies} owners={owners} />
       <OpportunitiesModule opportunities={opportunities} />
     </div>

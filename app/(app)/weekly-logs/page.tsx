@@ -20,7 +20,7 @@ export default async function WeeklyLogsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <WeeklyLogsHeader canManage={canManage} placements={placements} />
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5 sm:p-5">
         <WeeklyLogsModule rows={rows} canManage={canManage} placements={placements} />

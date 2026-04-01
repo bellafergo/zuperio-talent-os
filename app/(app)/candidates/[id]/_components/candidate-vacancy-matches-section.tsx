@@ -45,6 +45,7 @@ export function CandidateVacancyMatchesSection({
                 <TableHead>Company</TableHead>
                 <TableHead className="w-[64px] text-right">Score</TableHead>
                 <TableHead className="w-[120px]">Match</TableHead>
+                <TableHead className="w-[88px]">Matrix</TableHead>
                 <TableHead className="min-w-[220px]">Explanation</TableHead>
               </TableRow>
             </TableHeader>
@@ -69,6 +70,14 @@ export function CandidateVacancyMatchesSection({
                     <MatchRecommendationBadge
                       recommendation={m.recommendation}
                     />
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/matching/compare/${m.matchId}`}
+                      className="text-sm text-foreground underline-offset-4 hover:underline"
+                    >
+                      Compare
+                    </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     <span

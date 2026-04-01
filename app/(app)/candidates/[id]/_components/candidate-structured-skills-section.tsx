@@ -1,11 +1,5 @@
+import { EmptyState, SectionCard } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { CandidateStructuredSkillUi } from "@/lib/skills/types";
 
 function groupByCategory(items: CandidateStructuredSkillUi[]) {
@@ -31,19 +25,17 @@ export function CandidateStructuredSkillsSection({
     legacySkillsLine.trim() !== "" && legacySkillsLine.trim() !== "—";
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Skills</CardTitle>
-        <CardDescription>
-          Structured catalog links with optional years and level. Legacy
-          free-text is kept below for transition.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 pt-4">
+    <SectionCard
+      title="Skills"
+      description="Structured catalog links with optional years and level. Legacy free-text is kept below for transition."
+      contentClassName="space-y-6 pt-4"
+    >
         {groups.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No structured skills on file yet.
-          </p>
+          <EmptyState
+            variant="embedded"
+            title="No structured skills yet"
+            description="Add catalog skills on the candidate record to power matching."
+          />
         ) : (
           groups.map(([category, items]) => (
             <div key={category}>
@@ -86,7 +78,6 @@ export function CandidateStructuredSkillsSection({
             </p>
           </div>
         ) : null}
-      </CardContent>
-    </Card>
+    </SectionCard>
   );
 }

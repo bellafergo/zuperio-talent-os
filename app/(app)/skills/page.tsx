@@ -1,3 +1,4 @@
+import { DataTableShell, PageHeader } from "@/components/layout";
 import { listSkillsCatalogGroupedForUi } from "@/lib/skills/queries";
 
 import { SkillsCatalog } from "./_components/skills-catalog";
@@ -8,19 +9,15 @@ export default async function SkillsCatalogPage() {
   const groups = await listSkillsCatalogGroupedForUi();
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Skills catalog
-        </h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Normalized skill names used on candidate profiles and vacancy
-          requirements. Read-only reference for recruiters and sourcing.
-        </p>
-      </div>
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5 sm:p-6">
+    <div className="space-y-8">
+      <PageHeader
+        variant="list"
+        title="Skills catalog"
+        description="Normalized skill names used on candidate profiles and vacancy requirements. Read-only reference for recruiters and sourcing."
+      />
+      <DataTableShell paddingClassName="p-4 sm:p-6">
         <SkillsCatalog groups={groups} />
-      </div>
+      </DataTableShell>
     </div>
   );
 }

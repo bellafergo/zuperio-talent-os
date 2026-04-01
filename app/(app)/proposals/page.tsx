@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { auth } from "@/auth";
+import { DataTableShell, FilterBar } from "@/components/layout";
 import { canManageProposals } from "@/lib/auth/proposal-access";
 import { parseProposalListSearchParams } from "@/lib/proposals/list-search-params";
 import {
@@ -40,7 +41,7 @@ export default async function ProposalsPage({ searchParams }: PageProps) {
     ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <ProposalsHeader
         canManage={canManage}
         companies={companies}
@@ -50,11 +51,13 @@ export default async function ProposalsPage({ searchParams }: PageProps) {
       />
       <ProposalsSummaryStrip summary={summary} />
       <Suspense fallback={<div className="h-10" />}>
-        <ProposalsFilters />
+        <FilterBar>
+          <ProposalsFilters />
+        </FilterBar>
       </Suspense>
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5 sm:p-5">
+      <DataTableShell>
         <ProposalsTable rows={rows} />
-      </div>
+      </DataTableShell>
     </div>
   );
 }

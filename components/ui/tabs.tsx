@@ -42,7 +42,7 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "inline-flex h-7 shrink-0 items-center justify-center rounded-md px-3 text-xs font-medium whitespace-nowrap transition-colors",
+        "inline-flex h-8 shrink-0 items-center justify-center rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors",
         "outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
         "hover:text-foreground",
