@@ -59,6 +59,7 @@ const proposalSelect = {
 
       grossSalary: true,
       employerCost: true,
+      totalBonuses: true,
       totalBenefits: true,
       totalEmployerLoad: true,
       totalOperatingExpenses: true,

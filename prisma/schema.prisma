@@ -481,6 +481,8 @@ model ProposalPricing {
   // Outputs (deterministic)
   grossSalary            Decimal? @db.Decimal(14, 2)
   employerCost           Decimal? @db.Decimal(14, 2)
+  /** Monthly bonuses loaded into cost stack (same basis as `bonuses` input today). */
+  totalBonuses           Decimal? @db.Decimal(14, 2)
   totalBenefits          Decimal? @db.Decimal(14, 2)
   totalEmployerLoad      Decimal? @db.Decimal(14, 2)
   totalOperatingExpenses Decimal? @db.Decimal(14, 2)

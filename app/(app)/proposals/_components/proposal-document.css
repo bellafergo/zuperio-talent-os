@@ -42,6 +42,44 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Detailed economic proposal: section blocks */
+.proposal-doc-economic .proposal-doc-block-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--proposal-doc-muted);
+}
+
+.proposal-doc-economic .proposal-doc-block-title:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.proposal-doc-economic .proposal-doc-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--proposal-doc-muted);
+}
+
+.proposal-doc-economic table.proposal-doc-block-table {
+  margin-bottom: 0;
+}
+
+.proposal-doc-economic tr.proposal-doc-strong td {
+  font-weight: 600;
+}
+
+.proposal-doc-economic tr.proposal-doc-strong td.num {
+  font-size: 0.875rem;
+}
+
+.proposal-doc-economic tr.proposal-doc-divider td {
+  border-top: 1px solid var(--proposal-doc-border);
+  padding-top: 0.55rem;
+}
+
 @media print {
   .proposal-print-root .proposal-no-print {
     display: none !important;

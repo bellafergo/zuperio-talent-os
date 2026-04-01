@@ -130,8 +130,11 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
             value={formatProposalCurrencyAmount(proposal.pricing.totalBenefits, currency)}
           />
           <Kpi
-            label="Bonuses (monthly)"
-            value={formatProposalCurrencyAmount(proposal.pricing.bonuses, currency)}
+            label="Total bonuses (monthly)"
+            value={formatProposalCurrencyAmount(
+              proposal.pricing.totalBonuses ?? proposal.pricing.bonuses,
+              currency,
+            )}
           />
           <Kpi
             label="Opex"

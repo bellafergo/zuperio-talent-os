@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import type { ProposalDetailUi } from "@/lib/proposals/types";
 import {
   formatProposalCurrencyAmount,
@@ -126,7 +128,7 @@ export function ProposalDocumentPreview({
 
         <section className="mt-8">
           <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
-            Pricing summary
+            {isDetailed ? "Economic breakdown" : "Pricing summary"}
           </h3>
           {p ? (
             isDetailed ? (
@@ -251,99 +253,182 @@ function DetailedPricingTable({
   currency: string;
 }) {
   const p = proposal.pricing!;
-  const breakdown: { label: string; value: string }[] = [
-    {
-      label: "Net salary (candidate)",
-      value: formatProposalCurrencyAmount(p.candidateNetSalary, currency),
-    },
-    {
-      label: "Gross salary (monthly)",
-      value: formatProposalCurrencyAmount(p.grossSalary, currency),
-    },
-    {
-      label: "Bonuses (monthly)",
-      value: formatProposalCurrencyAmount(p.bonuses, currency),
-    },
-    {
-      label: "Benefits (monthly)",
-      value: formatProposalCurrencyAmount(p.benefits, currency),
-    },
-    {
-      label: "Total benefits (loaded)",
-      value: formatProposalCurrencyAmount(p.totalBenefits, currency),
-    },
-    {
-      label: "Employer load (total)",
-      value: formatProposalCurrencyAmount(p.totalEmployerLoad, currency),
-    },
-    {
-      label: "Employer cost",
-      value: formatProposalCurrencyAmount(p.employerCost, currency),
-    },
-    {
-      label: "Operating expenses",
-      value: formatProposalCurrencyAmount(p.totalOperatingExpenses, currency),
-    },
-    {
-      label: "Subtotal (internal cost stack)",
-      value: formatProposalCurrencyAmount(p.subtotal, currency),
-    },
-    {
-      label: "Base monthly rate (before discount)",
-      value: formatProposalCurrencyAmount(p.baseMonthlyRateBeforeDiscount, currency, 0),
-    },
-    {
-      label: "VAT % (stored override)",
-      value: formatProposalPercent(p.vatPercent),
-    },
-    {
-      label: "Gross margin (amount)",
-      value: formatProposalCurrencyAmount(p.grossMarginAmount, currency),
-    },
-    {
-      label: "Gross margin (%)",
-      value: formatProposalPercent(p.grossMarginPercent),
-    },
-    {
-      label: "Final monthly rate (excl. VAT)",
-      value: formatProposalCurrencyAmount(p.finalMonthlyRate, currency, 0),
-    },
-    {
-      label: "Final monthly rate (incl. VAT)",
-      value: formatProposalCurrencyAmount(p.finalMonthlyRateWithVAT, currency, 0),
-    },
-  ];
+  const totalBonuses = p.totalBonuses ?? p.bonuses;
+
+  const estEmployeeDeductions =
+    p.grossSalary != null && p.candidateNetSalary != null
+      ? Math.round((p.grossSalary - p.candidateNetSalary) * 100) / 100
+      : null;
+  const showEstDeductions =
+    estEmployeeDeductions != null && Math.abs(estEmployeeDeductions) > 0.005;
 
   return (
-    <div className="mt-3 space-y-4">
-      <p className="text-xs text-muted-foreground">
-        Scheme: <span className="font-medium text-foreground">{p.scheme}</span>
-        {" · "}
-        Monthly hours:{" "}
-        <span className="font-medium text-foreground">{p.monthlyHours}</span>
-        {" · "}
-        Validity:{" "}
-        <span className="font-medium text-foreground">
-          {proposal.validityDays} days
-        </span>
+    <div className="proposal-doc-economic mt-3 space-y-0">
+      <p className="proposal-doc-note">
+        <span className="font-medium text-foreground">Context:</span>{" "}
+        {p.scheme} · {p.monthlyHours} h/month · proposal validity{" "}
+        {proposal.validityDays} days. Amounts are monthly unless stated.
+        Informative lines do not change the commercial calculation.
       </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Concept</th>
-            <th className="num">Amount ({currency})</th>
-          </tr>
-        </thead>
-        <tbody>
-          {breakdown.map((row) => (
-            <tr key={row.label}>
-              <td className="text-muted-foreground">{row.label}</td>
-              <td className="num font-medium text-foreground">{row.value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      <p className="proposal-doc-block-title">A. Compensation base</p>
+      <EconBlockTable currency={currency}>
+        <EconRow
+          label="Net salary (candidate take-home)"
+          value={formatProposalCurrencyAmount(p.candidateNetSalary, currency)}
+        />
+        <EconRow
+          label="Gross salary (payroll basis)"
+          value={formatProposalCurrencyAmount(p.grossSalary, currency)}
+        />
+        {showEstDeductions ? (
+          <EconRow
+            label="Est. employee deductions (informative: gross − net)"
+            value={formatProposalCurrencyAmount(estEmployeeDeductions, currency)}
+          />
+        ) : null}
+      </EconBlockTable>
+
+      <p className="proposal-doc-block-title">B. Bonuses</p>
+      <EconBlockTable currency={currency}>
+        <EconRow
+          label="Bonuses (monthly accrual)"
+          value={formatProposalCurrencyAmount(p.bonuses, currency)}
+        />
+        <EconRow
+          label="Total bonuses (loaded into cost)"
+          value={formatProposalCurrencyAmount(totalBonuses, currency)}
+        />
+      </EconBlockTable>
+
+      <p className="proposal-doc-block-title">C. Benefits</p>
+      <EconBlockTable currency={currency}>
+        <EconRow
+          label="Benefits (monthly accrual)"
+          value={formatProposalCurrencyAmount(p.benefits, currency)}
+        />
+        <EconRow
+          label="Total benefits (loaded into cost)"
+          value={formatProposalCurrencyAmount(p.totalBenefits, currency)}
+        />
+      </EconBlockTable>
+
+      <p className="proposal-doc-block-title">D. Employer load</p>
+      <EconBlockTable currency={currency}>
+        <EconRow
+          label="Employer load rate (% of gross)"
+          value={formatProposalPercent(p.employerLoadPercent)}
+        />
+        <EconRow
+          label="Employer load (IMSS, payroll taxes, statutory — amount)"
+          value={formatProposalCurrencyAmount(p.totalEmployerLoad, currency)}
+        />
+        <EconRow
+          label="Employer cost (gross + employer load)"
+          value={formatProposalCurrencyAmount(p.employerCost, currency)}
+        />
+      </EconBlockTable>
+
+      <p className="proposal-doc-block-title">E. Operating expenses</p>
+      <EconBlockTable currency={currency}>
+        <EconRow
+          label="Operating expenses (monthly)"
+          value={formatProposalCurrencyAmount(p.operatingExpenses, currency)}
+        />
+        <EconRow
+          label="Total operating expenses (loaded)"
+          value={formatProposalCurrencyAmount(p.totalOperatingExpenses, currency)}
+        />
+      </EconBlockTable>
+
+      <p className="proposal-doc-block-title">F. Commercial result</p>
+      <EconBlockTable currency={currency}>
+        <EconRow
+          label="Internal monthly cost (subtotal)"
+          value={formatProposalCurrencyAmount(p.subtotal, currency)}
+          rowClassName="proposal-doc-divider proposal-doc-strong"
+        />
+        <EconRow
+          label="Target margin on cost (policy %)"
+          value={formatProposalPercent(p.marginPercent)}
+        />
+        <EconRow
+          label="Fee before commercial discount"
+          value={formatProposalCurrencyAmount(
+            p.baseMonthlyRateBeforeDiscount,
+            currency,
+            0,
+          )}
+        />
+        <EconRow
+          label="Commercial discount"
+          value={formatProposalPercent(p.discountPercent ?? 0)}
+        />
+        <EconRow
+          label="Final monthly fee (excl. VAT)"
+          value={formatProposalCurrencyAmount(p.finalMonthlyRate, currency, 0)}
+          rowClassName="proposal-doc-strong"
+        />
+        <EconRow
+          label="Gross margin on revenue (amount)"
+          value={formatProposalCurrencyAmount(p.grossMarginAmount, currency)}
+        />
+        <EconRow
+          label="Gross margin on revenue (% of fee)"
+          value={formatProposalPercent(p.grossMarginPercent)}
+        />
+        <EconRow
+          label="VAT rate (on fee)"
+          value={formatProposalPercent(p.vatPercent)}
+        />
+        <EconRow
+          label="Final monthly fee (incl. VAT)"
+          value={formatProposalCurrencyAmount(
+            p.finalMonthlyRateWithVAT,
+            currency,
+            0,
+          )}
+          rowClassName="proposal-doc-strong"
+        />
+      </EconBlockTable>
     </div>
+  );
+}
+
+function EconBlockTable({
+  currency,
+  children,
+}: {
+  currency: string;
+  children: ReactNode;
+}) {
+  return (
+    <table className="proposal-doc-block-table">
+      <thead>
+        <tr>
+          <th>Concept</th>
+          <th className="num">Amount ({currency})</th>
+        </tr>
+      </thead>
+      <tbody>{children}</tbody>
+    </table>
+  );
+}
+
+function EconRow({
+  label,
+  value,
+  rowClassName,
+}: {
+  label: string;
+  value: string;
+  rowClassName?: string;
+}) {
+  return (
+    <tr className={rowClassName}>
+      <td className="text-muted-foreground">{label}</td>
+      <td className="num font-medium text-foreground">{value}</td>
+    </tr>
   );
 }
 

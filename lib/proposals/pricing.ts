@@ -32,6 +32,8 @@ export type ProposalPricingComputed = {
   /** IMSS/load amount: grossSalary × employerLoadPercent. */
   employerLoad: number | null;
   employerCost: number | null;
+  /** Monthly bonuses in cost stack (aligned with `bonuses` input). */
+  totalBonuses: number;
   totalBenefits: number;
   totalEmployerLoad: number;
   totalOperatingExpenses: number;
@@ -61,7 +63,8 @@ export type ProposalPricingComputed = {
  *    - employerCost = gross + employerLoad
  *
  * 3. **Subtotal (internal monthly cost stack)**
- *    - subtotal = employerCost + benefits + bonuses + operatingExpenses
+ *    - totalBonuses / totalBenefits mirror loaded bonus and benefit lines
+ *    - subtotal = employerCost + totalBenefits + totalBonuses + totalOperatingExpenses
  *
  * 4. **Client rate**
  *    - baseMonthlyRateBeforeDiscount = subtotal / (1 − margin)
@@ -181,6 +184,7 @@ export function computeProposalPricing(
     grossSalary,
     employerLoad: employerLoadAmount,
     employerCost,
+    totalBonuses,
     totalBenefits,
     totalEmployerLoad,
     totalOperatingExpenses,

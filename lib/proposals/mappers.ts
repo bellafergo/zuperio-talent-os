@@ -140,6 +140,7 @@ export type ProposalWithRelations = {
 
     grossSalary: DecimalSource;
     employerCost: DecimalSource;
+    totalBonuses: DecimalSource;
     totalBenefits: DecimalSource;
     totalEmployerLoad: DecimalSource;
     totalOperatingExpenses: DecimalSource;
@@ -231,6 +232,7 @@ export function mapProposalToDetailUi(row: ProposalWithRelations): ProposalDetai
 
           grossSalary: parseDecimal(p.grossSalary),
           employerCost: parseDecimal(p.employerCost),
+          totalBonuses: parseDecimal(p.totalBonuses) ?? parseDecimal(p.bonuses),
           totalBenefits: parseDecimal(p.totalBenefits),
           totalEmployerLoad: parseDecimal(p.totalEmployerLoad),
           totalOperatingExpenses: parseDecimal(p.totalOperatingExpenses),

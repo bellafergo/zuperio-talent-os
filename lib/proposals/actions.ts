@@ -124,6 +124,7 @@ export async function createProposal(
 
           grossSalary: computed.grossSalary,
           employerCost: computed.employerCost,
+          totalBonuses: computed.totalBonuses,
           totalBenefits: computed.totalBenefits,
           totalEmployerLoad: computed.totalEmployerLoad,
           totalOperatingExpenses: computed.totalOperatingExpenses,
@@ -253,6 +254,7 @@ export async function updateProposal(
 
           grossSalary: computed.grossSalary,
           employerCost: computed.employerCost,
+          totalBonuses: computed.totalBonuses,
           totalBenefits: computed.totalBenefits,
           totalEmployerLoad: computed.totalEmployerLoad,
           totalOperatingExpenses: computed.totalOperatingExpenses,
@@ -279,6 +281,7 @@ export async function updateProposal(
 
           grossSalary: computed.grossSalary,
           employerCost: computed.employerCost,
+          totalBonuses: computed.totalBonuses,
           totalBenefits: computed.totalBenefits,
           totalEmployerLoad: computed.totalEmployerLoad,
           totalOperatingExpenses: computed.totalOperatingExpenses,

@@ -75,6 +75,8 @@ export type ProposalDetailUi = ProposalListRowUi & {
 
     grossSalary: number | null;
     employerCost: number | null;
+    /** Stored output; legacy rows fall back to `bonuses` in the mapper. */
+    totalBonuses: number | null;
     totalBenefits: number | null;
     totalEmployerLoad: number | null;
     totalOperatingExpenses: number | null;
