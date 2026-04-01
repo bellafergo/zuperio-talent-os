@@ -9,6 +9,13 @@ export type ContactListRow = {
   email: string;
   phone: string;
   status: ContactStatusUi;
+  /** For edit forms */
+  firstName: string;
+  lastName: string;
+  titleValue: string;
+  emailValue: string;
+  phoneValue: string;
+  statusValue: "ACTIVE" | "INACTIVE";
 };
 
 export type ContactFilterState = {

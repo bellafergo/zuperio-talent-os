@@ -34,5 +34,11 @@ export function mapContactToListRow(row: ContactWithCompany): ContactListRow {
     email: row.email?.trim() || "—",
     phone: row.phone?.trim() || "—",
     status: prismaStatusToUi[row.status],
+    firstName: row.firstName,
+    lastName: row.lastName?.trim() || "",
+    titleValue: row.title?.trim() || "",
+    emailValue: row.email?.trim() || "",
+    phoneValue: row.phone?.trim() || "",
+    statusValue: row.status,
   };
 }

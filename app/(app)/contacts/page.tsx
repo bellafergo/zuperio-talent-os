@@ -1,4 +1,6 @@
-import { listContactsForUi } from "@/lib/contacts/queries";
+import { auth } from "@/auth";
+import { canManageContacts } from "@/lib/auth/contact-access";
+import { listCompaniesForContactForm, listContactsForUi } from "@/lib/contacts/queries";
 
 import { ContactsHeader } from "./_components/contacts-header";
 import { ContactsModule } from "./_components/contacts-module";
@@ -6,11 +8,17 @@ import { ContactsModule } from "./_components/contacts-module";
 export const dynamic = "force-dynamic";
 
 export default async function ContactsPage() {
-  const contacts = await listContactsForUi();
+  const session = await auth();
+  const canManage = canManageContacts(session?.user?.role);
+
+  const [contacts, companies] = await Promise.all([
+    listContactsForUi(),
+    canManage ? listCompaniesForContactForm() : Promise.resolve([]),
+  ]);
 
   return (
     <div className="space-y-6">
-      <ContactsHeader />
+      <ContactsHeader canManage={canManage} companies={companies} />
       <ContactsModule contacts={contacts} />
     </div>
   );

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 import { mapContactToListRow, type ContactWithCompany } from "./mappers";
-import type { ContactListRow } from "./types";
+import type { CompanyOption, ContactListRow } from "./types";
 
 export async function listContactsForUi(): Promise<ContactListRow[]> {
   const rows = await prisma.contact.findMany({
@@ -23,4 +23,11 @@ export async function getContactByIdForUi(
     },
   });
   return row ? mapContactToListRow(row as ContactWithCompany) : null;
+}
+
+export async function listCompaniesForContactForm(): Promise<CompanyOption[]> {
+  return prisma.company.findMany({
+    select: { id: true, name: true },
+    orderBy: [{ name: "asc" }],
+  });
 }

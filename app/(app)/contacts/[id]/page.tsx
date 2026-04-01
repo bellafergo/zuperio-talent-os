@@ -2,6 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import {
   Card,
   CardContent,
@@ -9,8 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getContactByIdForUi } from "@/lib/contacts/queries";
+import { canManageContacts } from "@/lib/auth/contact-access";
+import { getContactByIdForUi, listCompaniesForContactForm } from "@/lib/contacts/queries";
 
+import { ContactEditDialog } from "../_components/contact-edit-dialog";
 import { ContactStatusBadge } from "../_components/contact-status-badge";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +24,13 @@ type PageProps = {
 
 export default async function ContactDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const contact = await getContactByIdForUi(id);
+  const session = await auth();
+  const canManage = canManageContacts(session?.user?.role);
+
+  const [contact, companies] = await Promise.all([
+    getContactByIdForUi(id),
+    canManage ? listCompaniesForContactForm() : Promise.resolve([]),
+  ]);
 
   if (!contact) {
     notFound();
@@ -38,11 +47,14 @@ export default async function ContactDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {contact.displayName}
-          </h1>
-          <ContactStatusBadge status={contact.status} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              {contact.displayName}
+            </h1>
+            <ContactStatusBadge status={contact.status} />
+          </div>
+          {canManage ? <ContactEditDialog contact={contact} companies={companies} /> : null}
         </div>
         <p className="text-sm text-muted-foreground">
           Person record · loaded from database
