@@ -117,3 +117,24 @@ export async function listCandidatesForProposalForm(): Promise<ProposalCandidate
   }));
 }
 
+/** First active company contact with an email, else first active contact (name only). */
+export async function getCompanyPreferredContactForProposalEmail(
+  companyId: string,
+): Promise<{ displayName: string; email: string | null } | null> {
+  const contacts = await prisma.contact.findMany({
+    where: { companyId, status: "ACTIVE" },
+    orderBy: [{ updatedAt: "desc" }],
+    select: { firstName: true, lastName: true, email: true },
+  });
+  if (contacts.length === 0) return null;
+  const withEmail = contacts.find((c) => c.email?.trim());
+  const pick = withEmail ?? contacts[0];
+  const displayName =
+    [pick.firstName, pick.lastName].filter(Boolean).join(" ").trim() ||
+    "Client contact";
+  return {
+    displayName,
+    email: pick.email?.trim() ?? null,
+  };
+}
+
