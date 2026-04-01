@@ -1,3 +1,8 @@
+import type {
+  VacancySeniority as PrismaVacancySeniority,
+  VacancyStatus as PrismaVacancyStatus,
+} from "@/generated/prisma/enums";
+
 export type VacancyStatusUi =
   | "Draft"
   | "Open"
@@ -24,6 +29,9 @@ export type VacancyListRow = {
   opportunityTitle: string;
   seniority: VacancySeniorityUi;
   status: VacancyStatusUi;
+  /** Prisma enum values for form defaults. */
+  seniorityValue: PrismaVacancySeniority;
+  statusValue: PrismaVacancyStatus;
   targetRateLabel: string;
   targetRateAmount: number | null;
   currency: string;
@@ -31,6 +39,12 @@ export type VacancyListRow = {
   skillsLine: string | null;
   roleSummaryLine: string | null;
   updatedAtLabel: string;
+};
+
+export type VacancyRequirementDraft = {
+  skillId: string;
+  required: boolean;
+  minimumYears: number | null;
 };
 
 export type VacancyFilterState = {

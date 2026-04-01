@@ -100,6 +100,8 @@ export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
     opportunityTitle: row.opportunity.title,
     seniority: prismaSeniorityToUi[row.seniority],
     status: prismaStatusToUi[row.status],
+    seniorityValue: row.seniority,
+    statusValue: row.status,
     targetRateLabel: formatTargetRate(amount, currency),
     targetRateAmount: amount,
     currency,

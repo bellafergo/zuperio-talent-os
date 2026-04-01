@@ -44,6 +44,16 @@ export async function listVacancyRequirementsForUi(
   );
 }
 
+export type SkillOption = { id: string; name: string; category: string | null };
+
+/** Flat skills list for vacancy requirement forms. */
+export async function listSkillsForVacancyForm(): Promise<SkillOption[]> {
+  return prisma.skill.findMany({
+    orderBy: [{ category: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, category: true },
+  });
+}
+
 /** Catalog grouped by category for /skills page. */
 export async function listSkillsCatalogGroupedForUi(): Promise<
   SkillCatalogGroupUi[]

@@ -2,6 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import {
   Card,
   CardContent,
@@ -9,15 +10,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { canManageVacancies } from "@/lib/auth/vacancy-access";
 import { listMatchesForVacancyUi } from "@/lib/matching/queries";
-import { listVacancyRequirementsForUi } from "@/lib/skills/queries";
+import { listSkillsForVacancyForm, listVacancyRequirementsForUi } from "@/lib/skills/queries";
 import { listApplicationsForVacancyUi } from "@/lib/vacancy-applications/queries";
 import { formatTargetRate } from "@/lib/vacancies/mappers";
-import { getVacancyByIdForUi } from "@/lib/vacancies/queries";
+import {
+  getVacancyByIdForUi,
+  getVacancyEditData,
+  listOpportunitiesForVacancyForm,
+} from "@/lib/vacancies/queries";
 
 import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
 import { VacancyRecruitmentPipelineSection } from "./_components/vacancy-recruitment-pipeline-section";
 import { VacancyRequirementsSection } from "./_components/vacancy-requirements-section";
+import { VacancyEditDialog } from "../_components/vacancy-edit-dialog";
 import { VacancyStatusBadge } from "../_components/vacancy-status-badge";
 
 export const dynamic = "force-dynamic";
@@ -28,12 +35,18 @@ type PageProps = {
 
 export default async function VacancyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [vacancy, candidateMatches, requirements, applications] =
+  const session = await auth();
+  const canManage = canManageVacancies(session?.user?.role);
+
+  const [vacancy, candidateMatches, requirements, applications, editData, opportunities, skills] =
     await Promise.all([
       getVacancyByIdForUi(id),
       listMatchesForVacancyUi(id),
       listVacancyRequirementsForUi(id),
       listApplicationsForVacancyUi(id),
+      canManage ? getVacancyEditData(id) : Promise.resolve(null),
+      canManage ? listOpportunitiesForVacancyForm() : Promise.resolve([]),
+      canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
     ]);
 
   if (!vacancy) {
@@ -56,13 +69,22 @@ export default async function VacancyDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {vacancy.title}
-          </h1>
-          <div className="shrink-0">
-            <VacancyStatusBadge status={vacancy.status} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              {vacancy.title}
+            </h1>
+            <div className="shrink-0">
+              <VacancyStatusBadge status={vacancy.status} />
+            </div>
           </div>
+          {canManage && editData ? (
+            <VacancyEditDialog
+              vacancy={editData}
+              opportunities={opportunities}
+              skills={skills}
+            />
+          ) : null}
         </div>
         <p className="text-sm text-muted-foreground">
           Role record · loaded from database
