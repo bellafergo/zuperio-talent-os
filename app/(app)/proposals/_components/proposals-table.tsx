@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -11,6 +12,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { ProposalListRowUi } from "@/lib/proposals/types";
+
+import { ProposalStatusBadge } from "./proposal-status-badge";
 
 export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
   if (rows.length === 0) {
@@ -29,7 +32,8 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
           <TableHead className="max-w-[220px]">Opportunity</TableHead>
           <TableHead className="max-w-[220px]">Vacancy</TableHead>
           <TableHead className="max-w-[180px]">Candidate</TableHead>
-          <TableHead className="w-[120px]">Status</TableHead>
+          <TableHead className="w-[140px]">Status</TableHead>
+          <TableHead className="w-[120px]">Follow-up</TableHead>
           <TableHead className="w-[140px] text-right">Monthly</TableHead>
           <TableHead className="w-[120px] text-right">Margin</TableHead>
           <TableHead className="w-[120px]">Updated</TableHead>
@@ -82,7 +86,18 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
                 "—"
               )}
             </TableCell>
-            <TableCell>{r.status}</TableCell>
+            <TableCell>
+              <ProposalStatusBadge label={r.status} value={r.statusValue} />
+            </TableCell>
+            <TableCell>
+              {r.isFollowUpPending ? (
+                <Badge variant="outline" className="border-amber-500/60 text-amber-900 dark:text-amber-200">
+                  Due
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
             <TableCell className="text-right text-muted-foreground">
               {r.finalMonthlyRateLabel}
             </TableCell>

@@ -95,8 +95,11 @@ enum PricingScheme {
 enum ProposalStatus {
   DRAFT
   SENT
-  ACCEPTED
-  REJECTED
+  /// Reserved for future open/click tracking; set manually if needed in v1.
+  VIEWED
+  IN_NEGOTIATION
+  WON
+  LOST
 }
 
 enum VacancyApplicationStage {
@@ -427,6 +430,11 @@ model Proposal {
 
   /// Last successful server-side PDF export (economic proposal); drives email-draft attachment state.
   proposalPdfExportedAt DateTime?
+
+  /// First time the proposal was emailed to the client (set on send; not overwritten on resend).
+  sentAt             DateTime?
+  lastFollowUpAt     DateTime?
+  followUpCount      Int       @default(0)
 
   createdById String?
   createdBy   User? @relation("ProposalCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)

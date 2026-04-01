@@ -17,9 +17,11 @@ import {
   getProposalByIdForUi,
 } from "@/lib/proposals/queries";
 
+import { ProposalCommercialTracking } from "../_components/proposal-commercial-tracking";
 import { ProposalDetailTabs } from "../_components/proposal-detail-tabs";
 import { ProposalDocumentPreview } from "../_components/proposal-document-preview";
 import { ProposalEditDialog } from "../_components/proposal-edit-dialog";
+import { ProposalStatusBadge } from "../_components/proposal-status-badge";
 import { ProposalEmailDraftPanel } from "../_components/proposal-email-draft-panel";
 import { ProposalCvDownloadButton } from "../_components/proposal-cv-download-button";
 import { ProposalPdfDownloadButton } from "../_components/proposal-pdf-download-button";
@@ -81,10 +83,13 @@ export default async function ProposalDetailPage({ params }: PageProps) {
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               Proposal · {proposal.companyName}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {proposal.status} · {proposal.currency} · valid {proposal.validityDays}
-              d · {proposal.format}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <ProposalStatusBadge label={proposal.status} value={proposal.statusValue} />
+              <span aria-hidden>·</span>
+              <span>
+                {proposal.currency} · valid {proposal.validityDays}d · {proposal.format}
+              </span>
+            </div>
           </div>
           {canManage ? (
             <ProposalEditDialog
@@ -100,6 +105,16 @@ export default async function ProposalDetailPage({ params }: PageProps) {
           Template-based proposal · deterministic pricing · preview ready for PDF
         </p>
       </div>
+
+      <ProposalCommercialTracking
+        proposalId={proposal.id}
+        canManage={canManage}
+        statusValue={proposal.statusValue}
+        isFollowUpPending={proposal.isFollowUpPending}
+        sentAtLabel={proposal.sentAtLabel}
+        lastFollowUpAtLabel={proposal.lastFollowUpAtLabel}
+        followUpCount={proposal.followUpCount}
+      />
 
       <ProposalDetailTabs
         overview={<ProposalOverviewPanel proposal={proposal} />}

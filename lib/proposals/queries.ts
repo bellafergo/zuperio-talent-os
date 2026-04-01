@@ -1,5 +1,8 @@
+import type { ProposalStatus } from "@/generated/prisma/enums";
+
 import { prisma } from "@/lib/prisma";
 
+import { followUpThresholdDate } from "./follow-up";
 import { mapProposalToDetailUi, mapProposalToListRowUi, type ProposalWithRelations } from "./mappers";
 import type {
   ProposalCandidateOption,
@@ -37,6 +40,9 @@ const proposalSelect = {
   scopeNotes: true,
   commercialNotes: true,
   proposalPdfExportedAt: true,
+  sentAt: true,
+  lastFollowUpAt: true,
+  followUpCount: true,
   pricing: {
     select: {
       scheme: true,
@@ -65,12 +71,58 @@ const proposalSelect = {
   updatedAt: true,
 } as const;
 
-export async function listProposalsForUi(): Promise<ProposalListRowUi[]> {
+export type ProposalListFilters = {
+  status?: ProposalStatus;
+  followUpPendingOnly?: boolean;
+};
+
+export async function listProposalsForUi(
+  filters?: ProposalListFilters,
+): Promise<ProposalListRowUi[]> {
+  if (filters?.followUpPendingOnly && filters.status && filters.status !== "SENT") {
+    return [];
+  }
+
+  const where =
+    filters?.followUpPendingOnly
+      ? {
+          status: "SENT" as const,
+          sentAt: { lt: followUpThresholdDate() },
+        }
+      : filters?.status
+        ? { status: filters.status }
+        : {};
+
   const rows = await prisma.proposal.findMany({
+    where,
     select: proposalSelect,
     orderBy: [{ updatedAt: "desc" }],
   });
   return rows.map((r) => mapProposalToListRowUi(r as unknown as ProposalWithRelations));
+}
+
+export type ProposalsDashboardSummary = {
+  total: number;
+  sent: number;
+  followUpPending: number;
+  won: number;
+  lost: number;
+};
+
+export async function getProposalsDashboardSummary(): Promise<ProposalsDashboardSummary> {
+  const [total, sent, followUpPending, won, lost] = await Promise.all([
+    prisma.proposal.count(),
+    prisma.proposal.count({ where: { status: "SENT" } }),
+    prisma.proposal.count({
+      where: {
+        status: "SENT",
+        sentAt: { lt: followUpThresholdDate() },
+      },
+    }),
+    prisma.proposal.count({ where: { status: "WON" } }),
+    prisma.proposal.count({ where: { status: "LOST" } }),
+  ]);
+  return { total, sent, followUpPending, won, lost };
 }
 
 export async function getProposalByIdForUi(id: string): Promise<ProposalDetailUi | null> {

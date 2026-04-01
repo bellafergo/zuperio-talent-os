@@ -36,9 +36,20 @@ const TYPE_LABELS: Record<ProposalType, string> = {
 const STATUS_LABELS: Record<ProposalStatus, string> = {
   DRAFT: "Draft",
   SENT: "Sent",
-  ACCEPTED: "Accepted",
-  REJECTED: "Rejected",
+  VIEWED: "Viewed (tracking)",
+  IN_NEGOTIATION: "In negotiation",
+  WON: "Won",
+  LOST: "Lost",
 };
+
+const STATUS_FIELD_ORDER: ProposalStatus[] = [
+  "DRAFT",
+  "SENT",
+  "VIEWED",
+  "IN_NEGOTIATION",
+  "WON",
+  "LOST",
+];
 
 const FORMAT_LABELS: Record<ProposalFormat, string> = {
   SIMPLE: "Simple proposal (1-page)",
@@ -95,7 +106,9 @@ export function ProposalRecordFormFields({
 }) {
   const typeOrder = Object.values(TypeConst) as ProposalType[];
   const formatOrder = Object.values(FormatConst) as ProposalFormat[];
-  const statusOrder = Object.values(StatusConst) as ProposalStatus[];
+  const statusOrder = STATUS_FIELD_ORDER.filter((s) =>
+    (Object.values(StatusConst) as string[]).includes(s),
+  );
   const schemeOrder = Object.values(SchemeConst) as PricingScheme[];
 
   const [companyId, setCompanyId] = React.useState(defaults?.companyId ?? "");

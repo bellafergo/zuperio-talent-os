@@ -1,8 +1,10 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 
 import { auth } from "@/auth";
 import { canSendProposalClientEmail } from "@/lib/auth/proposal-access";
+import { prisma } from "@/lib/prisma";
 import { generateCandidateCvPdfPackage } from "@/lib/candidates/generate-candidate-cv-pdf";
 import { sendProposalPackageEmail } from "@/lib/email/send-proposal-package-email";
 import { generateProposalPdfPackage } from "@/lib/proposals/generate-proposal-pdf";
@@ -106,6 +108,21 @@ export async function POST(
         { filename: cvFilename, content: cv.buffer },
       ],
     });
+
+    const prior = await prisma.proposal.findUnique({
+      where: { id: proposalId },
+      select: { sentAt: true },
+    });
+    await prisma.proposal.update({
+      where: { id: proposalId },
+      data: {
+        status: "SENT",
+        sentAt: prior?.sentAt ?? new Date(),
+      },
+    });
+
+    revalidatePath("/proposals");
+    revalidatePath(`/proposals/${proposalId}`);
 
     console.info("[proposal-send-email] sent", {
       proposalId,

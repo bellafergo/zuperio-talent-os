@@ -1,4 +1,18 @@
-export type ProposalStatusUi = "Draft" | "Sent" | "Accepted" | "Rejected";
+export type ProposalStatusUi =
+  | "Draft"
+  | "Sent"
+  | "Viewed"
+  | "In negotiation"
+  | "Won"
+  | "Lost";
+
+export type ProposalStatusValue =
+  | "DRAFT"
+  | "SENT"
+  | "VIEWED"
+  | "IN_NEGOTIATION"
+  | "WON"
+  | "LOST";
 export type ProposalTypeUi = "Staff augmentation";
 export type ProposalFormatUi = "Simple" | "Detailed";
 export type PricingSchemeUi = "Mixed" | "Full IMSS";
@@ -14,7 +28,7 @@ export type ProposalListRowUi = {
   candidateId: string | null;
   candidateName: string;
   status: ProposalStatusUi;
-  statusValue: "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED";
+  statusValue: ProposalStatusValue;
   type: ProposalTypeUi;
   typeValue: "STAFF_AUG";
   format: ProposalFormatUi;
@@ -30,6 +44,12 @@ export type ProposalListRowUi = {
   proposalPdfExportedAt: string | null;
   /** ISO-8601 UTC timestamp of last CV PDF export for the linked candidate, if any. */
   candidateCvExportedAt: string | null;
+  sentAt: string | null;
+  lastFollowUpAt: string | null;
+  followUpCount: number;
+  isFollowUpPending: boolean;
+  sentAtLabel: string;
+  lastFollowUpAtLabel: string;
 };
 
 export type ProposalDetailUi = ProposalListRowUi & {

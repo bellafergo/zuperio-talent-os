@@ -14,11 +14,15 @@ import type {
   ProposalTypeUi,
 } from "./types";
 
+import { computeIsFollowUpPending } from "./follow-up";
+
 const prismaStatusToUi: Record<PrismaProposalStatus, ProposalStatusUi> = {
   DRAFT: "Draft",
   SENT: "Sent",
-  ACCEPTED: "Accepted",
-  REJECTED: "Rejected",
+  VIEWED: "Viewed",
+  IN_NEGOTIATION: "In negotiation",
+  WON: "Won",
+  LOST: "Lost",
 };
 
 const prismaTypeToUi: Record<PrismaProposalType, ProposalTypeUi> = {
@@ -79,6 +83,20 @@ function formatUpdatedAt(d: Date): string {
   }).format(d);
 }
 
+function formatTrackingTimestamp(d: Date | null): string {
+  if (!d) return "—";
+  return (
+    new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+    }).format(d) + " UTC"
+  );
+}
+
 export type ProposalWithRelations = {
   id: string;
   companyId: string;
@@ -104,6 +122,9 @@ export type ProposalWithRelations = {
   scopeNotes: string | null;
   commercialNotes: string | null;
   proposalPdfExportedAt: Date | null;
+  sentAt: Date | null;
+  lastFollowUpAt: Date | null;
+  followUpCount: number;
   pricing: {
     scheme: PrismaPricingScheme;
     monthlyHours: number;
@@ -141,10 +162,21 @@ export function mapProposalToListRowUi(row: ProposalWithRelations): ProposalList
   const finalMonthlyWithVat = parseDecimal(row.pricing?.finalMonthlyRateWithVAT) ?? null;
   const marginPct = parseDecimal(row.pricing?.grossMarginPercent) ?? null;
 
+  const isFollowUpPending = computeIsFollowUpPending(
+    row.status,
+    row.sentAt,
+  );
+
   return {
     proposalPdfExportedAt: row.proposalPdfExportedAt?.toISOString() ?? null,
     candidateCvExportedAt:
       row.candidate?.candidateCvExportedAt?.toISOString() ?? null,
+    sentAt: row.sentAt?.toISOString() ?? null,
+    lastFollowUpAt: row.lastFollowUpAt?.toISOString() ?? null,
+    followUpCount: row.followUpCount,
+    isFollowUpPending,
+    sentAtLabel: formatTrackingTimestamp(row.sentAt),
+    lastFollowUpAtLabel: formatTrackingTimestamp(row.lastFollowUpAt),
     id: row.id,
     companyId: row.companyId,
     companyName: row.company.name,
