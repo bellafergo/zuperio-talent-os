@@ -3,7 +3,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
-import { SEED_COMPANIES, SEED_USERS } from "./seed-data";
+import { SEED_COMPANIES, SEED_CONTACTS, SEED_USERS } from "./seed-data";
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -54,11 +54,38 @@ async function main() {
       },
     });
   }
+
+  for (const c of SEED_CONTACTS) {
+    await prisma.contact.upsert({
+      where: { id: c.id },
+      create: {
+        id: c.id,
+        firstName: c.firstName,
+        lastName: c.lastName ?? null,
+        email: c.email ?? null,
+        phone: c.phone ?? null,
+        title: c.title ?? null,
+        status: c.status,
+        companyId: c.companyId,
+      },
+      update: {
+        firstName: c.firstName,
+        lastName: c.lastName ?? null,
+        email: c.email ?? null,
+        phone: c.phone ?? null,
+        title: c.title ?? null,
+        status: c.status,
+        companyId: c.companyId,
+      },
+    });
+  }
 }
 
 main()
   .then(() => {
-    console.info(`Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies.`);
+    console.info(
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts.`,
+    );
   })
   .catch((e) => {
     console.error(e);

@@ -18,6 +18,7 @@ function titleForPath(pathname: string): string {
   const exact = NAV_ITEMS.find((item) => item.href === pathname);
   if (exact) return exact.label;
   if (/^\/companies\/.+/.test(pathname)) return "Company";
+  if (/^\/contacts\/.+/.test(pathname)) return "Contact";
   return "Zuperio Talent OS";
 }
 
