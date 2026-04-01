@@ -78,6 +78,17 @@ enum WeeklyLogStatus {
   RETURNED
 }
 
+enum ProposalType {
+  STAFF_AUG
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+}
+
 enum VacancyApplicationStage {
   NEW
   PRE_SCREEN
@@ -117,6 +128,8 @@ model User {
 
   companiesAsOwner    Company[]     @relation("CompanyOwner")
   opportunitiesAsOwner Opportunity[] @relation("OpportunityOwner")
+
+  proposalsCreated Proposal[] @relation("ProposalCreatedBy")
 }
 
 model Company {
@@ -132,6 +145,7 @@ model Company {
   contacts      Contact[]
   opportunities Opportunity[]
   placements    Placement[]
+  proposals     Proposal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -174,6 +188,7 @@ model Opportunity {
   owner   User?   @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
   vacancies Vacancy[]
+  proposals Proposal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -203,6 +218,7 @@ model Vacancy {
   placements         Placement[]
   skillRequirements  VacancyRequirement[]
   applications       VacancyApplication[]
+  proposals          Proposal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -231,6 +247,7 @@ model Candidate {
   placements        Placement[]
   structuredSkills  CandidateSkill[]
   applications      VacancyApplication[]
+  proposals         Proposal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -367,6 +384,72 @@ model WeeklyLog {
   @@index([weekStart])
   @@index([status])
   @@unique([placementId, weekStart])
+}
+
+model Proposal {
+  id String @id @default(cuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  vacancyId String?
+  vacancy   Vacancy? @relation(fields: [vacancyId], references: [id], onDelete: SetNull)
+
+  candidateId String?
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+
+  type        ProposalType
+  status      ProposalStatus @default(DRAFT)
+  currency    String @default("EUR")
+  validityDays Int @default(14)
+
+  executiveSummary String?
+  profileSummary   String?
+  scopeNotes       String?
+  commercialNotes  String?
+
+  createdById String?
+  createdBy   User? @relation("ProposalCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  pricing ProposalPricing?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([opportunityId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@index([status])
+  @@index([type])
+  @@index([createdById])
+}
+
+model ProposalPricing {
+  id String @id @default(cuid())
+
+  proposalId String @unique
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  monthlyHours            Int
+  candidateNetSalary      Decimal? @db.Decimal(14, 2)
+  employerCost            Decimal? @db.Decimal(14, 2)
+  internalCost            Decimal? @db.Decimal(14, 2)
+  clientRate              Decimal  @db.Decimal(14, 2)
+
+  clientMonthlyAmount     Decimal  @db.Decimal(14, 2)
+  grossMarginAmount       Decimal  @db.Decimal(14, 2)
+  grossMarginPercent      Decimal  @db.Decimal(6, 2)
+
+  estimatedDurationMonths Int @default(6)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([proposalId])
 }
 
 /// Deterministic match row (structured skills v1); recomputed via sync.

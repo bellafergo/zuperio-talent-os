@@ -1,0 +1,472 @@
+"use client";
+
+import * as React from "react";
+
+import {
+  ProposalStatus as StatusConst,
+  ProposalType as TypeConst,
+  type ProposalStatus,
+  type ProposalType,
+} from "@/generated/prisma/enums";
+import type {
+  ProposalCandidateOption,
+  ProposalCompanyOption,
+  ProposalOpportunityOption,
+  ProposalVacancyOption,
+} from "@/lib/proposals/types";
+import { cn } from "@/lib/utils";
+
+import { Input } from "@/components/ui/input";
+
+const selectClass = cn(
+  "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none",
+  "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+  "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+  "dark:bg-input/30",
+);
+
+const TYPE_LABELS: Record<ProposalType, string> = {
+  STAFF_AUG: "Staff augmentation",
+};
+
+const STATUS_LABELS: Record<ProposalStatus, string> = {
+  DRAFT: "Draft",
+  SENT: "Sent",
+  ACCEPTED: "Accepted",
+  REJECTED: "Rejected",
+};
+
+export type ProposalFormDefaults = {
+  companyId: string;
+  opportunityId: string | null;
+  vacancyId: string | null;
+  candidateId: string | null;
+  typeValue: ProposalType;
+  statusValue: ProposalStatus;
+  currency: string;
+  validityDays: number;
+  executiveSummary: string;
+  profileSummary: string;
+  scopeNotes: string;
+  commercialNotes: string;
+  monthlyHours: number;
+  candidateNetSalary: number | null;
+  employerCost: number | null;
+  internalCost: number | null;
+  clientRate: number;
+  estimatedDurationMonths: number;
+};
+
+export function ProposalRecordFormFields({
+  proposalId,
+  companies,
+  opportunities,
+  vacancies,
+  candidates,
+  defaults,
+  fieldErrors,
+}: {
+  proposalId?: string;
+  companies: ProposalCompanyOption[];
+  opportunities: ProposalOpportunityOption[];
+  vacancies: ProposalVacancyOption[];
+  candidates: ProposalCandidateOption[];
+  defaults?: ProposalFormDefaults;
+  fieldErrors?: Record<string, string>;
+}) {
+  const typeOrder = Object.values(TypeConst) as ProposalType[];
+  const statusOrder = Object.values(StatusConst) as ProposalStatus[];
+
+  const [companyId, setCompanyId] = React.useState(defaults?.companyId ?? "");
+  const [opportunityId, setOpportunityId] = React.useState(defaults?.opportunityId ?? "");
+
+  const filteredOpps = React.useMemo(
+    () => opportunities.filter((o) => !companyId || o.companyId === companyId),
+    [opportunities, companyId],
+  );
+  const filteredVacancies = React.useMemo(
+    () =>
+      vacancies.filter((v) => {
+        if (companyId && v.companyId !== companyId) return false;
+        if (opportunityId && v.opportunityId !== opportunityId) return false;
+        return true;
+      }),
+    [vacancies, companyId, opportunityId],
+  );
+
+  return (
+    <div className="grid gap-4">
+      {proposalId ? <input type="hidden" name="proposalId" value={proposalId} /> : null}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Company <span className="text-destructive">*</span>
+          </label>
+          <select
+            name="companyId"
+            required
+            className={selectClass}
+            value={companyId}
+            onChange={(e) => {
+              setCompanyId(e.target.value);
+              setOpportunityId("");
+            }}
+            aria-invalid={Boolean(fieldErrors?.companyId)}
+          >
+            <option value="" disabled>
+              Select a company…
+            </option>
+            {companies.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {fieldErrors?.companyId ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.companyId}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Opportunity</label>
+          <select
+            name="opportunityId"
+            className={selectClass}
+            value={opportunityId}
+            onChange={(e) => setOpportunityId(e.target.value)}
+            aria-invalid={Boolean(fieldErrors?.opportunityId)}
+          >
+            <option value="">No opportunity</option>
+            {filteredOpps.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.title}
+              </option>
+            ))}
+          </select>
+          {fieldErrors?.opportunityId ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.opportunityId}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Vacancy</label>
+          <select
+            name="vacancyId"
+            className={selectClass}
+            defaultValue={defaults?.vacancyId ?? ""}
+            aria-invalid={Boolean(fieldErrors?.vacancyId)}
+          >
+            <option value="">No vacancy</option>
+            {filteredVacancies.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.title}
+              </option>
+            ))}
+          </select>
+          {fieldErrors?.vacancyId ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.vacancyId}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Candidate</label>
+          <select
+            name="candidateId"
+            className={selectClass}
+            defaultValue={defaults?.candidateId ?? ""}
+            aria-invalid={Boolean(fieldErrors?.candidateId)}
+          >
+            <option value="">No candidate</option>
+            {candidates.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {fieldErrors?.candidateId ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.candidateId}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Type <span className="text-destructive">*</span>
+          </label>
+          <select
+            name="type"
+            required
+            className={selectClass}
+            defaultValue={defaults?.typeValue ?? "STAFF_AUG"}
+            aria-invalid={Boolean(fieldErrors?.type)}
+          >
+            {typeOrder.map((t) => (
+              <option key={t} value={t}>
+                {TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+          {fieldErrors?.type ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.type}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Status <span className="text-destructive">*</span>
+          </label>
+          <select
+            name="status"
+            required
+            className={selectClass}
+            defaultValue={defaults?.statusValue ?? "DRAFT"}
+            aria-invalid={Boolean(fieldErrors?.status)}
+          >
+            {statusOrder.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+          {fieldErrors?.status ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.status}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Currency</label>
+          <Input
+            name="currency"
+            maxLength={3}
+            placeholder="EUR"
+            defaultValue={defaults?.currency ?? "EUR"}
+            aria-invalid={Boolean(fieldErrors?.currency)}
+          />
+          {fieldErrors?.currency ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.currency}
+            </p>
+          ) : null}
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Validity (days)</label>
+          <Input
+            name="validityDays"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={365}
+            step={1}
+            defaultValue={defaults?.validityDays ?? 14}
+            aria-invalid={Boolean(fieldErrors?.validityDays)}
+          />
+          {fieldErrors?.validityDays ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.validityDays}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-3 shadow-sm ring-1 ring-foreground/5">
+        <p className="text-sm font-medium text-foreground">Pricing inputs</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Deterministic: client monthly = hours × client rate; margin uses internal cost per hour.
+        </p>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Monthly hours <span className="text-destructive">*</span>
+            </label>
+            <Input
+              name="monthlyHours"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              step={1}
+              defaultValue={defaults?.monthlyHours ?? 160}
+              aria-invalid={Boolean(fieldErrors?.monthlyHours)}
+            />
+            {fieldErrors?.monthlyHours ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.monthlyHours}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Client rate (per hour) <span className="text-destructive">*</span>
+            </label>
+            <Input
+              name="clientRate"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step={0.01}
+              defaultValue={defaults?.clientRate ?? 100}
+              aria-invalid={Boolean(fieldErrors?.clientRate)}
+            />
+            {fieldErrors?.clientRate ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.clientRate}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Internal cost (per hour)</label>
+            <Input
+              name="internalCost"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step={0.01}
+              defaultValue={defaults?.internalCost ?? ""}
+              aria-invalid={Boolean(fieldErrors?.internalCost)}
+            />
+            {fieldErrors?.internalCost ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.internalCost}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Estimated duration (months)</label>
+            <Input
+              name="estimatedDurationMonths"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={60}
+              step={1}
+              defaultValue={defaults?.estimatedDurationMonths ?? 6}
+              aria-invalid={Boolean(fieldErrors?.estimatedDurationMonths)}
+            />
+            {fieldErrors?.estimatedDurationMonths ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.estimatedDurationMonths}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Candidate net salary (monthly)</label>
+            <Input
+              name="candidateNetSalary"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step={0.01}
+              defaultValue={defaults?.candidateNetSalary ?? ""}
+              aria-invalid={Boolean(fieldErrors?.candidateNetSalary)}
+            />
+            {fieldErrors?.candidateNetSalary ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.candidateNetSalary}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Employer cost (monthly)</label>
+            <Input
+              name="employerCost"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step={0.01}
+              defaultValue={defaults?.employerCost ?? ""}
+              aria-invalid={Boolean(fieldErrors?.employerCost)}
+            />
+            {fieldErrors?.employerCost ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.employerCost}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Executive summary</label>
+        <textarea
+          name="executiveSummary"
+          defaultValue={defaults?.executiveSummary ?? ""}
+          rows={3}
+          className={cn(
+            "w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none",
+            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+            "dark:bg-input/30",
+          )}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Profile summary</label>
+        <textarea
+          name="profileSummary"
+          defaultValue={defaults?.profileSummary ?? ""}
+          rows={3}
+          className={cn(
+            "w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none",
+            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+            "dark:bg-input/30",
+          )}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Scope notes</label>
+        <textarea
+          name="scopeNotes"
+          defaultValue={defaults?.scopeNotes ?? ""}
+          rows={3}
+          className={cn(
+            "w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none",
+            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+            "dark:bg-input/30",
+          )}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Commercial notes</label>
+        <textarea
+          name="commercialNotes"
+          defaultValue={defaults?.commercialNotes ?? ""}
+          rows={3}
+          className={cn(
+            "w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none",
+            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+            "dark:bg-input/30",
+          )}
+        />
+      </div>
+    </div>
+  );
+}
+
