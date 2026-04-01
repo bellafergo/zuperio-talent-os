@@ -71,6 +71,13 @@ enum PlacementStatus {
   CANCELLED
 }
 
+enum WeeklyLogStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  RETURNED
+}
+
 enum VacancyApplicationStage {
   NEW
   PRE_SCREEN
@@ -323,6 +330,8 @@ model Placement {
   /// Pay rate to candidate (major currency units, e.g. per hour).
   rateCandidate Decimal? @db.Decimal(14, 2)
 
+  weeklyLogs WeeklyLog[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -330,6 +339,30 @@ model Placement {
   @@index([candidateId])
   @@index([vacancyId])
   @@index([status])
+}
+
+model WeeklyLog {
+  id          String @id @default(cuid())
+  placementId String
+  placement   Placement @relation(fields: [placementId], references: [id], onDelete: Cascade)
+
+  weekStart DateTime
+  weekEnd   DateTime
+
+  summary       String?
+  achievements  String?
+  blockers      String?
+  /// Total hours for the week (major units, supports fractions like 37.5).
+  hoursTotal    Decimal? @db.Decimal(6, 2)
+  status        WeeklyLogStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([placementId])
+  @@index([weekStart])
+  @@index([status])
+  @@unique([placementId, weekStart])
 }
 
 /// Deterministic match row (structured skills v1); recomputed via sync.
