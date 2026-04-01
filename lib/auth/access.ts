@@ -85,6 +85,11 @@ export const NAV_ITEMS_BY_ROLE: readonly NavItemDef[] = [
     label: "Propuestas",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
+  {
+    href: "/admin/users",
+    label: "Usuarios",
+    roles: ["DIRECTOR"],
+  },
 ] as const;
 
 export function navItemsForRole(role: UserRole | undefined): NavItemDef[] {

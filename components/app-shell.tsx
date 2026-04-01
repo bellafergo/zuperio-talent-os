@@ -26,6 +26,7 @@ function titleForPath(pathname: string, navItems: NavItemDef[]): string {
   if (pathname === "/matching") return "Matching";
   if (pathname === "/skills") return "Skills";
   if (pathname === "/applications") return "Postulaciones";
+  if (pathname.startsWith("/admin/users")) return "Usuarios";
   return "Zuperio Talent OS";
 }
 

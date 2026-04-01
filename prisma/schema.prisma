@@ -142,6 +142,8 @@ model User {
   role      UserRole @default(RECRUITER)
   /// Bcrypt hash for credentials sign-in (null = cannot use password login).
   passwordHash String?
+  /// Internal admin can deactivate; inactive users cannot sign in.
+  isActive  Boolean  @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
