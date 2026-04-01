@@ -157,7 +157,7 @@ model Vacancy {
   /// Target bill rate (e.g. per hour) in major currency units.
   targetRate Decimal?        @db.Decimal(14, 2)
   currency   String?         @default("EUR")
-  /// Comma-separated must-have / nice-to-have skills (matching v1).
+  /// Legacy free-text skills (temporary; matching v1 still uses this until migrated).
   skills       String?
   /// Short role scope for matching and future JD text.
   roleSummary  String?
@@ -165,8 +165,9 @@ model Vacancy {
   opportunityId String
   opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
 
-  candidateMatches CandidateVacancyMatch[]
-  placements       Placement[]
+  candidateMatches   CandidateVacancyMatch[]
+  placements         Placement[]
+  skillRequirements  VacancyRequirement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,14 +186,15 @@ model Candidate {
   phone                String?
   role                 String
   seniority            VacancySeniority
-  /// Comma-separated skills for now (e.g. "React, Node.js, TypeScript").
+  /// Legacy free-text skills (temporary; prefer CandidateSkill for new work).
   skills               String
   availabilityStatus   CandidateAvailabilityStatus @default(AVAILABLE)
   currentCompany       String?
   notes                String?
 
-  vacancyMatches CandidateVacancyMatch[]
-  placements     Placement[]
+  vacancyMatches  CandidateVacancyMatch[]
+  placements        Placement[]
+  structuredSkills  CandidateSkill[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -200,6 +202,53 @@ model Candidate {
   @@index([seniority])
   @@index([availabilityStatus])
   @@index([email])
+}
+
+/// Normalized skill catalog for structured profiles and requisitions.
+model Skill {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  category String?
+
+  candidateLinks CandidateSkill[]
+  vacancyNeeds   VacancyRequirement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+model CandidateSkill {
+  id              String    @id @default(cuid())
+  candidateId     String
+  candidate       Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  skillId         String
+  skill           Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  yearsExperience Int?
+  level           String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([candidateId, skillId])
+  @@index([skillId])
+}
+
+model VacancyRequirement {
+  id           String  @id @default(cuid())
+  vacancyId    String
+  vacancy      Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  skillId      String
+  skill        Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  required     Boolean
+  minimumYears Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([vacancyId, skillId])
+  @@index([skillId])
 }
 
 /// Staff augmentation assignment: candidate delivering work for a client via a vacancy.

@@ -2,7 +2,6 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -13,9 +12,11 @@ import {
 import { getCandidateByIdForUi } from "@/lib/candidates/queries";
 import { listMatchesForCandidateUi } from "@/lib/matching/queries";
 import { getCurrentAssignmentForCandidateUi } from "@/lib/placements/queries";
+import { listCandidateStructuredSkillsForUi } from "@/lib/skills/queries";
 
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
+import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
 
 export const dynamic = "force-dynamic";
@@ -26,11 +27,13 @@ type PageProps = {
 
 export default async function CandidateDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [candidate, vacancyMatches, currentAssignment] = await Promise.all([
-    getCandidateByIdForUi(id),
-    listMatchesForCandidateUi(id),
-    getCurrentAssignmentForCandidateUi(id),
-  ]);
+  const [candidate, vacancyMatches, currentAssignment, structuredSkills] =
+    await Promise.all([
+      getCandidateByIdForUi(id),
+      listMatchesForCandidateUi(id),
+      getCurrentAssignmentForCandidateUi(id),
+      listCandidateStructuredSkillsForUi(id),
+    ]);
 
   if (!candidate) {
     notFound();
@@ -66,31 +69,10 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         <DetailField label="Phone" value={candidate.phone} />
       </div>
 
-      <Card className="shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-base font-medium">Skills</CardTitle>
-          <CardDescription>
-            Parsed from the comma-separated list on the record.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {candidate.skillTags.length === 0 ? (
-            <p className="text-sm text-muted-foreground">—</p>
-          ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {candidate.skillTags.map((tag, i) => (
-                <Badge
-                  key={`${tag}-${i}`}
-                  variant="outline"
-                  className="font-normal"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <CandidateStructuredSkillsSection
+        skills={structuredSkills}
+        legacySkillsLine={candidate.skills}
+      />
 
       <Card className="shadow-sm">
         <CardHeader className="border-b border-border pb-4">

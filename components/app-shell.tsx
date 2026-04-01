@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/opportunities", label: "Opportunities" },
   { href: "/vacancies", label: "Vacancies" },
   { href: "/candidates", label: "Candidates" },
+  { href: "/skills", label: "Skills" },
   { href: "/matching", label: "Matching" },
   { href: "/active-employees", label: "Active Employees" },
   { href: "/weekly-logs", label: "Weekly Logs" },
@@ -24,6 +25,7 @@ function titleForPath(pathname: string): string {
   if (/^\/vacancies\/.+/.test(pathname)) return "Vacancy";
   if (/^\/candidates\/.+/.test(pathname)) return "Candidate";
   if (pathname === "/matching") return "Matching";
+  if (pathname === "/skills") return "Skills";
   return "Zuperio Talent OS";
 }
 

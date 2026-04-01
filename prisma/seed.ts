@@ -6,6 +6,12 @@ import { PrismaClient } from "../generated/prisma/client";
 import { syncAllCandidateVacancyMatches } from "../lib/matching/sync";
 
 import {
+  SEED_CANDIDATE_SKILLS,
+  SEED_SKILLS,
+  SEED_VACANCY_REQUIREMENTS,
+} from "./seed-skills";
+
+import {
   SEED_CANDIDATES,
   SEED_COMPANIES,
   SEED_CONTACTS,
@@ -145,6 +151,21 @@ async function main() {
     });
   }
 
+  for (const s of SEED_SKILLS) {
+    await prisma.skill.upsert({
+      where: { id: s.id },
+      create: {
+        id: s.id,
+        name: s.name,
+        category: s.category,
+      },
+      update: {
+        name: s.name,
+        category: s.category,
+      },
+    });
+  }
+
   for (const c of SEED_CANDIDATES) {
     await prisma.candidate.upsert({
       where: { id: c.id },
@@ -172,6 +193,50 @@ async function main() {
         availabilityStatus: c.availabilityStatus,
         currentCompany: c.currentCompany ?? null,
         notes: c.notes ?? null,
+      },
+    });
+  }
+
+  for (const cs of SEED_CANDIDATE_SKILLS) {
+    await prisma.candidateSkill.upsert({
+      where: {
+        candidateId_skillId: {
+          candidateId: cs.candidateId,
+          skillId: cs.skillId,
+        },
+      },
+      create: {
+        id: cs.id,
+        candidateId: cs.candidateId,
+        skillId: cs.skillId,
+        yearsExperience: cs.yearsExperience ?? null,
+        level: cs.level ?? null,
+      },
+      update: {
+        yearsExperience: cs.yearsExperience ?? null,
+        level: cs.level ?? null,
+      },
+    });
+  }
+
+  for (const vr of SEED_VACANCY_REQUIREMENTS) {
+    await prisma.vacancyRequirement.upsert({
+      where: {
+        vacancyId_skillId: {
+          vacancyId: vr.vacancyId,
+          skillId: vr.skillId,
+        },
+      },
+      create: {
+        id: vr.id,
+        vacancyId: vr.vacancyId,
+        skillId: vr.skillId,
+        required: vr.required,
+        minimumYears: vr.minimumYears ?? null,
+      },
+      update: {
+        required: vr.required,
+        minimumYears: vr.minimumYears ?? null,
       },
     });
   }
@@ -210,7 +275,7 @@ async function main() {
 main()
   .then(() => {
     console.info(
-      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates, ${SEED_PLACEMENTS.length} placements.`,
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates, ${SEED_SKILLS.length} skills, ${SEED_CANDIDATE_SKILLS.length} candidate skills, ${SEED_VACANCY_REQUIREMENTS.length} vacancy requirements, ${SEED_PLACEMENTS.length} placements.`,
     );
   })
   .catch((e) => {

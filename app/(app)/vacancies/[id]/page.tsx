@@ -10,10 +10,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { listMatchesForVacancyUi } from "@/lib/matching/queries";
+import { listVacancyRequirementsForUi } from "@/lib/skills/queries";
 import { formatTargetRate } from "@/lib/vacancies/mappers";
 import { getVacancyByIdForUi } from "@/lib/vacancies/queries";
 
 import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
+import { VacancyRequirementsSection } from "./_components/vacancy-requirements-section";
 import { VacancyStatusBadge } from "../_components/vacancy-status-badge";
 
 export const dynamic = "force-dynamic";
@@ -24,9 +26,10 @@ type PageProps = {
 
 export default async function VacancyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const [vacancy, candidateMatches] = await Promise.all([
+  const [vacancy, candidateMatches, requirements] = await Promise.all([
     getVacancyByIdForUi(id),
     listMatchesForVacancyUi(id),
+    listVacancyRequirementsForUi(id),
   ]);
 
   if (!vacancy) {
@@ -76,7 +79,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         <DetailField label="Seniority" value={vacancy.seniority} />
         <DetailField label="Target rate" value={rateDisplay} />
         <DetailField
-          label="Skills (requisition)"
+          label="Skills (legacy text)"
           value={vacancy.skillsLine ?? "—"}
         />
         <DetailField
@@ -101,6 +104,8 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         </CardContent>
       </Card>
 
+      <VacancyRequirementsSection requirements={requirements} />
+
       <Card className="shadow-sm">
         <CardHeader className="border-b border-border pb-4">
           <CardTitle className="text-base font-medium">Responsibilities</CardTitle>
@@ -110,8 +115,8 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         </CardHeader>
         <CardContent className="pt-4">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Structured responsibilities can extend this section later; skill tags
-            and role scope above already feed matching v1.
+            Structured responsibilities can extend this section later; matching
+            v1 still uses legacy skill text until rules are pointed at requirements.
           </p>
         </CardContent>
       </Card>
