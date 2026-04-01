@@ -8,8 +8,7 @@ import {
   industriesFromCompanies,
   ownersFromCompanies,
 } from "@/lib/companies/filter-companies";
-import { MOCK_COMPANIES } from "@/lib/companies/mock-data";
-import type { CompanyFilterState } from "@/lib/companies/types";
+import type { Company, CompanyFilterState } from "@/lib/companies/types";
 
 import { CompaniesDataTable } from "./companies-data-table";
 import { CompaniesEmptyState } from "./companies-empty-state";
@@ -22,23 +21,23 @@ const defaultFilters: CompanyFilterState = {
   owner: "all",
 };
 
-export function CompaniesModule() {
+export function CompaniesModule({ companies }: { companies: Company[] }) {
   const [filters, setFilters] = useState<CompanyFilterState>(defaultFilters);
 
   const industries = useMemo(
-    () => industriesFromCompanies(MOCK_COMPANIES),
-    [],
+    () => industriesFromCompanies(companies),
+    [companies],
   );
-  const owners = useMemo(() => ownersFromCompanies(MOCK_COMPANIES), []);
+  const owners = useMemo(() => ownersFromCompanies(companies), [companies]);
 
   const filtered = useMemo(
-    () => filterCompanies(MOCK_COMPANIES, filters),
-    [filters],
+    () => filterCompanies(companies, filters),
+    [companies, filters],
   );
 
   const clearFilters = () => setFilters(defaultFilters);
 
-  const catalogEmpty = MOCK_COMPANIES.length === 0;
+  const catalogEmpty = companies.length === 0;
   const noMatches = !catalogEmpty && filtered.length === 0;
 
   return (

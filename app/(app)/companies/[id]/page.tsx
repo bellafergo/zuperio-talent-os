@@ -9,9 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCompanyById } from "@/lib/companies/get-company";
+import { getCompanyByIdForUi } from "@/lib/companies/queries";
 
 import { CompanyStatusBadge } from "../_components/company-status-badge";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -19,7 +21,7 @@ type PageProps = {
 
 export default async function CompanyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const company = getCompanyById(id);
+  const company = await getCompanyByIdForUi(id);
 
   if (!company) {
     notFound();
@@ -43,13 +45,13 @@ export default async function CompanyDetailPage({ params }: PageProps) {
           <CompanyStatusBadge status={company.status} />
         </div>
         <p className="text-sm text-muted-foreground">
-          Account overview · mock data only
+          Account overview · loaded from database
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <DetailField label="Industry" value={company.industry} />
-        <DetailField label="Location" value={company.location} />
+        <DetailField label="Industry" value={company.industry || "—"} />
+        <DetailField label="Location" value={company.location || "—"} />
         <DetailField label="Owner" value={company.owner} />
       </div>
 
@@ -62,8 +64,8 @@ export default async function CompanyDetailPage({ params }: PageProps) {
         </CardHeader>
         <CardContent className="pt-4">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Notes and rich descriptions will sync from your workspace once data is
-            connected. For now this record exists only in local mock data.
+            Rich notes and activity summaries will appear here as the workspace
+            grows. The core company record above is stored in PostgreSQL.
           </p>
         </CardContent>
       </Card>

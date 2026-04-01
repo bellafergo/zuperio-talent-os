@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import type { CompanyFilterState } from "@/lib/companies/types";
-import { COMPANY_STATUSES } from "@/lib/companies/mock-data";
+import { COMPANY_STATUSES } from "@/lib/companies/constants";
 
 type CompaniesToolbarProps = {
   filters: CompanyFilterState;

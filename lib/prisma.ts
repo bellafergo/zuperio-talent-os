@@ -18,8 +18,8 @@ function createPrismaClient() {
 }
 
 /**
- * Shared Prisma client for server-side code (API routes, server actions, etc.).
- * Not used by the current mock UI. Instantiate only on the server.
+ * Shared Prisma client for server-side code (Server Components, API routes, etc.).
+ * Instantiate only on the server — never import from client components.
  */
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
