@@ -1,0 +1,91 @@
+import type { Company, CompanyStatus } from "./types";
+
+export const COMPANY_STATUSES: CompanyStatus[] = [
+  "Active",
+  "Prospect",
+  "Paused",
+  "Churned",
+];
+
+export const MOCK_COMPANIES: Company[] = [
+  {
+    id: "1",
+    name: "Acme Logistics",
+    industry: "Transportation",
+    location: "São Paulo, BR",
+    owner: "Fernanda Costa",
+    status: "Active",
+  },
+  {
+    id: "2",
+    name: "Northwind Trading",
+    industry: "Retail",
+    location: "Porto, PT",
+    owner: "João Silva",
+    status: "Prospect",
+  },
+  {
+    id: "3",
+    name: "Contoso Health",
+    industry: "Healthcare",
+    location: "Lisbon, PT",
+    owner: "Fernanda Costa",
+    status: "Active",
+  },
+  {
+    id: "4",
+    name: "Fabrikam Tech",
+    industry: "Technology",
+    location: "Remote",
+    owner: "Maria Santos",
+    status: "Paused",
+  },
+  {
+    id: "5",
+    name: "Wide World Insurance",
+    industry: "Financial services",
+    location: "Madrid, ES",
+    owner: "João Silva",
+    status: "Active",
+  },
+  {
+    id: "6",
+    name: "Adventure Works",
+    industry: "Manufacturing",
+    location: "Curitiba, BR",
+    owner: "Maria Santos",
+    status: "Prospect",
+  },
+  {
+    id: "7",
+    name: "Tailspin Toys",
+    industry: "Retail",
+    location: "Barcelona, ES",
+    owner: "Fernanda Costa",
+    status: "Churned",
+  },
+  {
+    id: "8",
+    name: "Litware Labs",
+    industry: "Technology",
+    location: "Berlin, DE",
+    owner: "João Silva",
+    status: "Active",
+  },
+  {
+    id: "9",
+    name: "Blue Yonder Foods",
+    industry: "Consumer goods",
+    location: "Lisbon, PT",
+    owner: "Maria Santos",
+    status: "Prospect",
+  },
+  {
+    id: "10",
+    name: "Southridge Energy",
+    industry: "Energy",
+    location: "Houston, US",
+    owner: "João Silva",
+    status: "Paused",
+  },
+];

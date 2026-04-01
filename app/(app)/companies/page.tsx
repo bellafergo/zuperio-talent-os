@@ -1,5 +1,11 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { CompaniesHeader } from "./_components/companies-header";
+import { CompaniesModule } from "./_components/companies-module";
 
 export default function CompaniesPage() {
-  return <PlaceholderPage title="Companies" />;
+  return (
+    <div className="space-y-6">
+      <CompaniesHeader />
+      <CompaniesModule />
+    </div>
+  );
 }
