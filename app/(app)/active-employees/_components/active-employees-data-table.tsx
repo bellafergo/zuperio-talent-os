@@ -11,9 +11,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type {
+  PlacementCandidateOption,
+  PlacementVacancyOption,
+} from "@/lib/placements/queries";
 import type { PlacementListRowUi } from "@/lib/placements/types";
 
-export function ActiveEmployeesDataTable({ rows }: { rows: PlacementListRowUi[] }) {
+import { PlacementEditDialog } from "./placement-edit-dialog";
+
+export function ActiveEmployeesDataTable({
+  rows,
+  canManage,
+  candidates,
+  vacancies,
+}: {
+  rows: PlacementListRowUi[];
+  canManage: boolean;
+  candidates: PlacementCandidateOption[];
+  vacancies: PlacementVacancyOption[];
+}) {
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center text-sm text-muted-foreground">
@@ -31,6 +47,7 @@ export function ActiveEmployeesDataTable({ rows }: { rows: PlacementListRowUi[] 
           <TableHead className="max-w-[220px]">Role</TableHead>
           <TableHead className="w-[120px]">Start date</TableHead>
           <TableHead className="w-[110px]">Status</TableHead>
+          {canManage ? <TableHead className="w-[110px]" /> : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -66,6 +83,15 @@ export function ActiveEmployeesDataTable({ rows }: { rows: PlacementListRowUi[] 
             <TableCell>
               <PlacementStatusBadge status={r.status} />
             </TableCell>
+            {canManage ? (
+              <TableCell className="text-right">
+                <PlacementEditDialog
+                  row={r}
+                  candidates={candidates}
+                  vacancies={vacancies}
+                />
+              </TableCell>
+            ) : null}
           </TableRow>
         ))}
       </TableBody>

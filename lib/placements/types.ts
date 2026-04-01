@@ -11,6 +11,13 @@ export type PlacementListRowUi = {
   vacancyTitle: string;
   startDateLabel: string;
   status: PlacementStatusUi;
+  /** ISO yyyy-mm-dd for edit forms. */
+  startDateValue: string;
+  endDateValue: string | null;
+  /** Prisma enum value for edit defaults. */
+  statusValue: "ACTIVE" | "COMPLETED" | "CANCELLED";
+  rateClientAmount: number | null;
+  rateCandidateAmount: number | null;
 };
 
 export type CandidateCurrentAssignmentUi = {

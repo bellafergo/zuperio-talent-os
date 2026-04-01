@@ -7,7 +7,25 @@ import {
 } from "./mappers";
 import type { CandidateCurrentAssignmentUi, PlacementListRowUi } from "./types";
 
-const placementInclude = {
+export type PlacementCandidateOption = {
+  id: string;
+  name: string;
+};
+
+export type PlacementVacancyOption = {
+  id: string;
+  title: string;
+  companyId: string;
+  companyName: string;
+};
+
+const placementSelect = {
+  id: true,
+  startDate: true,
+  endDate: true,
+  status: true,
+  rateClient: true,
+  rateCandidate: true,
   candidate: { select: { id: true, firstName: true, lastName: true } },
   vacancy: { select: { id: true, title: true } },
   company: { select: { id: true, name: true } },
@@ -32,7 +50,7 @@ export async function listPlacementsForActiveEmployeesUi(): Promise<
   PlacementListRowUi[]
 > {
   const rows = await prisma.placement.findMany({
-    include: placementInclude,
+    select: placementSelect,
     orderBy: { startDate: "desc" },
   });
   return sortPlacementsForDirectory(rows as unknown as PlacementWithRelations[]).map(
@@ -45,12 +63,45 @@ export async function listPlacementsForCompanyUi(
 ): Promise<PlacementListRowUi[]> {
   const rows = await prisma.placement.findMany({
     where: { companyId },
-    include: placementInclude,
+    select: placementSelect,
     orderBy: { startDate: "desc" },
   });
   return sortPlacementsForDirectory(rows as unknown as PlacementWithRelations[]).map(
     mapPlacementToListRowUi,
   );
+}
+
+export async function listCandidatesForPlacementForm(): Promise<
+  PlacementCandidateOption[]
+> {
+  const rows = await prisma.candidate.findMany({
+    select: { id: true, firstName: true, lastName: true },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+  return rows.map((c) => ({
+    id: c.id,
+    name: `${c.firstName} ${c.lastName}`.trim(),
+  }));
+}
+
+export async function listVacanciesForPlacementForm(): Promise<
+  PlacementVacancyOption[]
+> {
+  const rows = await prisma.vacancy.findMany({
+    select: {
+      id: true,
+      title: true,
+      opportunity: { select: { company: { select: { id: true, name: true } } } },
+    },
+    orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
+  });
+
+  return rows.map((v) => ({
+    id: v.id,
+    title: v.title,
+    companyId: v.opportunity.company.id,
+    companyName: v.opportunity.company.name,
+  }));
 }
 
 /** Most recent active assignment for the candidate profile, if any. */
@@ -60,7 +111,7 @@ export async function getCurrentAssignmentForCandidateUi(
   const row = await prisma.placement.findFirst({
     where: { candidateId, status: "ACTIVE" },
     orderBy: { startDate: "desc" },
-    include: placementInclude,
+    select: placementSelect,
   });
   return row
     ? mapPlacementToCurrentAssignmentUi(row as unknown as PlacementWithRelations)

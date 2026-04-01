@@ -5,7 +5,6 @@ const SALES_BLOCKED_PREFIXES = [
   "/skills",
   "/matching",
   "/applications",
-  "/active-employees",
 ] as const;
 
 export function isSalesBlockedPath(pathname: string): boolean {
