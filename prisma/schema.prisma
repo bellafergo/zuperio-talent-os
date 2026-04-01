@@ -356,6 +356,10 @@ model WeeklyLog {
   hoursTotal    Decimal? @db.Decimal(6, 2)
   status        WeeklyLogStatus @default(DRAFT)
 
+  /// Manual reminder tracking (future automation can build on this).
+  reminderLastSentAt DateTime?
+  reminderCount      Int @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -10,6 +10,8 @@ const weeklyLogSelect = {
   weekEnd: true,
   status: true,
   hoursTotal: true,
+  reminderLastSentAt: true,
+  reminderCount: true,
   summary: true,
   achievements: true,
   blockers: true,

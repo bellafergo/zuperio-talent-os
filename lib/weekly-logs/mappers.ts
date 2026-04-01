@@ -46,6 +46,8 @@ export type WeeklyLogWithPlacement = {
   weekEnd: Date;
   status: PrismaWeeklyLogStatus;
   hoursTotal: { toNumber?: () => number } | number | string | null;
+  reminderLastSentAt: Date | null;
+  reminderCount: number;
   summary: string | null;
   achievements: string | null;
   blockers: string | null;
@@ -60,9 +62,41 @@ function candidateName(c: WeeklyLogWithPlacement["placement"]["candidate"]): str
   return `${c.firstName} ${c.lastName}`.trim();
 }
 
+function formatReminderSentAt(d: Date): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(d);
+}
+
+function overdueMeta(row: Pick<WeeklyLogWithPlacement, "weekEnd" | "status">): {
+  isOverdue: boolean;
+  overdueReason: string | null;
+} {
+  // Simple rule:
+  // - Overdue only for DRAFT or RETURNED
+  // - Deadline = weekEnd + 2 days (grace)
+  const graceDays = 2;
+  if (row.status !== "DRAFT" && row.status !== "RETURNED") {
+    return { isOverdue: false, overdueReason: null };
+  }
+  const deadline = new Date(row.weekEnd);
+  deadline.setUTCDate(deadline.getUTCDate() + graceDays);
+  const now = new Date();
+  if (now.getTime() <= deadline.getTime()) {
+    return { isOverdue: false, overdueReason: null };
+  }
+  return {
+    isOverdue: true,
+    overdueReason: `Past deadline (week end + ${graceDays}d).`,
+  };
+}
+
 export function mapWeeklyLogToListRowUi(
   row: WeeklyLogWithPlacement,
 ): WeeklyLogListRowUi {
+  const overdue = overdueMeta(row);
   return {
     id: row.id,
     placementId: row.placementId,
@@ -78,6 +112,12 @@ export function mapWeeklyLogToListRowUi(
     summary: row.summary?.trim() || null,
     achievements: row.achievements?.trim() || null,
     blockers: row.blockers?.trim() || null,
+    isOverdue: overdue.isOverdue,
+    overdueReason: overdue.overdueReason,
+    reminderLastSentAtLabel: row.reminderLastSentAt
+      ? formatReminderSentAt(row.reminderLastSentAt)
+      : null,
+    reminderCount: row.reminderCount ?? 0,
   };
 }
 
