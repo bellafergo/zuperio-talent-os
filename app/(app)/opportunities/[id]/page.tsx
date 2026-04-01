@@ -2,6 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import {
   Card,
   CardContent,
@@ -9,9 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { canManageOpportunities } from "@/lib/auth/opportunity-access";
 import { formatOpportunityCurrency } from "@/lib/opportunities/mappers";
-import { getOpportunityByIdForUi } from "@/lib/opportunities/queries";
+import {
+  getOpportunityByIdForUi,
+  listCompaniesForOpportunityForm,
+  listUsersForOpportunityForm,
+} from "@/lib/opportunities/queries";
 
+import { OpportunityEditDialog } from "../_components/opportunity-edit-dialog";
 import { OpportunityStageBadge } from "../_components/opportunity-stage-badge";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +29,14 @@ type PageProps = {
 
 export default async function OpportunityDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const opportunity = await getOpportunityByIdForUi(id);
+  const session = await auth();
+  const canManage = canManageOpportunities(session?.user?.role);
+
+  const [opportunity, companies, owners] = await Promise.all([
+    getOpportunityByIdForUi(id),
+    canManage ? listCompaniesForOpportunityForm() : Promise.resolve([]),
+    canManage ? listUsersForOpportunityForm() : Promise.resolve([]),
+  ]);
 
   if (!opportunity) {
     notFound();
@@ -44,13 +58,22 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {opportunity.title}
-          </h1>
-          <div className="shrink-0">
-            <OpportunityStageBadge stage={opportunity.stage} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              {opportunity.title}
+            </h1>
+            <div className="shrink-0">
+              <OpportunityStageBadge stage={opportunity.stage} />
+            </div>
           </div>
+          {canManage ? (
+            <OpportunityEditDialog
+              opportunity={opportunity}
+              companies={companies}
+              owners={owners}
+            />
+          ) : null}
         </div>
         <p className="text-sm text-muted-foreground">
           Deal record · loaded from database

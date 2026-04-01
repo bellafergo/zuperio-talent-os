@@ -14,6 +14,8 @@ export type OpportunityListRow = {
   ownerId: string | null;
   ownerName: string;
   stage: OpportunityStageUi;
+  /** Prisma enum value for form defaults. */
+  stageValue: "PROSPECTING" | "QUALIFICATION" | "PROPOSAL" | "NEGOTIATION" | "CLOSED_WON" | "CLOSED_LOST";
   valueLabel: string;
   valueAmount: number | null;
   currency: string;

@@ -76,6 +76,7 @@ export function mapOpportunityToListRow(row: OpportunityWithRelations): Opportun
     ownerId: row.ownerId,
     ownerName: row.owner?.name?.trim() || "—",
     stage: prismaStageToUi[row.stage],
+    stageValue: row.stage,
     valueLabel: formatOpportunityCurrency(amount, currency),
     valueAmount: amount,
     currency,

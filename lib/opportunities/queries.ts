@@ -6,6 +6,9 @@ import {
 } from "./mappers";
 import type { OpportunityListRow } from "./types";
 
+export type OpportunityCompanyOption = { id: string; name: string };
+export type OpportunityOwnerOption = { id: string; name: string | null; email: string };
+
 export async function listOpportunitiesForUi(): Promise<OpportunityListRow[]> {
   const rows = await prisma.opportunity.findMany({
     include: {
@@ -32,4 +35,22 @@ export async function getOpportunityByIdForUi(
   return row
     ? mapOpportunityToListRow(row as unknown as OpportunityWithRelations)
     : null;
+}
+
+export async function listCompaniesForOpportunityForm(): Promise<
+  OpportunityCompanyOption[]
+> {
+  return prisma.company.findMany({
+    select: { id: true, name: true },
+    orderBy: [{ name: "asc" }],
+  });
+}
+
+export async function listUsersForOpportunityForm(): Promise<
+  OpportunityOwnerOption[]
+> {
+  return prisma.user.findMany({
+    select: { id: true, name: true, email: true },
+    orderBy: [{ name: "asc" }, { email: "asc" }],
+  });
 }
