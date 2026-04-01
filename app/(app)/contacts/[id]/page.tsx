@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
-import { DetailGrid, PageHeader, SectionCard } from "@/components/layout";
+import { PageHeader, SectionCard } from "@/components/layout";
 import {
   canManageContactMethodDirectory,
   canManageContacts,
@@ -9,6 +9,7 @@ import {
 import { getContactByIdForUi, listCompaniesForContactForm } from "@/lib/contacts/queries";
 
 import { ContactAddMethodDialog } from "../_components/contact-add-method-dialog";
+import { ContactDetailRecordCard } from "../_components/contact-detail-record-card";
 import { ContactEditDialog } from "../_components/contact-edit-dialog";
 import { ContactMethodsDirectorSection } from "../_components/contact-methods-director-section";
 import { ContactStatusBadge } from "../_components/contact-status-badge";
@@ -41,7 +42,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
         backHref="/contacts"
         backLabel="Volver a contactos"
         title={contact.displayName}
-        description="Persona ligada a una cuenta: campos desde PostgreSQL."
+        description="Ficha del contacto en la cuenta: empresa, puesto y canales principales."
         meta={<ContactStatusBadge status={contact.status} />}
         actions={
           canManage ? (
@@ -53,33 +54,22 @@ export default async function ContactDetailPage({ params }: PageProps) {
         }
       />
 
-      <p className="text-sm text-muted-foreground">
-        Última actualización del registro:{" "}
-        <span className="font-medium tabular-nums text-foreground">
-          {contact.updatedAtLabel}
-        </span>
-      </p>
-
-      <DetailGrid
-        items={[
-          { label: "Puesto / rol", value: contact.title },
-          { label: "Correo", value: contact.email },
-          { label: "Teléfono", value: contact.phone },
-          {
-            label: "Empresa",
-            value: contact.companyName,
-            href: `/companies/${contact.companyId}`,
-          },
-        ]}
+      <ContactDetailRecordCard
+        companyName={contact.companyName}
+        companyId={contact.companyId}
+        title={contact.title}
+        email={contact.email}
+        phone={contact.phone}
+        updatedAtLabel={contact.updatedAtLabel}
       />
 
       <SectionCard
         title="Notas"
-        description="Contexto, preferencias e historial de conversación."
+        description="Contexto interno del contacto (próximamente notas editables en esta ficha)."
       >
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Notas y entradas de línea de tiempo vivirán aquí a medida crezca la capa
-          CRM. Los campos principales del contacto arriba están en PostgreSQL.
+          Aquí vivirán notas y seguimiento comercial cuando activemos el editor en
+          esta vista.
         </p>
       </SectionCard>
 

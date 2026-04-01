@@ -13,7 +13,7 @@ export async function ContactMethodsDirectorSection({
   return (
     <SectionCard
       title="Historial de métodos de contacto"
-      description="Vista Director: todos los canales guardados, principal por tipo y desactivación sin borrar el archivo histórico en base de datos."
+      description="Todos los canales guardados. Revisa tipo, valor, principal y estado; las acciones no eliminan filas del historial."
       contentClassName="pt-4"
     >
       <ContactMethodsDirectorTable methods={methods} />
