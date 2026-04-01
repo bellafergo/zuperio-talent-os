@@ -10,6 +10,7 @@ import type {
 } from "@/lib/opportunities/queries";
 import { cn } from "@/lib/utils";
 
+import { CurrencySelect } from "@/components/currency-select";
 import { Input } from "@/components/ui/input";
 
 const selectClass = cn(
@@ -173,12 +174,9 @@ export function OpportunityRecordFormFields({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Currency</label>
-          <Input
-            name="currency"
-            placeholder="EUR"
-            maxLength={3}
-            defaultValue={defaults?.currency ?? "EUR"}
+          <label className="text-sm font-medium">Moneda</label>
+          <CurrencySelect
+            defaultValue={defaults?.currency ?? "MXN"}
             aria-invalid={Boolean(fieldErrors?.currency)}
           />
           {fieldErrors?.currency ? (

@@ -14,29 +14,31 @@ import type {
   ProposalTypeUi,
 } from "./types";
 
+import { DEFAULT_CURRENCY, formatMoney } from "@/lib/currency";
+
 import { computeIsFollowUpPending } from "./follow-up";
 
 const prismaStatusToUi: Record<PrismaProposalStatus, ProposalStatusUi> = {
-  DRAFT: "Draft",
-  SENT: "Sent",
-  VIEWED: "Viewed",
-  IN_NEGOTIATION: "In negotiation",
-  WON: "Won",
-  LOST: "Lost",
+  DRAFT: "Borrador",
+  SENT: "Enviada",
+  VIEWED: "Vista",
+  IN_NEGOTIATION: "En negociación",
+  WON: "Ganada",
+  LOST: "Perdida",
 };
 
 const prismaTypeToUi: Record<PrismaProposalType, ProposalTypeUi> = {
-  STAFF_AUG: "Staff augmentation",
+  STAFF_AUG: "Ampliación de personal",
 };
 
 const prismaFormatToUi: Record<PrismaProposalFormat, ProposalFormatUi> = {
-  SIMPLE: "Simple",
-  DETAILED: "Detailed",
+  SIMPLE: "Sencilla",
+  DETAILED: "Detallada",
 };
 
 const prismaSchemeToUi: Record<PrismaPricingScheme, PricingSchemeUi> = {
-  MIXED: "Mixed",
-  FULL_IMSS: "Full IMSS",
+  MIXED: "Mixto",
+  FULL_IMSS: "IMSS completo",
 };
 
 /** Prisma `Decimal` or plain number/string from DB/JSON */
@@ -58,16 +60,7 @@ function parseDecimal(value: DecimalSource): number | null {
 }
 
 function formatMoneyCompact(amount: number | null, currency: string): string {
-  if (amount == null) return "—";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "EUR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `${amount.toLocaleString("en-US")} ${currency}`;
-  }
+  return formatMoney(amount, currency?.trim() || DEFAULT_CURRENCY, 0);
 }
 
 function formatPercent(pct: number | null): string {
@@ -76,7 +69,7 @@ function formatPercent(pct: number | null): string {
 }
 
 function formatUpdatedAt(d: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-MX", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -161,7 +154,7 @@ function candidateName(row: ProposalWithRelations): string {
 }
 
 export function mapProposalToListRowUi(row: ProposalWithRelations): ProposalListRowUi {
-  const currency = row.currency?.trim() || "EUR";
+  const currency = row.currency?.trim() || DEFAULT_CURRENCY;
   const finalMonthly = parseDecimal(row.pricing?.finalMonthlyRate) ?? null;
   const finalMonthlyWithVat = parseDecimal(row.pricing?.finalMonthlyRateWithVAT) ?? null;
   const marginPct = parseDecimal(row.pricing?.grossMarginPercent) ?? null;

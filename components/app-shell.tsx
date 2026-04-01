@@ -16,16 +16,16 @@ import type { UserRole } from "@/generated/prisma/enums";
 function titleForPath(pathname: string, navItems: NavItemDef[]): string {
   const exact = navItems.find((item) => item.href === pathname);
   if (exact) return exact.label;
-  if (/^\/companies\/.+/.test(pathname)) return "Company";
-  if (/^\/contacts\/.+/.test(pathname)) return "Contact";
-  if (/^\/opportunities\/.+/.test(pathname)) return "Opportunity";
-  if (/^\/vacancies\/.+/.test(pathname)) return "Vacancy";
-  if (/^\/candidates\/.+/.test(pathname)) return "Candidate";
-  if (/^\/proposals\/.+/.test(pathname)) return "Proposal";
-  if (/^\/matching\/compare\/.+/.test(pathname)) return "Match comparison";
+  if (/^\/companies\/.+/.test(pathname)) return "Empresa";
+  if (/^\/contacts\/.+/.test(pathname)) return "Contacto";
+  if (/^\/opportunities\/.+/.test(pathname)) return "Oportunidad";
+  if (/^\/vacancies\/.+/.test(pathname)) return "Vacante";
+  if (/^\/candidates\/.+/.test(pathname)) return "Candidato";
+  if (/^\/proposals\/.+/.test(pathname)) return "Propuesta";
+  if (/^\/matching\/compare\/.+/.test(pathname)) return "Comparar match";
   if (pathname === "/matching") return "Matching";
   if (pathname === "/skills") return "Skills";
-  if (pathname === "/applications") return "Applications";
+  if (pathname === "/applications") return "Postulaciones";
   return "Zuperio Talent OS";
 }
 
@@ -49,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           {status === "loading" ? (
-            <p className="px-3 text-sm text-muted-foreground">Loading…</p>
+            <p className="px-3 text-sm text-muted-foreground">Cargando…</p>
           ) : (
             <ul className="space-y-0.5">
               {navItems.map((item) => {
@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto flex w-full max-w-[min(100%,90rem)] items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                Internal
+                Operación
               </p>
               <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">
                 {title}
@@ -111,7 +111,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     }
                   >
                     <LogOutIcon className="size-3.5" aria-hidden />
-                    Sign out
+                    Cerrar sesión
                   </Button>
                 </>
               ) : null}

@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/table";
 
 const SAMPLE_ROWS = [
-  { name: "Acme Corp", stage: "Negotiation", owner: "You" },
-  { name: "Northwind", stage: "Discovery", owner: "Team" },
-  { name: "Contoso", stage: "Qualified", owner: "You" },
+  { name: "Acme Corp", stage: "Negociación", owner: "Tú" },
+  { name: "Northwind", stage: "Descubrimiento", owner: "Equipo" },
+  { name: "Contoso", stage: "Calificada", owner: "Tú" },
 ] as const;
 
 export default function DashboardPage() {
@@ -27,10 +27,10 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Active opportunities", value: "—" },
-          { label: "Open vacancies", value: "—" },
-          { label: "Active employees", value: "—" },
-          { label: "Weekly logs due", value: "—" },
+          { label: "Oportunidades activas", value: "—" },
+          { label: "Vacantes abiertas", value: "—" },
+          { label: "Empleados activos", value: "—" },
+          { label: "Bitácoras pendientes", value: "—" },
         ].map((item) => (
           <Card key={item.label} className="shadow-sm" size="sm">
             <CardHeader className="pb-2">
@@ -45,34 +45,34 @@ export default function DashboardPage() {
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle>Overview</CardTitle>
+          <CardTitle>Resumen</CardTitle>
           <CardDescription>
-            Dashboard metrics and activity will appear here once backend data
-            is connected. Use the sidebar to navigate to each workspace area.
+            Las métricas en vivo aparecerán aquí cuando estén conectadas al
+            backend. Usa el menú lateral para ir a cada área de trabajo.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex max-w-md flex-col gap-2 sm:flex-row sm:items-center">
             <Input
               className="sm:flex-1"
-              placeholder="Search (placeholder)"
+              placeholder="Buscar (próximamente)"
               type="search"
-              aria-label="Search placeholder"
+              aria-label="Buscar"
             />
             <Button type="button" variant="secondary" className="shrink-0">
-              Filter
+              Filtrar
             </Button>
           </div>
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Sample table
+              Tabla de ejemplo
             </p>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Stage</TableHead>
-                  <TableHead>Owner</TableHead>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead>Etapa</TableHead>
+                  <TableHead>Responsable</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

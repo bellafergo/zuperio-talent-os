@@ -13,8 +13,8 @@ export function CompaniesHeader({
   return (
     <PageHeader
       variant="list"
-      title="Companies"
-      description="Accounts and relationships across your pipeline. Search and filter the directory below."
+      title="Empresas"
+      description="Cuentas y relaciones en tu embudo. Busca y filtra el directorio."
       actions={canManage ? <CompaniesNewCompanyDialog users={users} /> : null}
     />
   );

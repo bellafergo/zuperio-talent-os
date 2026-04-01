@@ -3,6 +3,8 @@ import type {
   VacancyStatus as PrismaVacancyStatus,
 } from "@/generated/prisma/enums";
 
+import { DEFAULT_CURRENCY, formatMoney } from "@/lib/currency";
+
 import type {
   VacancyListRow,
   VacancySeniorityUi,
@@ -49,16 +51,8 @@ function parseDecimal(
 
 export function formatTargetRate(amount: number | null, currency: string) {
   if (amount == null || Number.isNaN(amount)) return "—";
-  try {
-    const formatted = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "EUR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-    return `${formatted} / hr`;
-  } catch {
-    return `${amount.toLocaleString("en-US")} ${currency} / hr`;
-  }
+  const formatted = formatMoney(amount, currency?.trim() || DEFAULT_CURRENCY, 0);
+  return `${formatted} / h`;
 }
 
 function formatUpdatedAt(d: Date) {
@@ -87,7 +81,7 @@ export type VacancyWithRelations = {
 };
 
 export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
-  const currency = row.currency?.trim() || "EUR";
+  const currency = row.currency?.trim() || DEFAULT_CURRENCY;
   const amount = parseDecimal(row.targetRate);
   const skillsLine = row.skills?.trim() || null;
   const roleSummaryLine = row.roleSummary?.trim() || null;

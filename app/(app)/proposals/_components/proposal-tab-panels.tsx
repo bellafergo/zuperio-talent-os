@@ -85,7 +85,7 @@ export function ProposalOverviewPanel({
 }
 
 export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi }) {
-  const currency = proposal.currency?.trim() || "EUR";
+  const currency = proposal.currency?.trim() || "MXN";
   return (
     <SectionCard
       title="Pricing summary"

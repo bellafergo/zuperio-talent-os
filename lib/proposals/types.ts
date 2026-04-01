@@ -1,10 +1,10 @@
 export type ProposalStatusUi =
-  | "Draft"
-  | "Sent"
-  | "Viewed"
-  | "In negotiation"
-  | "Won"
-  | "Lost";
+  | "Borrador"
+  | "Enviada"
+  | "Vista"
+  | "En negociación"
+  | "Ganada"
+  | "Perdida";
 
 export type ProposalStatusValue =
   | "DRAFT"
@@ -13,9 +13,9 @@ export type ProposalStatusValue =
   | "IN_NEGOTIATION"
   | "WON"
   | "LOST";
-export type ProposalTypeUi = "Staff augmentation";
-export type ProposalFormatUi = "Simple" | "Detailed";
-export type PricingSchemeUi = "Mixed" | "Full IMSS";
+export type ProposalTypeUi = "Ampliación de personal";
+export type ProposalFormatUi = "Sencilla" | "Detallada";
+export type PricingSchemeUi = "Mixto" | "IMSS completo";
 
 export type ProposalListRowUi = {
   id: string;

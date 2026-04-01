@@ -47,7 +47,7 @@ export function ProposalCvDownloadButton({
       URL.revokeObjectURL(url);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "CV PDF export failed");
+      setError(e instanceof Error ? e.message : "No se pudo generar el CV");
     } finally {
       setPending(false);
     }
@@ -56,9 +56,10 @@ export function ProposalCvDownloadButton({
   return (
     <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">Zuperio CV PDF</p>
+        <p className="text-sm font-medium text-foreground">CV en PDF</p>
         <p className="text-xs text-muted-foreground">
-          Same template as the candidate print view — skills, placements, notes.
+          Misma plantilla que la vista de impresión del candidato (skills,
+          experiencia, notas).
         </p>
       </div>
       <div className="flex flex-col items-stretch gap-2 sm:items-end">
@@ -71,7 +72,7 @@ export function ProposalCvDownloadButton({
           className="gap-1.5"
         >
           <DownloadIcon className="size-3.5" aria-hidden />
-          {pending ? "Generating…" : "Download CV PDF"}
+          {pending ? "Generando…" : "Descargar CV (PDF)"}
         </Button>
         {error ? (
           <p className="max-w-[min(100%,420px)] text-right text-xs text-destructive">

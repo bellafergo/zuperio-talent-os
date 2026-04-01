@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { canViewCommercialDashboard } from "@/lib/auth/commercial-dashboard-access";
+import { formatCurrencyValueSum } from "@/lib/currency";
 import { getCommercialDashboardData } from "@/lib/proposals/commercial-dashboard-queries";
-import { formatProposalCurrencyAmount } from "@/lib/proposals/presentation";
 
 import {
   EmptyState,
@@ -30,30 +30,28 @@ import type {
 
 export const dynamic = "force-dynamic";
 
-const EUR = "EUR";
-
 function statusLabel(s: ProposalStatus): string {
   const m: Record<ProposalStatus, string> = {
-    DRAFT: "Draft",
-    SENT: "Sent",
-    VIEWED: "Viewed",
-    IN_NEGOTIATION: "In negotiation",
-    WON: "Won",
-    LOST: "Lost",
+    DRAFT: "Borrador",
+    SENT: "Enviada",
+    VIEWED: "Vista",
+    IN_NEGOTIATION: "En negociación",
+    WON: "Ganada",
+    LOST: "Perdida",
   };
   return m[s];
 }
 
 function formatScheme(s: PricingScheme): string {
-  return s === "FULL_IMSS" ? "Full IMSS" : "Mixed";
+  return s === "FULL_IMSS" ? "IMSS completo" : "Mixto";
 }
 
 function formatFormat(f: ProposalFormat): string {
-  return f === "DETAILED" ? "Detailed" : "Simple";
+  return f === "DETAILED" ? "Detallada" : "Sencilla";
 }
 
 function formatSentAt(d: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-MX", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "UTC",
@@ -71,91 +69,110 @@ export default async function CommercialDashboardPage() {
 
   const d = await getCommercialDashboardData();
 
-  const fmt = (n: number) => formatProposalCurrencyAmount(n, EUR, 0);
+  const fmtSum = (b: Parameters<typeof formatCurrencyValueSum>[0]) =>
+    formatCurrencyValueSum(b, 0);
   const pct = (n: number | null) =>
-    n == null ? "—" : `${n.toFixed(1)}%`;
+    n == null ? "—" : `${n.toFixed(1).replace(".", ",")}%`;
 
   return (
     <>
       <PageHeader
         variant="list"
-        eyebrow="Commercial"
-        title="Dashboard"
-        description="Live proposal pipeline and monthly-rate economics from saved pricing. Figures are deterministic; mixed currencies are not normalised."
+        eyebrow="Comercial"
+        title="Tablero"
+        description="Embudo de propuestas e importes mensuales según precios guardados. Sin conversión de divisa: MXN y USD se muestran por separado."
       />
 
       <div className="space-y-10 rounded-2xl border border-border/70 bg-gradient-to-b from-muted/40 via-muted/15 to-transparent p-5 ring-1 ring-foreground/[0.04] sm:p-6">
         <section className="space-y-4">
           <SectionHeading
-            title="Pipeline counts"
+            title="Embudo por etapa"
             prominence="lead"
-            description="Volume by stage — same definitions as the proposals list."
+            description="Mismas definiciones que el listado de propuestas."
           />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
             <KPIStatCard label="Total" value={String(d.counts.total)} />
-            <KPIStatCard label="Draft" value={String(d.counts.draft)} />
-            <KPIStatCard label="Sent" value={String(d.counts.sent)} />
+            <KPIStatCard label="Borrador" value={String(d.counts.draft)} />
+            <KPIStatCard label="Enviadas" value={String(d.counts.sent)} />
+            <KPIStatCard label="Vistas" value={String(d.counts.viewed)} />
             <KPIStatCard
-              label="Follow-up due"
+              label="Seguimiento"
               value={String(d.counts.followUpPending)}
               emphasis={d.counts.followUpPending > 0}
             />
             <KPIStatCard
-              label="In negotiation"
+              label="En negociación"
               value={String(d.counts.inNegotiation)}
             />
-            <KPIStatCard label="Won" value={String(d.counts.won)} emphasis />
-            <KPIStatCard label="Lost" value={String(d.counts.lost)} />
+            <KPIStatCard label="Ganadas" value={String(d.counts.won)} emphasis />
+            <KPIStatCard label="Perdidas" value={String(d.counts.lost)} />
           </div>
           <p className="text-xs text-muted-foreground">
-            Viewed: {d.counts.viewed} · Follow-up rule: Sent + sentAt older than 2
-            days (same as proposals list).
+            Vistas: {d.counts.viewed} · Seguimiento: enviada y más de 2 días sin
+            actualizar (igual que en propuestas).
           </p>
         </section>
 
         <section className="space-y-4 border-t border-border/60 pt-10">
           <SectionHeading
-            title="Revenue (monthly rate)"
+            title="Ingresos (tarifa mensual)"
             prominence="lead"
-            description="Sums use finalMonthlyRate where pricing exists. Pipeline (non-lost) includes Draft, Sent, Viewed, In negotiation, and Won. Lost is excluded from that subtotal."
+            description="Suma de tarifa final donde hay precios. Pipeline (no perdidas) incluye borrador, enviada, vista, negociación y ganada. Perdidas aparte."
           />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <KPIStatCard
-              label="Pipeline (non-lost)"
-              value={fmt(d.revenue.pipelineNonLost)}
+              label="Pipeline (no perdidas)"
+              value={fmtSum(d.revenue.pipelineNonLost)}
               emphasis
             />
-            <KPIStatCard label="Sent (value)" value={fmt(d.revenue.pipelineSent)} />
             <KPIStatCard
-              label="Negotiation (value)"
-              value={fmt(d.revenue.pipelineNegotiation)}
+              label="Enviadas (valor)"
+              value={fmtSum(d.revenue.pipelineSent)}
             />
-            <KPIStatCard label="Won (value)" value={fmt(d.revenue.won)} emphasis />
-            <KPIStatCard label="Lost (value)" value={fmt(d.revenue.lost)} />
-            <KPIStatCard label="Avg margin %" value={pct(d.revenue.avgMarginPercent)} />
             <KPIStatCard
-              label="Avg proposal value"
+              label="Negociación (valor)"
+              value={fmtSum(d.revenue.pipelineNegotiation)}
+            />
+            <KPIStatCard
+              label="Ganadas (valor)"
+              value={fmtSum(d.revenue.won)}
+              emphasis
+            />
+            <KPIStatCard label="Perdidas (valor)" value={fmtSum(d.revenue.lost)} />
+            <KPIStatCard
+              label="Margen medio %"
+              value={pct(d.revenue.avgMarginPercent)}
+            />
+            <KPIStatCard
+              label="Valor medio (nominal)"
               value={
                 d.revenue.avgProposalValue == null
                   ? "—"
-                  : fmt(Math.round(d.revenue.avgProposalValue * 100) / 100)
+                  : (Math.round(d.revenue.avgProposalValue * 100) / 100).toLocaleString(
+                      "es-MX",
+                      { maximumFractionDigits: 0 },
+                    )
               }
             />
           </div>
+          <p className="text-xs text-muted-foreground">
+            El valor medio es aritmético sin tipo de cambio; úsalo solo como referencia
+            si mezclas monedas.
+          </p>
         </section>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionCard
-          title="By status"
-          description="Count and sum of final monthly rate"
+          title="Por estado"
+          description="Conteo y suma de tarifa mensual (MXN / USD por separado)"
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="text-right">Cantidad</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -164,7 +181,7 @@ export default async function CommercialDashboardPage() {
                   <TableCell>{statusLabel(r.status)}</TableCell>
                   <TableCell className="text-right tabular-nums">{r.count}</TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {fmt(r.valueSum)}
+                    {fmtSum(r.valueSum)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -173,22 +190,22 @@ export default async function CommercialDashboardPage() {
         </SectionCard>
 
         <SectionCard
-          title="By company"
-          description="Top 15 by pipeline value on this proposal set"
+          title="Por empresa"
+          description="Top 15 por valor en este conjunto de propuestas"
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Company</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>Empresa</TableHead>
+                <TableHead className="text-right">Cantidad</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {d.byCompany.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3} className="text-muted-foreground">
-                    No proposals yet.
+                    Sin propuestas aún.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -204,7 +221,7 @@ export default async function CommercialDashboardPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{r.count}</TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground">
-                      {fmt(r.valueSum)}
+                      {fmtSum(r.valueSum)}
                     </TableCell>
                   </TableRow>
                 ))
@@ -216,15 +233,15 @@ export default async function CommercialDashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <SectionCard
-          title="By owner"
-          description="Created-by user on the proposal"
+          title="Por responsable"
+          description="Usuario que creó la propuesta"
         >
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Owner</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>Responsable</TableHead>
+                <TableHead className="text-right">Cantidad</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -233,7 +250,7 @@ export default async function CommercialDashboardPage() {
                   <TableCell>{r.label}</TableCell>
                   <TableCell className="text-right tabular-nums">{r.count}</TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {fmt(r.valueSum)}
+                    {fmtSum(r.valueSum)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -241,13 +258,13 @@ export default async function CommercialDashboardPage() {
           </Table>
         </SectionCard>
 
-        <SectionCard title="By format">
+        <SectionCard title="Por formato">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Format</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>Formato</TableHead>
+                <TableHead className="text-right">Cantidad</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -256,7 +273,7 @@ export default async function CommercialDashboardPage() {
                   <TableCell>{formatFormat(r.format)}</TableCell>
                   <TableCell className="text-right tabular-nums">{r.count}</TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {fmt(r.valueSum)}
+                    {fmtSum(r.valueSum)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -264,13 +281,13 @@ export default async function CommercialDashboardPage() {
           </Table>
         </SectionCard>
 
-        <SectionCard title="By pricing scheme">
+        <SectionCard title="Por esquema de precios">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Scheme</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>Esquema</TableHead>
+                <TableHead className="text-right">Cantidad</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -279,7 +296,7 @@ export default async function CommercialDashboardPage() {
                   <TableCell>{formatScheme(r.scheme)}</TableCell>
                   <TableCell className="text-right tabular-nums">{r.count}</TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {fmt(r.valueSum)}
+                    {fmtSum(r.valueSum)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -289,30 +306,30 @@ export default async function CommercialDashboardPage() {
       </div>
 
       <SectionCard
-        title="Follow-up due"
+        title="Seguimiento pendiente"
         description={
           <>
-            Sent status, more than 2 days since{" "}
-            <span className="font-medium text-foreground">sentAt</span> — oldest
-            first
+            Estado enviada y más de 2 días desde{" "}
+            <span className="font-medium text-foreground">fecha de envío</span>{" "}
+            — primero las más antiguas
           </>
         }
       >
         {d.followUps.length === 0 ? (
           <EmptyState
             variant="embedded"
-            title="None right now"
-            description="No proposals are currently in the follow-up window."
+            title="Ninguna por ahora"
+            description="No hay propuestas en ventana de seguimiento."
           />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Proposal</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Sent</TableHead>
-                <TableHead className="text-right">Follow-ups logged</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Propuesta</TableHead>
+                <TableHead>Empresa</TableHead>
+                <TableHead>Enviada</TableHead>
+                <TableHead className="text-right">Seguimientos</TableHead>
+                <TableHead>Estado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -323,7 +340,7 @@ export default async function CommercialDashboardPage() {
                       href={`/proposals/${r.id}`}
                       className="font-medium underline-offset-4 hover:underline"
                     >
-                      Open
+                      Abrir
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{r.companyName}</TableCell>

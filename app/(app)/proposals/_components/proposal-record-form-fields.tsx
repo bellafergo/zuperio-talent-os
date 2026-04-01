@@ -20,6 +20,7 @@ import type {
 } from "@/lib/proposals/types";
 import { cn } from "@/lib/utils";
 
+import { CurrencySelect } from "@/components/currency-select";
 import { Input } from "@/components/ui/input";
 
 const selectClass = cn(
@@ -311,12 +312,9 @@ export function ProposalRecordFormFields({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Currency</label>
-          <Input
-            name="currency"
-            maxLength={3}
-            placeholder="EUR"
-            defaultValue={defaults?.currency ?? "EUR"}
+          <label className="text-sm font-medium">Moneda</label>
+          <CurrencySelect
+            defaultValue={defaults?.currency ?? "MXN"}
             aria-invalid={Boolean(fieldErrors?.currency)}
           />
           {fieldErrors?.currency ? (

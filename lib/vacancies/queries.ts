@@ -1,3 +1,4 @@
+import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { prisma } from "@/lib/prisma";
 
 import { mapVacancyToListRow, type VacancyWithRelations } from "./mappers";
@@ -113,7 +114,7 @@ export async function getVacancyEditData(
     seniorityValue: row.seniority as VacancyEditData["seniorityValue"],
     statusValue: row.status as VacancyEditData["statusValue"],
     targetRateAmount: normalizedAmount,
-    currency: row.currency?.trim() || "EUR",
+    currency: row.currency?.trim() || DEFAULT_CURRENCY,
     roleSummaryLine: row.roleSummary?.trim() || null,
     requirements: row.skillRequirements.map((r) => ({
       skillId: r.skillId,

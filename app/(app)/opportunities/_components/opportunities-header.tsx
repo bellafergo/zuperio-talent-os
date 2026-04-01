@@ -18,8 +18,8 @@ export function OpportunitiesHeader({
   return (
     <PageHeader
       variant="list"
-      title="Opportunities"
-      description="Pipeline and deal tracking tied to accounts. Data comes from PostgreSQL; search and filters apply to the loaded page."
+      title="Oportunidades"
+      description="Embudo y seguimiento de deals por cuenta. Búsqueda y filtros sobre la página cargada."
       actions={
         canManage ? (
           <OpportunitiesNewOpportunityDialog companies={companies} owners={owners} />

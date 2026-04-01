@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
-import { PageHeader, SectionCard } from "@/components/layout";
+import { PageHeader } from "@/components/layout";
 import {
   canManageProposals,
   canSendProposalClientEmail,
@@ -23,8 +23,7 @@ import { ProposalDocumentPreview } from "../_components/proposal-document-previe
 import { ProposalEditDialog } from "../_components/proposal-edit-dialog";
 import { ProposalStatusBadge } from "../_components/proposal-status-badge";
 import { ProposalEmailDraftPanel } from "../_components/proposal-email-draft-panel";
-import { ProposalCvDownloadButton } from "../_components/proposal-cv-download-button";
-import { ProposalPdfDownloadButton } from "../_components/proposal-pdf-download-button";
+import { ProposalExportsSection } from "../_components/proposal-exports-section";
 import {
   ProposalOverviewPanel,
   ProposalPricingPanel,
@@ -74,11 +73,11 @@ export default async function ProposalDetailPage({ params }: PageProps) {
     <div className="space-y-8">
       <PageHeader
         variant="detail"
-        eyebrow="Client proposal"
+        eyebrow="Propuesta comercial"
         backHref="/proposals"
-        backLabel="Back to proposals"
+        backLabel="Volver a propuestas"
         title={proposal.companyName}
-        description="Deterministic pricing, PDF-ready document, structured candidate fit, and commercial tracking — built for delivery and review."
+        description="Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial."
         meta={
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <ProposalStatusBadge label={proposal.status} value={proposal.statusValue} />
@@ -126,17 +125,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         pricing={<ProposalPricingPanel proposal={proposal} />}
         preview={
           <div className="space-y-6">
-            <SectionCard
-              title="Exports"
-              description="Download PDF and candidate CV for client delivery."
-            >
-              <div className="flex flex-wrap gap-3">
-                <ProposalPdfDownloadButton proposalId={proposal.id} />
-                {proposal.candidateId ? (
-                  <ProposalCvDownloadButton candidateId={proposal.candidateId} />
-                ) : null}
-              </div>
-            </SectionCard>
+            <ProposalExportsSection proposal={proposal} />
             <ProposalDocumentPreview
               proposal={proposal}
               preparedByDisplay={preparedByDisplay}

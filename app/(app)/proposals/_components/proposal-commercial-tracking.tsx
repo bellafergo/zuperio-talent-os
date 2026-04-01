@@ -67,22 +67,22 @@ export function ProposalCommercialTracking({
     setError(null);
     startTransition(async () => {
       const r = await action();
-      if (!r.ok) setError(r.message ?? "Action failed");
+      if (!r.ok) setError(r.message ?? "No se pudo completar la acción");
       else router.refresh();
     });
   }
 
   return (
     <SectionCard
-      title="Commercial tracking"
-      description="Pipeline timing and follow-up log — visible at a glance for stakeholder reviews."
+      title="Seguimiento comercial"
+      description="Tiempos de embudo y bitácora de seguimientos."
       contentClassName="space-y-4 pt-4"
     >
       <div className="grid gap-3 sm:grid-cols-3">
-        <TrackingStat label="Sent to client" value={sentAtLabel} />
-        <TrackingStat label="Last follow-up logged" value={lastFollowUpAtLabel} />
+        <TrackingStat label="Enviada al cliente" value={sentAtLabel} />
+        <TrackingStat label="Último seguimiento" value={lastFollowUpAtLabel} />
         <TrackingStat
-          label="Follow-ups logged"
+          label="Seguimientos registrados"
           value={String(followUpCount)}
           highlight={isFollowUpPending}
         />
@@ -90,14 +90,12 @@ export function ProposalCommercialTracking({
 
       {isFollowUpPending ? (
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-xs leading-relaxed text-amber-950 dark:text-amber-100">
-          Follow-up due: this proposal has been in{" "}
-          <span className="font-semibold">Sent</span> for more than 2 days since{" "}
-          <span className="font-semibold">sentAt</span>.
+          Seguimiento pendiente: la propuesta lleva más de 2 días en estado{" "}
+          <span className="font-semibold">Enviada</span> desde la fecha de envío.
         </p>
       ) : statusValue === "SENT" ? (
         <p className="text-xs text-muted-foreground">
-          Not yet in the 2-day follow-up window (or{" "}
-          <span className="font-medium">sentAt</span> is not set).
+          Aún no entra en ventana de seguimiento de 2 días (o falta fecha de envío).
         </p>
       ) : null}
 
@@ -106,7 +104,7 @@ export function ProposalCommercialTracking({
       {canManage ? (
         <div className="flex flex-col gap-2 border-t border-border pt-4">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Actions
+            Acciones
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -118,7 +116,7 @@ export function ProposalCommercialTracking({
                 run(() => setProposalPipelineStatus(proposalId, "IN_NEGOTIATION"))
               }
             >
-              Mark as negotiation
+              Marcar en negociación
             </Button>
             <Button
               type="button"
@@ -127,7 +125,7 @@ export function ProposalCommercialTracking({
               disabled={pending || statusValue === "WON"}
               onClick={() => run(() => setProposalPipelineStatus(proposalId, "WON"))}
             >
-              Mark as won
+              Marcar ganada
             </Button>
             <Button
               type="button"
@@ -136,7 +134,7 @@ export function ProposalCommercialTracking({
               disabled={pending || statusValue === "LOST"}
               onClick={() => run(() => setProposalPipelineStatus(proposalId, "LOST"))}
             >
-              Mark as lost
+              Marcar perdida
             </Button>
             <Button
               type="button"
@@ -145,13 +143,13 @@ export function ProposalCommercialTracking({
               disabled={pending || terminal}
               onClick={() => run(() => markProposalFollowUpSent(proposalId))}
             >
-              Mark follow-up sent
+              Registrar seguimiento enviado
             </Button>
           </div>
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Only Sales and Director can change pipeline status or log follow-ups.
+          Solo ventas y dirección pueden cambiar el estado o registrar seguimientos.
         </p>
       )}
     </SectionCard>

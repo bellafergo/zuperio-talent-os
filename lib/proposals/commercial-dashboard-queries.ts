@@ -5,6 +5,11 @@ import type {
 } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 
+import {
+  addToCurrencySum,
+  emptyCurrencySum,
+  type CurrencyValueSum,
+} from "@/lib/currency";
 import { prisma } from "@/lib/prisma";
 
 import { computeIsFollowUpPending } from "./follow-up";
@@ -12,6 +17,7 @@ import { computeIsFollowUpPending } from "./follow-up";
 type ProposalRow = {
   id: string;
   status: ProposalStatus;
+  currency: string;
   sentAt: Date | null;
   followUpCount: number;
   format: ProposalFormat;
@@ -38,36 +44,40 @@ function marginPercent(p: ProposalRow["pricing"]): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function sumNumeric(s: CurrencyValueSum): number {
+  return s.mxn + s.usd + s.other;
+}
+
 export type StatusBreakdownRow = {
   status: ProposalStatus;
   count: number;
-  valueSum: number;
+  valueSum: CurrencyValueSum;
 };
 
 export type CompanyBreakdownRow = {
   companyId: string;
   companyName: string;
   count: number;
-  valueSum: number;
+  valueSum: CurrencyValueSum;
 };
 
 export type OwnerBreakdownRow = {
   userId: string | null;
   label: string;
   count: number;
-  valueSum: number;
+  valueSum: CurrencyValueSum;
 };
 
 export type FormatBreakdownRow = {
   format: ProposalFormat;
   count: number;
-  valueSum: number;
+  valueSum: CurrencyValueSum;
 };
 
 export type SchemeBreakdownRow = {
   scheme: PricingScheme;
   count: number;
-  valueSum: number;
+  valueSum: CurrencyValueSum;
 };
 
 export type FollowUpRow = {
@@ -90,15 +100,13 @@ export type CommercialDashboardData = {
     lost: number;
   };
   revenue: {
-    /** Sum of finalMonthlyRate for all proposals except LOST (null pricing excluded from sum). */
-    pipelineNonLost: number;
-    pipelineSent: number;
-    pipelineNegotiation: number;
-    won: number;
-    lost: number;
-    /** Simple mean of grossMarginPercent where present. */
+    pipelineNonLost: CurrencyValueSum;
+    pipelineSent: CurrencyValueSum;
+    pipelineNegotiation: CurrencyValueSum;
+    won: CurrencyValueSum;
+    lost: CurrencyValueSum;
     avgMarginPercent: number | null;
-    /** Simple mean of finalMonthlyRate where present. */
+    /** Arithmetic mean of final monthly rate (no FX); interpret with caution if mixed currencies. */
     avgProposalValue: number | null;
   };
   byStatus: StatusBreakdownRow[];
@@ -119,22 +127,22 @@ const STATUS_ORDER: ProposalStatus[] = [
 ];
 
 function ownerLabel(row: ProposalRow): string {
-  if (!row.createdById) return "Unassigned";
+  if (!row.createdById) return "Sin asignar";
   const n = row.createdBy?.name?.trim();
   if (n) return n;
-  return row.createdBy?.email ?? "Unknown user";
+  return row.createdBy?.email ?? "Usuario desconocido";
 }
 
 /**
  * Single fetch + deterministic in-memory aggregates.
- * Revenue uses `finalMonthlyRate` (monthly client rate, major currency units as stored per proposal).
- * Mixed currencies are summed numerically — see UI note.
+ * Revenue sums are split by proposal `currency` (MXN / USD / other); no FX conversion.
  */
 export async function getCommercialDashboardData(): Promise<CommercialDashboardData> {
   const rows = (await prisma.proposal.findMany({
     select: {
       id: true,
       status: true,
+      currency: true,
       sentAt: true,
       followUpCount: true,
       format: true,
@@ -163,20 +171,35 @@ export async function getCommercialDashboardData(): Promise<CommercialDashboardD
   let lost = 0;
   let followUpPending = 0;
 
-  let pipelineNonLost = 0;
-  let pipelineSent = 0;
-  let pipelineNegotiation = 0;
-  let wonRev = 0;
-  let lostRev = 0;
+  const pipelineNonLost = emptyCurrencySum();
+  const pipelineSent = emptyCurrencySum();
+  const pipelineNegotiation = emptyCurrencySum();
+  const wonRev = emptyCurrencySum();
+  const lostRev = emptyCurrencySum();
 
   const margins: number[] = [];
   const values: number[] = [];
 
-  const statusMap = new Map<ProposalStatus, { count: number; valueSum: number }>();
-  const companyMap = new Map<string, { name: string; count: number; valueSum: number }>();
-  const ownerMap = new Map<string | null, { label: string; count: number; valueSum: number }>();
-  const formatMap = new Map<ProposalFormat, { count: number; valueSum: number }>();
-  const schemeMap = new Map<PricingScheme, { count: number; valueSum: number }>();
+  const statusMap = new Map<
+    ProposalStatus,
+    { count: number; valueSum: CurrencyValueSum }
+  >();
+  const companyMap = new Map<
+    string,
+    { name: string; count: number; valueSum: CurrencyValueSum }
+  >();
+  const ownerMap = new Map<
+    string | null,
+    { label: string; count: number; valueSum: CurrencyValueSum }
+  >();
+  const formatMap = new Map<
+    ProposalFormat,
+    { count: number; valueSum: CurrencyValueSum }
+  >();
+  const schemeMap = new Map<
+    PricingScheme,
+    { count: number; valueSum: CurrencyValueSum }
+  >();
 
   const followUps: FollowUpRow[] = [];
 
@@ -222,41 +245,56 @@ export async function getCommercialDashboardData(): Promise<CommercialDashboardD
     }
 
     if (v != null) {
-      if (row.status !== "LOST") pipelineNonLost += v;
-      if (row.status === "SENT") pipelineSent += v;
-      if (row.status === "IN_NEGOTIATION") pipelineNegotiation += v;
-      if (row.status === "WON") wonRev += v;
-      if (row.status === "LOST") lostRev += v;
+      if (row.status !== "LOST") addToCurrencySum(pipelineNonLost, row.currency, v);
+      if (row.status === "SENT") addToCurrencySum(pipelineSent, row.currency, v);
+      if (row.status === "IN_NEGOTIATION")
+        addToCurrencySum(pipelineNegotiation, row.currency, v);
+      if (row.status === "WON") addToCurrencySum(wonRev, row.currency, v);
+      if (row.status === "LOST") addToCurrencySum(lostRev, row.currency, v);
     }
 
-    const stAgg = statusMap.get(row.status) ?? { count: 0, valueSum: 0 };
+    let stAgg = statusMap.get(row.status);
+    if (!stAgg) {
+      stAgg = { count: 0, valueSum: emptyCurrencySum() };
+      statusMap.set(row.status, stAgg);
+    }
     stAgg.count += 1;
-    if (v != null) stAgg.valueSum += v;
-    statusMap.set(row.status, stAgg);
+    if (v != null) addToCurrencySum(stAgg.valueSum, row.currency, v);
 
-    const coAgg =
-      companyMap.get(row.companyId) ?? { name: row.company.name, count: 0, valueSum: 0 };
+    let coAgg = companyMap.get(row.companyId);
+    if (!coAgg) {
+      coAgg = { name: row.company.name, count: 0, valueSum: emptyCurrencySum() };
+      companyMap.set(row.companyId, coAgg);
+    }
     coAgg.count += 1;
-    if (v != null) coAgg.valueSum += v;
-    companyMap.set(row.companyId, coAgg);
+    if (v != null) addToCurrencySum(coAgg.valueSum, row.currency, v);
 
     const ownerKey = row.createdById;
     const oLabel = ownerLabel(row);
-    const owAgg = ownerMap.get(ownerKey) ?? { label: oLabel, count: 0, valueSum: 0 };
+    let owAgg = ownerMap.get(ownerKey);
+    if (!owAgg) {
+      owAgg = { label: oLabel, count: 0, valueSum: emptyCurrencySum() };
+      ownerMap.set(ownerKey, owAgg);
+    }
     owAgg.count += 1;
-    if (v != null) owAgg.valueSum += v;
-    ownerMap.set(ownerKey, owAgg);
+    if (v != null) addToCurrencySum(owAgg.valueSum, row.currency, v);
 
-    const fAgg = formatMap.get(row.format) ?? { count: 0, valueSum: 0 };
+    let fAgg = formatMap.get(row.format);
+    if (!fAgg) {
+      fAgg = { count: 0, valueSum: emptyCurrencySum() };
+      formatMap.set(row.format, fAgg);
+    }
     fAgg.count += 1;
-    if (v != null) fAgg.valueSum += v;
-    formatMap.set(row.format, fAgg);
+    if (v != null) addToCurrencySum(fAgg.valueSum, row.currency, v);
 
     const scheme = row.pricing?.scheme ?? "MIXED";
-    const scAgg = schemeMap.get(scheme) ?? { count: 0, valueSum: 0 };
+    let scAgg = schemeMap.get(scheme);
+    if (!scAgg) {
+      scAgg = { count: 0, valueSum: emptyCurrencySum() };
+      schemeMap.set(scheme, scAgg);
+    }
     scAgg.count += 1;
-    if (v != null) scAgg.valueSum += v;
-    schemeMap.set(scheme, scAgg);
+    if (v != null) addToCurrencySum(scAgg.valueSum, row.currency, v);
   }
 
   followUps.sort((a, b) => a.sentAt.getTime() - b.sentAt.getTime());
@@ -267,7 +305,7 @@ export async function getCommercialDashboardData(): Promise<CommercialDashboardD
     values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null;
 
   const byStatus: StatusBreakdownRow[] = STATUS_ORDER.map((status) => {
-    const x = statusMap.get(status) ?? { count: 0, valueSum: 0 };
+    const x = statusMap.get(status) ?? { count: 0, valueSum: emptyCurrencySum() };
     return { status, count: x.count, valueSum: x.valueSum };
   });
 
@@ -278,7 +316,10 @@ export async function getCommercialDashboardData(): Promise<CommercialDashboardD
       count: x.count,
       valueSum: x.valueSum,
     }))
-    .sort((a, b) => b.valueSum - a.valueSum || b.count - a.count)
+    .sort(
+      (a, b) =>
+        sumNumeric(b.valueSum) - sumNumeric(a.valueSum) || b.count - a.count,
+    )
     .slice(0, 15);
 
   const byOwner: OwnerBreakdownRow[] = [...ownerMap.entries()]
@@ -288,18 +329,21 @@ export async function getCommercialDashboardData(): Promise<CommercialDashboardD
       count: x.count,
       valueSum: x.valueSum,
     }))
-    .sort((a, b) => b.valueSum - a.valueSum || b.count - a.count);
+    .sort(
+      (a, b) =>
+        sumNumeric(b.valueSum) - sumNumeric(a.valueSum) || b.count - a.count,
+    );
 
   const byFormat: FormatBreakdownRow[] = (["SIMPLE", "DETAILED"] as ProposalFormat[]).map(
     (format) => {
-      const x = formatMap.get(format) ?? { count: 0, valueSum: 0 };
+      const x = formatMap.get(format) ?? { count: 0, valueSum: emptyCurrencySum() };
       return { format, count: x.count, valueSum: x.valueSum };
     },
   );
 
   const byScheme: SchemeBreakdownRow[] = (["MIXED", "FULL_IMSS"] as PricingScheme[]).map(
     (scheme) => {
-      const x = schemeMap.get(scheme) ?? { count: 0, valueSum: 0 };
+      const x = schemeMap.get(scheme) ?? { count: 0, valueSum: emptyCurrencySum() };
       return { scheme, count: x.count, valueSum: x.valueSum };
     },
   );

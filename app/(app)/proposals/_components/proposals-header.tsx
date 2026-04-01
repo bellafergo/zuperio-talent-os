@@ -24,8 +24,8 @@ export function ProposalsHeader({
   return (
     <PageHeader
       variant="list"
-      title="Proposals"
-      description="Commercial proposals built from company, opportunity, vacancy, and candidate data. Pricing is deterministic and auditable; text is manual-first."
+      title="Propuestas"
+      description="Propuestas comerciales con empresa, oportunidad, vacante y candidato. Precios deterministas y auditables; textos manuales."
       actions={
         canManage ? (
           <ProposalsNewProposalDialog

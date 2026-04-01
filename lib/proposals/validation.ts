@@ -83,8 +83,10 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
   if (!statusRaw || !STATUS_SET.has(statusRaw)) fieldErrors.status = "Select a valid status.";
 
   const currencyRaw = opt(formData, "currency");
-  const currency = currencyRaw ? currencyRaw.toUpperCase() : "EUR";
-  if (!/^[A-Z]{3}$/.test(currency)) fieldErrors.currency = "Currency must be a 3-letter code.";
+  const currency = currencyRaw ? currencyRaw.toUpperCase() : "MXN";
+  if (currency !== "MXN" && currency !== "USD") {
+    fieldErrors.currency = "La moneda debe ser MXN o USD.";
+  }
 
   const validityDaysRaw = opt(formData, "validityDays");
   const validityDaysN = validityDaysRaw ? Number(validityDaysRaw) : 14;

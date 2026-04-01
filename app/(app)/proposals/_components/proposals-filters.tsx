@@ -8,7 +8,7 @@ import { ProposalStatus as StatusConst, type ProposalStatus } from "@/generated/
 import { Button } from "@/components/ui/button";
 
 const STATUS_OPTIONS: { value: ProposalStatus | ""; label: string }[] = [
-  { value: "", label: "All statuses" },
+  { value: "", label: "Todos los estados" },
   ...(
     [
       "DRAFT",
@@ -26,12 +26,12 @@ const STATUS_OPTIONS: { value: ProposalStatus | ""; label: string }[] = [
 
 function STATUS_LABEL(s: ProposalStatus): string {
   const map: Record<ProposalStatus, string> = {
-    DRAFT: "Draft",
-    SENT: "Sent",
-    VIEWED: "Viewed",
-    IN_NEGOTIATION: "In negotiation",
-    WON: "Won",
-    LOST: "Lost",
+    DRAFT: "Borrador",
+    SENT: "Enviada",
+    VIEWED: "Vista",
+    IN_NEGOTIATION: "En negociación",
+    WON: "Ganada",
+    LOST: "Perdida",
   };
   return map[s];
 }
@@ -74,7 +74,7 @@ export function ProposalsFilters() {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
       <label className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span className="shrink-0">Status</span>
+        <span className="shrink-0">Estado</span>
         <select
           className={selectClass}
           disabled={pending}
@@ -96,7 +96,7 @@ export function ProposalsFilters() {
           disabled={pending}
           onChange={(e) => setQuery({ followUp: e.target.checked })}
         />
-        Follow-up pending (&gt;2d since sent)
+        Seguimiento pendiente (&gt;2 días desde envío)
       </label>
       <Button
         type="button"
@@ -108,7 +108,7 @@ export function ProposalsFilters() {
           startTransition(() => router.push("/proposals"));
         }}
       >
-        Clear filters
+        Limpiar filtros
       </Button>
     </div>
   );

@@ -3,10 +3,10 @@ import type { ProposalsDashboardSummary } from "@/lib/proposals/queries";
 export function ProposalsSummaryStrip({ summary }: { summary: ProposalsDashboardSummary }) {
   const items = [
     { label: "Total", value: summary.total },
-    { label: "Sent", value: summary.sent },
-    { label: "Follow-up due", value: summary.followUpPending },
-    { label: "Won", value: summary.won },
-    { label: "Lost", value: summary.lost },
+    { label: "Enviadas", value: summary.sent },
+    { label: "Seguimiento", value: summary.followUpPending },
+    { label: "Ganadas", value: summary.won },
+    { label: "Perdidas", value: summary.lost },
   ] as const;
 
   return (

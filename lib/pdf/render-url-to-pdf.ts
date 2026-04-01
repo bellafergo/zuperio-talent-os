@@ -32,8 +32,9 @@ export async function renderUrlToPdfBuffer(
       await page.setExtraHTTPHeaders({ Cookie: cookieHeader });
     }
     await page.goto(printPageUrl, {
-      waitUntil: "networkidle0",
-      timeout: 45_000,
+      // networkidle0 is brittle with analytics/long-poll; idle2 is enough for static print HTML
+      waitUntil: "networkidle2",
+      timeout: 60_000,
     });
     await page.evaluate(() => document.fonts.ready).catch(() => undefined);
     const pdf = await page.pdf({

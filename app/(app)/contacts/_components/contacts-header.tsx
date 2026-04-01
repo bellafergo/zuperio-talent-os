@@ -13,8 +13,8 @@ export function ContactsHeader({
   return (
     <PageHeader
       variant="list"
-      title="Contacts"
-      description="People across your accounts. Records are loaded from PostgreSQL; search and filters run in the browser on the current page."
+      title="Contactos"
+      description="Personas ligadas a tus cuentas. Búsqueda y filtros en la página actual."
       actions={canManage ? <ContactsNewContactDialog companies={companies} /> : null}
     />
   );

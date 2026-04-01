@@ -22,7 +22,7 @@ export default async function MatchingComparePage({ params }: PageProps) {
         backHref="/matching"
         backLabel="Back to matching"
         eyebrow="Match intelligence"
-        title="Candidate vs vacancy"
+        title="Candidato vs vacante"
         description="Full structured comparison — same deterministic engine as pipeline scores. Details below."
       />
       <ComparisonMatrixCard bundle={bundle} layout="focus" />

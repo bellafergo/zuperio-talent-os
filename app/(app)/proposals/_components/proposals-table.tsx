@@ -19,7 +19,7 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center text-sm text-muted-foreground">
-        No proposals yet. Create the first proposal for an opportunity.
+        Aún no hay propuestas. Crea la primera desde una oportunidad.
       </div>
     );
   }
@@ -28,15 +28,15 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="max-w-[240px]">Company</TableHead>
-          <TableHead className="max-w-[220px]">Opportunity</TableHead>
-          <TableHead className="max-w-[220px]">Vacancy</TableHead>
-          <TableHead className="max-w-[180px]">Candidate</TableHead>
-          <TableHead className="w-[140px]">Status</TableHead>
-          <TableHead className="w-[120px]">Follow-up</TableHead>
-          <TableHead className="w-[140px] text-right">Monthly</TableHead>
-          <TableHead className="w-[120px] text-right">Margin</TableHead>
-          <TableHead className="w-[120px]">Updated</TableHead>
+          <TableHead className="max-w-[240px]">Empresa</TableHead>
+          <TableHead className="max-w-[220px]">Oportunidad</TableHead>
+          <TableHead className="max-w-[220px]">Vacante</TableHead>
+          <TableHead className="max-w-[180px]">Candidato</TableHead>
+          <TableHead className="w-[140px]">Estado</TableHead>
+          <TableHead className="w-[120px]">Seguimiento</TableHead>
+          <TableHead className="w-[140px] text-right">Mensual</TableHead>
+          <TableHead className="w-[120px] text-right">Margen</TableHead>
+          <TableHead className="w-[120px]">Actualizado</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -92,7 +92,7 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
             <TableCell>
               {r.isFollowUpPending ? (
                 <Badge variant="outline" className="border-amber-500/60 text-amber-900 dark:text-amber-200">
-                  Due
+                  Pendiente
                 </Badge>
               ) : (
                 <span className="text-muted-foreground">—</span>

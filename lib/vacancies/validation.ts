@@ -119,11 +119,11 @@ export function parseVacancyForm(formData: FormData): VacancyFormValidationResul
   }
 
   const currencyRaw = parseOptionalTrimmed(formData, "currency");
-  let currency: string | null = null;
+  let currency: string | null = "MXN";
   if (currencyRaw) {
     const c = currencyRaw.toUpperCase();
-    if (!/^[A-Z]{3}$/.test(c)) {
-      fieldErrors.currency = "Currency must be a 3-letter code (e.g. EUR).";
+    if (c !== "MXN" && c !== "USD") {
+      fieldErrors.currency = "La moneda debe ser MXN o USD.";
     } else {
       currency = c;
     }

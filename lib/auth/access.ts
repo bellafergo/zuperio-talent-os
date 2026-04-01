@@ -22,37 +22,37 @@ export type NavItemDef = {
 export const NAV_ITEMS_BY_ROLE: readonly NavItemDef[] = [
   {
     href: "/",
-    label: "Dashboard",
+    label: "Inicio",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
   {
     href: "/dashboard",
-    label: "Commercial",
+    label: "Comercial",
     roles: ["SALES", "DIRECTOR"],
   },
   {
     href: "/companies",
-    label: "Companies",
+    label: "Empresas",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
   {
     href: "/contacts",
-    label: "Contacts",
+    label: "Contactos",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
   {
     href: "/opportunities",
-    label: "Opportunities",
+    label: "Oportunidades",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
   {
     href: "/vacancies",
-    label: "Vacancies",
+    label: "Vacantes",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
   {
     href: "/candidates",
-    label: "Candidates",
+    label: "Candidatos",
     roles: ["RECRUITER", "DIRECTOR"],
   },
   {
@@ -67,22 +67,22 @@ export const NAV_ITEMS_BY_ROLE: readonly NavItemDef[] = [
   },
   {
     href: "/applications",
-    label: "Applications",
+    label: "Postulaciones",
     roles: ["RECRUITER", "DIRECTOR"],
   },
   {
     href: "/active-employees",
-    label: "Active Employees",
+    label: "Empleados activos",
     roles: ["RECRUITER", "DIRECTOR"],
   },
   {
     href: "/weekly-logs",
-    label: "Weekly Logs",
+    label: "Bitácoras semanales",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
   {
     href: "/proposals",
-    label: "Proposals",
+    label: "Propuestas",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
 ] as const;
@@ -95,10 +95,10 @@ export function navItemsForRole(role: UserRole | undefined): NavItemDef[] {
 export function roleLabel(role: UserRole): string {
   switch (role) {
     case "SALES":
-      return "Sales";
+      return "Ventas";
     case "RECRUITER":
-      return "Recruiter";
+      return "Reclutamiento";
     case "DIRECTOR":
-      return "Director";
+      return "Dirección";
   }
 }

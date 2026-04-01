@@ -15,6 +15,7 @@ import type {
 } from "@/lib/vacancies/types";
 import { cn } from "@/lib/utils";
 
+import { CurrencySelect } from "@/components/currency-select";
 import { Input } from "@/components/ui/input";
 import { VacancyRequirementsEditor } from "./vacancy-requirements-editor";
 
@@ -237,14 +238,11 @@ export function VacancyRecordFormFields({
             htmlFor={vacancyId ? `edit-currency-${vacancyId}` : "new-currency"}
             className="text-sm font-medium"
           >
-            Currency
+            Moneda
           </label>
-          <Input
+          <CurrencySelect
             id={vacancyId ? `edit-currency-${vacancyId}` : "new-currency"}
-            name="currency"
-            placeholder="EUR"
-            maxLength={3}
-            defaultValue={defaults?.currency ?? "EUR"}
+            defaultValue={defaults?.currency ?? "MXN"}
             aria-invalid={Boolean(fieldErrors?.currency)}
           />
           {fieldErrors?.currency ? (

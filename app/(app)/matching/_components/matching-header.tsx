@@ -4,14 +4,14 @@ export function MatchingHeader({ pairCount }: { pairCount: number }) {
   return (
     <PageHeader
       variant="list"
-      eyebrow="Talent matching"
+      eyebrow="Matching de talento"
       title="Matching"
-      description="Candidate–vacancy pairs scored from structured skills (requirements vs profile), seniority, availability (including active placements elsewhere), and role keywords. No AI — same inputs always yield the same score."
+      description="Pares candidato–vacante puntuados con skills estructurados, seniority, disponibilidad (incl. colocaciones activas) y palabras clave del rol. Sin IA: mismas entradas, mismo score."
       meta={
         <span className="text-sm tabular-nums text-muted-foreground">
           {pairCount === 0
-            ? "No scored pairs in catalog"
-            : `${pairCount.toLocaleString()} scored ${pairCount === 1 ? "pair" : "pairs"}`}
+            ? "Sin pares puntuados"
+            : `${pairCount.toLocaleString("es-MX")} ${pairCount === 1 ? "par" : "pares"} puntuados`}
         </span>
       }
     />

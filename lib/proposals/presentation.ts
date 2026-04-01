@@ -3,22 +3,14 @@
  * Does not compute pricing — only displays numbers already on the record.
  */
 
+import { DEFAULT_CURRENCY, formatMoney } from "@/lib/currency";
+
 export function formatProposalCurrencyAmount(
   amount: number | null | undefined,
   currency: string,
   maximumFractionDigits: 0 | 2 = 2,
 ): string {
-  if (amount == null) return "—";
-  const c = currency?.trim() || "EUR";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: c,
-      maximumFractionDigits,
-    }).format(amount);
-  } catch {
-    return `${amount.toLocaleString("en-US", { maximumFractionDigits })} ${c}`;
-  }
+  return formatMoney(amount, currency?.trim() || DEFAULT_CURRENCY, maximumFractionDigits);
 }
 
 export function formatProposalPercent(

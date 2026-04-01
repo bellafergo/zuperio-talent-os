@@ -43,7 +43,7 @@ export function ProposalPdfDownloadButton({ proposalId }: { proposalId: string }
       URL.revokeObjectURL(url);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "PDF export failed");
+      setError(e instanceof Error ? e.message : "No se pudo generar el PDF");
     } finally {
       setPending(false);
     }
@@ -52,10 +52,10 @@ export function ProposalPdfDownloadButton({ proposalId }: { proposalId: string }
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">Economic proposal PDF</p>
+        <p className="text-sm font-medium text-foreground">PDF de propuesta económica</p>
         <p className="text-xs text-muted-foreground">
-          Generated server-side from the same template as this preview (Simple or
-          Detailed, depending on the proposal format).
+          Misma plantilla que la vista previa (formato sencillo o detallado). Se
+          genera en el servidor al descargar; no usa IA.
         </p>
       </div>
       <div className="flex flex-col items-stretch gap-2 sm:items-end">
@@ -68,7 +68,7 @@ export function ProposalPdfDownloadButton({ proposalId }: { proposalId: string }
           className="gap-1.5"
         >
           <DownloadIcon className="size-3.5" aria-hidden />
-          {pending ? "Generating…" : "Download PDF"}
+          {pending ? "Generando…" : "Descargar PDF"}
         </Button>
         {error ? (
           <p className="max-w-[min(100%,420px)] text-right text-xs text-destructive">

@@ -26,11 +26,11 @@ export function ProposalDocumentPreview({
   preparedByDisplay,
   hidePrintHint = false,
 }: ProposalDocumentPreviewProps) {
-  const currency = proposal.currency?.trim() || "EUR";
+  const currency = proposal.currency?.trim() || "MXN";
   const isDetailed = proposal.formatValue === "DETAILED";
   const p = proposal.pricing;
 
-  const today = new Intl.DateTimeFormat("en-GB", {
+  const today = new Intl.DateTimeFormat("es-MX", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -58,7 +58,7 @@ export function ProposalDocumentPreview({
                 Zuperio
               </p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                Commercial proposal
+                Propuesta comercial
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 Staff augmentation · {proposal.format} · {proposal.type}
@@ -74,20 +74,20 @@ export function ProposalDocumentPreview({
         <section className="mt-6 grid gap-6 sm:grid-cols-2">
           <div>
             <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
-              Client
+              Cliente
             </h3>
             <p className="mt-2 text-sm font-semibold text-foreground">
               {proposal.companyName}
             </p>
             {proposal.opportunityTitle !== "—" ? (
               <p className="mt-1 text-xs text-muted-foreground">
-                Opportunity: {proposal.opportunityTitle}
+                Oportunidad: {proposal.opportunityTitle}
               </p>
             ) : null}
           </div>
           <div>
             <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
-              Prepared by
+              Elaborado por
             </h3>
             <p className="mt-2 text-sm font-semibold text-foreground">
               {preparedByDisplay}
@@ -97,15 +97,15 @@ export function ProposalDocumentPreview({
         </section>
 
         <section className="mt-8">
-          <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
-            Proposed resource
+            <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
+            Recurso propuesto
           </h3>
           <table className="mt-3">
             <thead>
               <tr>
-                <th>Candidate</th>
-                <th>Role / vacancy</th>
-                <th className="num">Monthly hours</th>
+                <th>Candidato</th>
+                <th>Rol / vacante</th>
+                <th className="num">Horas mensuales</th>
               </tr>
             </thead>
             <tbody>
@@ -128,7 +128,7 @@ export function ProposalDocumentPreview({
 
         <section className="mt-8">
           <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
-            {isDetailed ? "Economic breakdown" : "Pricing summary"}
+            {isDetailed ? "Desglose económico" : "Resumen de precios"}
           </h3>
           {p ? (
             isDetailed ? (

@@ -16,8 +16,8 @@ export function VacanciesHeader({
   return (
     <PageHeader
       variant="list"
-      title="Vacancies"
-      description="Open roles mapped to deals and accounts. Rows are loaded from PostgreSQL; filters apply to the current page in the browser."
+      title="Vacantes"
+      description="Roles abiertos ligados a oportunidades y cuentas. Los filtros aplican a la página cargada."
       actions={
         canManage ? (
           <VacanciesNewVacancyDialog opportunities={opportunities} skills={skills} />

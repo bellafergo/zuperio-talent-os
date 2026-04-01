@@ -13,8 +13,8 @@ export function CandidatesHeader({
   return (
     <PageHeader
       variant="list"
-      title="Candidates"
-      description="Consultant and contractor pool for staff augmentation. Profiles are stored in PostgreSQL; structured matching scores vacancies deterministically."
+      title="Candidatos"
+      description="Pool para staff augmentation. Perfiles en base de datos; el matching estructurado puntúa vacantes de forma determinista."
       actions={
         canManage ? (
           <CandidatesNewCandidateDialog skillsCatalog={skillsCatalog} />
