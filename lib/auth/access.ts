@@ -26,6 +26,11 @@ export const NAV_ITEMS_BY_ROLE: readonly NavItemDef[] = [
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
   },
   {
+    href: "/dashboard",
+    label: "Commercial",
+    roles: ["SALES", "DIRECTOR"],
+  },
+  {
     href: "/companies",
     label: "Companies",
     roles: ["SALES", "RECRUITER", "DIRECTOR"],
