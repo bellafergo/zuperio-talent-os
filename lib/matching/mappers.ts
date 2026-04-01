@@ -1,9 +1,4 @@
-import type {
-  MatchRecommendation as PrismaMatchRecommendation,
-  VacancySeniority as PrismaVacancySeniority,
-} from "@/generated/prisma/enums";
-
-import { prismaSeniorityToUi } from "@/lib/vacancies/mappers";
+import type { MatchRecommendation as PrismaMatchRecommendation } from "@/generated/prisma/enums";
 
 import type {
   CandidateMatchRowUi,
@@ -31,8 +26,6 @@ type CandidateMini = {
   id: string;
   firstName: string;
   lastName: string;
-  role: string;
-  seniority: PrismaVacancySeniority;
 };
 
 type VacancyMini = {
@@ -44,7 +37,7 @@ type VacancyMini = {
 export type MatchWithCandidate = {
   id: string;
   score: number;
-  skillsMatchNotes: string | null;
+  explanation: string;
   recommendation: PrismaMatchRecommendation;
   candidate: CandidateMini;
 };
@@ -52,6 +45,7 @@ export type MatchWithCandidate = {
 export type MatchWithVacancy = {
   id: string;
   score: number;
+  explanation: string;
   recommendation: PrismaMatchRecommendation;
   vacancy: VacancyMini;
 };
@@ -59,6 +53,7 @@ export type MatchWithVacancy = {
 export type MatchMatrixPrismaRow = {
   id: string;
   score: number;
+  explanation: string;
   recommendation: PrismaMatchRecommendation;
   candidate: CandidateMini;
   vacancy: VacancyMini;
@@ -73,11 +68,9 @@ export function mapMatchToVacancyRowUi(row: MatchWithCandidate): VacancyMatchRow
     matchId: row.id,
     candidateId: row.candidate.id,
     candidateName: candidateName(row.candidate),
-    candidateRole: row.candidate.role,
-    candidateSeniority: prismaSeniorityToUi[row.candidate.seniority],
     score: row.score,
     recommendation: mapMatchRecommendationToUi(row.recommendation),
-    skillsMatchNotes: row.skillsMatchNotes,
+    explanation: row.explanation,
   };
 }
 
@@ -89,6 +82,7 @@ export function mapMatchToCandidateRowUi(row: MatchWithVacancy): CandidateMatchR
     companyName: row.vacancy.opportunity.company.name,
     score: row.score,
     recommendation: mapMatchRecommendationToUi(row.recommendation),
+    explanation: row.explanation,
   };
 }
 
@@ -102,5 +96,6 @@ export function mapMatchToMatrixRowUi(row: MatchMatrixPrismaRow): MatchMatrixRow
     companyName: row.vacancy.opportunity.company.name,
     score: row.score,
     recommendation: mapMatchRecommendationToUi(row.recommendation),
+    explanation: row.explanation,
   };
 }

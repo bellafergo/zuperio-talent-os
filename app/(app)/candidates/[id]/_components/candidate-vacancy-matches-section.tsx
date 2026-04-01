@@ -28,22 +28,24 @@ export function CandidateVacancyMatchesSection({
       <CardHeader className="border-b border-border pb-4">
         <CardTitle className="text-base font-medium">Matching vacancies</CardTitle>
         <CardDescription>
-          Open roles ranked by the same v1 matching rules used across the platform.
+          Ranked by structured skill coverage, seniority, availability, and role
+          overlap (same engine as vacancy view).
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {matches.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No scored vacancy matches for this candidate yet.
+            No scored vacancy matches yet.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[220px]">Vacancy</TableHead>
+                <TableHead className="max-w-[200px]">Vacancy</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead className="w-[64px] text-right">Score</TableHead>
                 <TableHead className="w-[120px]">Match</TableHead>
+                <TableHead className="min-w-[220px]">Explanation</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -67,6 +69,14 @@ export function CandidateVacancyMatchesSection({
                     <MatchRecommendationBadge
                       recommendation={m.recommendation}
                     />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    <span
+                      className="line-clamp-2 text-sm leading-relaxed"
+                      title={m.explanation}
+                    >
+                      {m.explanation}
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}

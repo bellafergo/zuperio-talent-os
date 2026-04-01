@@ -26,11 +26,12 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="max-w-[160px]">Candidate</TableHead>
-          <TableHead className="max-w-[200px]">Vacancy</TableHead>
+          <TableHead className="max-w-[140px]">Candidate</TableHead>
+          <TableHead className="max-w-[160px]">Vacancy</TableHead>
           <TableHead>Company</TableHead>
-          <TableHead className="w-[64px] text-right">Score</TableHead>
-          <TableHead className="w-[120px]">Match</TableHead>
+          <TableHead className="w-[56px] text-right">Score</TableHead>
+          <TableHead className="w-[108px]">Match</TableHead>
+          <TableHead className="min-w-[200px]">Explanation</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -60,6 +61,14 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
             </TableCell>
             <TableCell>
               <MatchRecommendationBadge recommendation={r.recommendation} />
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              <span
+                className="line-clamp-2 text-sm leading-relaxed"
+                title={r.explanation}
+              >
+                {r.explanation}
+              </span>
             </TableCell>
           </TableRow>
         ))}

@@ -3,7 +3,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
-import { syncAllCandidateVacancyMatches } from "../lib/matching/sync";
+import { syncAllCandidateVacancyMatches } from "../lib/matching/service";
 
 import {
   SEED_CANDIDATE_SKILLS,

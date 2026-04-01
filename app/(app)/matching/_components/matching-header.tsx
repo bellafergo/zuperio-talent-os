@@ -5,9 +5,9 @@ export function MatchingHeader() {
         Matching
       </h1>
       <p className="max-w-2xl text-sm text-muted-foreground">
-        Candidate–vacancy pairs scored with deterministic rules (seniority,
-        availability, skills overlap, role keywords). No AI — same data always
-        produces the same score.
+        Candidate–vacancy pairs scored from structured skills (requirements vs
+        profile), seniority, availability (including active placements elsewhere),
+        and role keywords. No AI — same inputs always yield the same score.
       </p>
     </div>
   );

@@ -4,9 +4,8 @@ import type {
   VacancySeniority,
 } from "@/generated/prisma/enums";
 
-import { parseSkillTags } from "@/lib/candidates/mappers";
-
 import {
+  MATCH_AVAILABILITY_CAP_WHEN_BUSY_ELSEWHERE,
   MATCH_SCORE_PARTIAL_MIN,
   MATCH_SCORE_STRONG_MIN,
   MATCH_WEIGHTS,
@@ -48,23 +47,6 @@ function seniorityIndex(s: VacancySeniority): number {
   return SENIORITY_ORDER.indexOf(s);
 }
 
-function normalizeSkillToken(s: string): string {
-  return s
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/\.{2,}/g, ".");
-}
-
-function skillSetFromCsv(csv: string): Set<string> {
-  const set = new Set<string>();
-  for (const raw of parseSkillTags(csv)) {
-    const n = normalizeSkillToken(raw);
-    if (n) set.add(n);
-  }
-  return set;
-}
-
 function meaningfulTokens(text: string): string[] {
   const parts = text
     .toLowerCase()
@@ -74,151 +56,173 @@ function meaningfulTokens(text: string): string[] {
   return [...new Set(parts)];
 }
 
-function jaccard(a: Set<string>, b: Set<string>): number {
-  if (a.size === 0 || b.size === 0) return 0;
-  let inter = 0;
-  for (const x of a) {
-    if (b.has(x)) inter += 1;
-  }
-  const union = a.size + b.size - inter;
-  return union > 0 ? inter / union : 0;
-}
-
 function recommendationFromScore(score: number): MatchRecommendation {
   if (score >= MATCH_SCORE_STRONG_MIN) return "STRONG_MATCH";
   if (score >= MATCH_SCORE_PARTIAL_MIN) return "PARTIAL_MATCH";
   return "LOW_MATCH";
 }
 
-function truncateNote(s: string, max = 280): string {
+function truncateExplanation(s: string, max = 320): string {
   const t = s.trim();
   if (t.length <= max) return t;
   return `${t.slice(0, max - 1)}…`;
 }
 
-export type MatchCandidateInput = {
+// --- Public input shapes (plain data; no Prisma in signatures) ----------------
+
+export type CandidateSkillForMatch = {
+  skillId: string;
+  /** Catalog display name, for role overlap text only. */
+  skillName: string;
+  yearsExperience: number | null;
+};
+
+export type VacancyRequirementForMatch = {
+  skillId: string;
+  required: boolean;
+  minimumYears: number | null;
+};
+
+export type MatchCandidateStructuredInput = {
   seniority: VacancySeniority;
   availabilityStatus: CandidateAvailabilityStatus;
   role: string;
-  skills: string;
+  skills: CandidateSkillForMatch[];
 };
 
-export type MatchVacancyInput = {
+export type MatchVacancyStructuredInput = {
   seniority: VacancySeniority;
   title: string;
-  skills: string | null;
   roleSummary: string | null;
+  requirements: VacancyRequirementForMatch[];
+};
+
+export type MatchPlacementContext = {
+  /** Candidate has ACTIVE placement on a vacancy other than the one scored. */
+  busyOnOtherVacancy: boolean;
 };
 
 export type ComputedMatch = {
   score: number;
-  seniorityMatch: boolean;
-  availabilityMatch: boolean;
-  skillsMatchNotes: string | null;
   recommendation: MatchRecommendation;
+  explanation: string;
 };
 
-function seniorityBlock(
+function candidateSkillMap(skills: CandidateSkillForMatch[]) {
+  const m = new Map<string, { years: number | null; name: string }>();
+  for (const s of skills) {
+    m.set(s.skillId, { years: s.yearsExperience, name: s.skillName });
+  }
+  return m;
+}
+
+/**
+ * Skills: up to 40 pts from required coverage + minimum-years bonus; optional-only fallback.
+ */
+function scoreSkillsStructured(
+  requirements: VacancyRequirementForMatch[],
+  skills: CandidateSkillForMatch[],
+): { points: number; parts: string[] } {
+  const map = candidateSkillMap(skills);
+  const required = requirements.filter((r) => r.required);
+  const optional = requirements.filter((r) => !r.required);
+  const parts: string[] = [];
+
+  if (required.length > 0) {
+    const matchedReq = required.filter((r) => map.has(r.skillId));
+    const ratio = matchedReq.length / required.length;
+    const base = Math.round(ratio * 32);
+    parts.push(
+      `Required skills: ${matchedReq.length}/${required.length} covered (${Math.round(ratio * 100)}%).`,
+    );
+
+    const applicableMin = required.filter(
+      (r) => r.minimumYears != null && map.has(r.skillId),
+    );
+    let bonus = 0;
+    if (applicableMin.length > 0) {
+      let satisfied = 0;
+      for (const r of applicableMin) {
+        const y = map.get(r.skillId)?.years;
+        if (y != null && y >= (r.minimumYears ?? 0)) satisfied += 1;
+      }
+      bonus = Math.round((satisfied / applicableMin.length) * 8);
+      parts.push(
+        `Minimum years: ${satisfied}/${applicableMin.length} satisfied where specified.`,
+      );
+    } else {
+      bonus = Math.round(ratio * 8);
+      parts.push(
+        "No minimum-year bars on matched skills; small pro-rated bonus applied.",
+      );
+    }
+
+    return { points: Math.min(40, base + bonus), parts };
+  }
+
+  if (optional.length > 0) {
+    const matched = optional.filter((r) => map.has(r.skillId));
+    const ratio = matched.length / optional.length;
+    const pts = Math.round(ratio * 40);
+    parts.push(
+      `No required skills on requisition; nice-to-have overlap ${matched.length}/${optional.length}.`,
+    );
+    return { points: Math.min(40, pts), parts };
+  }
+
+  parts.push("No structured requirements on this vacancy; skills score 0.");
+  return { points: 0, parts };
+}
+
+function scoreSeniority(
   c: VacancySeniority,
   v: VacancySeniority,
-): { points: number; match: boolean; phrase: string } {
+): { points: number; phrase: string } {
   const diff = Math.abs(seniorityIndex(c) - seniorityIndex(v));
+  const max = MATCH_WEIGHTS.seniorityMax;
   if (diff === 0) {
-    return {
-      points: MATCH_WEIGHTS.seniorityMax,
-      match: true,
-      phrase: "Seniority aligns exactly.",
-    };
+    return { points: max, phrase: "Seniority matches the role level." };
   }
   if (diff === 1) {
     return {
-      points: Math.round(MATCH_WEIGHTS.seniorityMax * 0.72),
-      match: true,
-      phrase: "Seniority is adjacent (close enough for many mandates).",
+      points: Math.round(max * 0.72),
+      phrase: "Seniority is one step from target (often acceptable).",
     };
   }
   if (diff === 2) {
     return {
-      points: Math.round(MATCH_WEIGHTS.seniorityMax * 0.34),
-      match: false,
-      phrase: "Seniority gap is noticeable.",
+      points: Math.round(max * 0.36),
+      phrase: "Seniority is two steps from target.",
     };
   }
-  return {
-    points: 0,
-    match: false,
-    phrase: "Seniority is far from the target level.",
-  };
+  return { points: 0, phrase: "Seniority is far from the vacancy level." };
 }
 
-function availabilityBlock(
+function scoreAvailability(
   status: CandidateAvailabilityStatus,
-): { points: number; match: boolean; phrase: string } {
+): { points: number; phrase: string } {
+  const max = MATCH_WEIGHTS.availabilityMax;
   switch (status) {
     case "AVAILABLE":
-      return {
-        points: MATCH_WEIGHTS.availabilityMax,
-        match: true,
-        phrase: "Availability: ready for new work.",
-      };
+      return { points: max, phrase: "Availability: open for new work." };
     case "IN_PROCESS":
       return {
-        points: Math.round(MATCH_WEIGHTS.availabilityMax * 0.6),
-        match: true,
-        phrase: "Availability: in process — confirm dates before submission.",
+        points: Math.round(max * 0.6),
+        phrase: "Availability: in process — confirm capacity before submit.",
       };
     case "ASSIGNED":
       return {
-        points: Math.round(MATCH_WEIGHTS.availabilityMax * 0.2),
-        match: false,
-        phrase: "Availability: currently assigned.",
+        points: Math.round(max * 0.2),
+        phrase: "Availability: marked assigned.",
       };
     case "NOT_AVAILABLE":
-      return {
-        points: 0,
-        match: false,
-        phrase: "Availability: not available for new mandates.",
-      };
+      return { points: 0, phrase: "Availability: not available." };
   }
 }
 
-function skillsBlock(
-  candidateSkills: string,
-  vacancySkills: string | null,
-): { points: number; phrase: string; examples: string[] } {
-  const candSet = skillSetFromCsv(candidateSkills);
-  const vacSet = skillSetFromCsv(vacancySkills ?? "");
-
-  if (vacSet.size === 0 || candSet.size === 0) {
-    return {
-      points: 0,
-      phrase:
-        vacSet.size === 0
-          ? "No vacancy skill tags on file."
-          : "Candidate has no parsed skills.",
-      examples: [],
-    };
-  }
-
-  const inter: string[] = [];
-  for (const s of vacSet) {
-    if (candSet.has(s)) inter.push(s);
-  }
-
-  const jac = jaccard(candSet, vacSet);
-  const points = Math.round(jac * MATCH_WEIGHTS.skillsMax);
-  const examples = inter.slice(0, 4);
-  const phrase =
-    inter.length === 0
-      ? "No overlapping skills between vacancy tags and candidate profile."
-      : `Skills: ${inter.length} overlap${inter.length === 1 ? "" : "s"} with the requisition.`;
-
-  return { points, phrase, examples };
-}
-
-function roleOverlapBlock(
+function scoreRoleOverlap(
   candidateRole: string,
-  candidateSkills: string,
+  skillNames: string[],
   vacTitle: string,
   vacSummary: string | null,
 ): { points: number; phrase: string } {
@@ -226,53 +230,56 @@ function roleOverlapBlock(
   if (tokens.length === 0) {
     return { points: 0, phrase: "" };
   }
-  const haystack = `${candidateRole} ${candidateSkills}`.toLowerCase();
+  const haystack =
+    `${candidateRole} ${skillNames.join(" ")}`.toLowerCase();
   const hits = tokens.filter((t) => haystack.includes(t));
   const ratio = hits.length / tokens.length;
   const points = Math.round(ratio * MATCH_WEIGHTS.roleOverlapMax);
   const phrase =
-    points >= MATCH_WEIGHTS.roleOverlapMax * 0.5
-      ? "Role/title wording aligns with the candidate profile."
+    points >= 8
+      ? "Role/title aligns with profile and structured skills."
       : hits.length > 0
-        ? "Some role keywords appear in the candidate profile."
-        : "Limited role/title keyword overlap.";
+        ? "Some role keywords overlap the profile."
+        : "Limited role/title overlap.";
   return { points, phrase };
 }
 
 /**
- * Deterministic v1 score: seniority + availability + skill Jaccard + title/role token overlap.
- * No network calls; same inputs always yield the same output.
+ * Deterministic structured v1: VacancyRequirement vs CandidateSkill, seniority,
+ * availability (capped if busy elsewhere on an ACTIVE placement), role tokens vs role + skill names.
+ * Does not read legacy CSV skill fields.
  */
-export function computeCandidateVacancyMatch(
-  candidate: MatchCandidateInput,
-  vacancy: MatchVacancyInput,
+export function computeStructuredCandidateVacancyMatch(
+  candidate: MatchCandidateStructuredInput,
+  vacancy: MatchVacancyStructuredInput,
+  placement: MatchPlacementContext,
 ): ComputedMatch {
-  const s = seniorityBlock(candidate.seniority, vacancy.seniority);
-  const a = availabilityBlock(candidate.availabilityStatus);
-  const k = skillsBlock(candidate.skills, vacancy.skills);
-  const r = roleOverlapBlock(
+  const k = scoreSkillsStructured(vacancy.requirements, candidate.skills);
+  const s = scoreSeniority(candidate.seniority, vacancy.seniority);
+  let a = scoreAvailability(candidate.availabilityStatus);
+  if (placement.busyOnOtherVacancy) {
+    a = {
+      points: Math.min(a.points, MATCH_AVAILABILITY_CAP_WHEN_BUSY_ELSEWHERE),
+      phrase: `${a.phrase} Active placement on another account — availability capped.`,
+    };
+  }
+  const skillNames = candidate.skills.map((x) => x.skillName);
+  const r = scoreRoleOverlap(
     candidate.role,
-    candidate.skills,
+    skillNames,
     vacancy.title,
     vacancy.roleSummary,
   );
 
-  const raw = s.points + a.points + k.points + r.points;
+  const raw = k.points + s.points + a.points + r.points;
   const score = Math.max(0, Math.min(100, raw));
 
-  const parts = [s.phrase, a.phrase, k.phrase];
-  if (k.examples.length > 0) {
-    parts.push(`Examples: ${k.examples.join(", ")}.`);
-  }
-  if (r.phrase) parts.push(r.phrase);
-
-  const skillsMatchNotes = truncateNote(parts.join(" "));
+  const explParts = [...k.parts, s.phrase, a.phrase];
+  if (r.phrase) explParts.push(r.phrase);
 
   return {
     score,
-    seniorityMatch: s.match,
-    availabilityMatch: a.match,
-    skillsMatchNotes,
     recommendation: recommendationFromScore(score),
+    explanation: truncateExplanation(explParts.join(" ")),
   };
 }

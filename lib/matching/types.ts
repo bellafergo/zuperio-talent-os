@@ -1,5 +1,3 @@
-import type { VacancySeniorityUi } from "@/lib/vacancies/types";
-
 export type MatchRecommendationUi =
   | "Strong match"
   | "Partial match"
@@ -10,11 +8,9 @@ export type VacancyMatchRowUi = {
   matchId: string;
   candidateId: string;
   candidateName: string;
-  candidateRole: string;
-  candidateSeniority: VacancySeniorityUi;
   score: number;
   recommendation: MatchRecommendationUi;
-  skillsMatchNotes: string | null;
+  explanation: string;
 };
 
 /** Row for candidate detail — matched vacancies. */
@@ -25,6 +21,7 @@ export type CandidateMatchRowUi = {
   companyName: string;
   score: number;
   recommendation: MatchRecommendationUi;
+  explanation: string;
 };
 
 /** Global matching table. */
@@ -37,4 +34,5 @@ export type MatchMatrixRowUi = {
   companyName: string;
   score: number;
   recommendation: MatchRecommendationUi;
+  explanation: string;
 };

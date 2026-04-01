@@ -18,8 +18,6 @@ const candidateSelect = {
   id: true,
   firstName: true,
   lastName: true,
-  role: true,
-  seniority: true,
 } as const;
 
 const vacancyForMatchSelect = {

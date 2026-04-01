@@ -280,18 +280,17 @@ model Placement {
   @@index([status])
 }
 
-/// Deterministic staff-augmentation match (v1); recomputed from rules + seed sync.
+/// Deterministic match row (structured skills v1); recomputed via sync.
 model CandidateVacancyMatch {
-  id                  String              @id @default(cuid())
-  candidateId         String
-  candidate           Candidate           @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  vacancyId           String
-  vacancy             Vacancy             @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
-  score               Int
-  seniorityMatch      Boolean
-  availabilityMatch   Boolean
-  skillsMatchNotes    String?
-  recommendation      MatchRecommendation
+  id             String              @id @default(cuid())
+  candidateId    String
+  candidate      Candidate           @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId      String
+  vacancy        Vacancy             @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  score          Int
+  recommendation MatchRecommendation
+  /// Human-readable scoring summary (deterministic).
+  explanation    String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

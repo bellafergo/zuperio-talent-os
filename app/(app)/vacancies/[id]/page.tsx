@@ -115,8 +115,8 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         </CardHeader>
         <CardContent className="pt-4">
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Structured responsibilities can extend this section later; matching
-            v1 still uses legacy skill text until rules are pointed at requirements.
+            Structured responsibilities can extend this section later;             Matching uses structured requirements; legacy skill text is for humans
+            only.
           </p>
         </CardContent>
       </Card>
