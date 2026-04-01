@@ -1,5 +1,7 @@
 export type ProposalStatusUi = "Draft" | "Sent" | "Accepted" | "Rejected";
 export type ProposalTypeUi = "Staff augmentation";
+export type ProposalFormatUi = "Simple" | "Detailed";
+export type PricingSchemeUi = "Mixed" | "Full IMSS";
 
 export type ProposalListRowUi = {
   id: string;
@@ -15,9 +17,12 @@ export type ProposalListRowUi = {
   statusValue: "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED";
   type: ProposalTypeUi;
   typeValue: "STAFF_AUG";
+  format: ProposalFormatUi;
+  formatValue: "SIMPLE" | "DETAILED";
   currency: string;
   validityDays: number;
-  clientMonthlyAmountLabel: string;
+  finalMonthlyRateLabel: string;
+  finalMonthlyRateWithVATLabel: string;
   grossMarginPercentLabel: string;
   grossMarginPercentAmount: number | null;
   updatedAtLabel: string;
@@ -29,14 +34,27 @@ export type ProposalDetailUi = ProposalListRowUi & {
   scopeNotes: string | null;
   commercialNotes: string | null;
   pricing: {
+    schemeValue: "MIXED" | "FULL_IMSS";
+    scheme: PricingSchemeUi;
     monthlyHours: number;
     candidateNetSalary: number | null;
+    marginPercent: number | null;
+    employerLoadPercent: number | null;
+    bonuses: number | null;
+    benefits: number | null;
+    operatingExpenses: number | null;
+    discountPercent: number | null;
+
+    grossSalary: number | null;
     employerCost: number | null;
-    internalCost: number | null;
-    clientRate: number;
-    clientMonthlyAmount: number;
+    totalBenefits: number | null;
+    totalEmployerLoad: number | null;
+    totalOperatingExpenses: number | null;
+    subtotal: number | null;
     grossMarginAmount: number;
     grossMarginPercent: number;
+    finalMonthlyRate: number | null;
+    finalMonthlyRateWithVAT: number | null;
     estimatedDurationMonths: number;
   } | null;
 };

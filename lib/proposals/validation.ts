@@ -7,6 +7,8 @@ import {
 
 const STATUS_SET = new Set<string>(Object.values(StatusConst));
 const TYPE_SET = new Set<string>(Object.values(TypeConst));
+const FORMAT_SET = new Set<string>(["SIMPLE", "DETAILED"]);
+const SCHEME_SET = new Set<string>(["MIXED", "FULL_IMSS"]);
 
 export type ProposalFormParsed = {
   companyId: string;
@@ -14,6 +16,7 @@ export type ProposalFormParsed = {
   vacancyId: string | null;
   candidateId: string | null;
   type: ProposalType;
+  format: "SIMPLE" | "DETAILED";
   status: ProposalStatus;
   currency: string;
   validityDays: number;
@@ -24,9 +27,13 @@ export type ProposalFormParsed = {
 
   monthlyHours: number;
   candidateNetSalary: number | null;
-  employerCost: number | null;
-  internalCost: number | null;
-  clientRate: number;
+  scheme: "MIXED" | "FULL_IMSS";
+  marginPercent: number | null;
+  employerLoadPercent: number | null;
+  bonuses: number | null;
+  benefits: number | null;
+  operatingExpenses: number | null;
+  discountPercent: number | null;
   estimatedDurationMonths: number;
 };
 
@@ -65,6 +72,9 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
   const typeRaw = opt(formData, "type") ?? "";
   if (!typeRaw || !TYPE_SET.has(typeRaw)) fieldErrors.type = "Select a valid type.";
 
+  const formatRaw = opt(formData, "format") ?? "SIMPLE";
+  if (!FORMAT_SET.has(formatRaw)) fieldErrors.format = "Select a valid format.";
+
   const statusRaw = opt(formData, "status") ?? "";
   if (!statusRaw || !STATUS_SET.has(statusRaw)) fieldErrors.status = "Select a valid status.";
 
@@ -89,17 +99,6 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
     fieldErrors.monthlyHours = "Monthly hours must be greater than 0.";
   }
 
-  const clientRateRaw = opt(formData, "clientRate");
-  const clientRateN = clientRateRaw ? Number(clientRateRaw) : NaN;
-  if (!Number.isFinite(clientRateN) || clientRateN < 0) {
-    fieldErrors.clientRate = "Client rate must be 0 or higher.";
-  }
-
-  const internalCostVal = parseOptionalNumber(opt(formData, "internalCost"));
-  if (internalCostVal === "invalid" || (typeof internalCostVal === "number" && internalCostVal < 0)) {
-    fieldErrors.internalCost = "Internal cost must be 0 or higher.";
-  }
-
   const candidateNetSalaryVal = parseOptionalNumber(opt(formData, "candidateNetSalary"));
   if (
     candidateNetSalaryVal === "invalid" ||
@@ -108,9 +107,40 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
     fieldErrors.candidateNetSalary = "Candidate net salary must be 0 or higher.";
   }
 
-  const employerCostVal = parseOptionalNumber(opt(formData, "employerCost"));
-  if (employerCostVal === "invalid" || (typeof employerCostVal === "number" && employerCostVal < 0)) {
-    fieldErrors.employerCost = "Employer cost must be 0 or higher.";
+  const schemeRaw = opt(formData, "scheme") ?? "MIXED";
+  if (!SCHEME_SET.has(schemeRaw)) fieldErrors.scheme = "Select a valid pricing scheme.";
+
+  const marginVal = parseOptionalNumber(opt(formData, "marginPercent"));
+  if (marginVal === "invalid" || (typeof marginVal === "number" && (marginVal < 0 || marginVal > 95))) {
+    fieldErrors.marginPercent = "Margin percent must be between 0 and 95.";
+  }
+
+  const loadVal = parseOptionalNumber(opt(formData, "employerLoadPercent"));
+  if (loadVal === "invalid" || (typeof loadVal === "number" && (loadVal < 0 || loadVal > 200))) {
+    fieldErrors.employerLoadPercent = "Employer load percent must be between 0 and 200.";
+  }
+
+  const bonusesVal = parseOptionalNumber(opt(formData, "bonuses"));
+  if (bonusesVal === "invalid" || (typeof bonusesVal === "number" && bonusesVal < 0)) {
+    fieldErrors.bonuses = "Bonuses must be 0 or higher.";
+  }
+
+  const benefitsVal = parseOptionalNumber(opt(formData, "benefits"));
+  if (benefitsVal === "invalid" || (typeof benefitsVal === "number" && benefitsVal < 0)) {
+    fieldErrors.benefits = "Benefits must be 0 or higher.";
+  }
+
+  const opexVal = parseOptionalNumber(opt(formData, "operatingExpenses"));
+  if (opexVal === "invalid" || (typeof opexVal === "number" && opexVal < 0)) {
+    fieldErrors.operatingExpenses = "Operating expenses must be 0 or higher.";
+  }
+
+  const discountVal = parseOptionalNumber(opt(formData, "discountPercent"));
+  if (
+    discountVal === "invalid" ||
+    (typeof discountVal === "number" && (discountVal < 0 || discountVal > 100))
+  ) {
+    fieldErrors.discountPercent = "Discount percent must be between 0 and 100.";
   }
 
   const estMonthsRaw = opt(formData, "estimatedDurationMonths");
@@ -131,6 +161,7 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
       vacancyId,
       candidateId,
       type: typeRaw as ProposalType,
+      format: formatRaw as ProposalFormParsed["format"],
       status: statusRaw as ProposalStatus,
       currency,
       validityDays: Math.floor(validityDaysN),
@@ -140,9 +171,13 @@ export function parseProposalForm(formData: FormData): ProposalFormValidationRes
       commercialNotes,
       monthlyHours: Math.floor(monthlyHoursN),
       candidateNetSalary: typeof candidateNetSalaryVal === "number" ? candidateNetSalaryVal : null,
-      employerCost: typeof employerCostVal === "number" ? employerCostVal : null,
-      internalCost: typeof internalCostVal === "number" ? internalCostVal : null,
-      clientRate: clientRateN,
+      scheme: schemeRaw as ProposalFormParsed["scheme"],
+      marginPercent: typeof marginVal === "number" ? marginVal : null,
+      employerLoadPercent: typeof loadVal === "number" ? loadVal : null,
+      bonuses: typeof bonusesVal === "number" ? bonusesVal : null,
+      benefits: typeof benefitsVal === "number" ? benefitsVal : null,
+      operatingExpenses: typeof opexVal === "number" ? opexVal : null,
+      discountPercent: typeof discountVal === "number" ? discountVal : null,
       estimatedDurationMonths: Math.floor(estMonthsN),
     },
   };

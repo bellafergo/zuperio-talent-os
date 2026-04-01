@@ -3,8 +3,12 @@
 import * as React from "react";
 
 import {
+  PricingScheme as SchemeConst,
   ProposalStatus as StatusConst,
+  ProposalFormat as FormatConst,
   ProposalType as TypeConst,
+  type PricingScheme,
+  type ProposalFormat,
   type ProposalStatus,
   type ProposalType,
 } from "@/generated/prisma/enums";
@@ -36,12 +40,23 @@ const STATUS_LABELS: Record<ProposalStatus, string> = {
   REJECTED: "Rejected",
 };
 
+const FORMAT_LABELS: Record<ProposalFormat, string> = {
+  SIMPLE: "Simple proposal (1-page)",
+  DETAILED: "Detailed proposal (breakdown)",
+};
+
+const SCHEME_LABELS: Record<PricingScheme, string> = {
+  MIXED: "Mixed",
+  FULL_IMSS: "Full IMSS",
+};
+
 export type ProposalFormDefaults = {
   companyId: string;
   opportunityId: string | null;
   vacancyId: string | null;
   candidateId: string | null;
   typeValue: ProposalType;
+  formatValue: ProposalFormat;
   statusValue: ProposalStatus;
   currency: string;
   validityDays: number;
@@ -51,9 +66,13 @@ export type ProposalFormDefaults = {
   commercialNotes: string;
   monthlyHours: number;
   candidateNetSalary: number | null;
-  employerCost: number | null;
-  internalCost: number | null;
-  clientRate: number;
+  schemeValue: PricingScheme;
+  marginPercent: number | null;
+  employerLoadPercent: number | null;
+  bonuses: number | null;
+  benefits: number | null;
+  operatingExpenses: number | null;
+  discountPercent: number | null;
   estimatedDurationMonths: number;
 };
 
@@ -75,7 +94,9 @@ export function ProposalRecordFormFields({
   fieldErrors?: Record<string, string>;
 }) {
   const typeOrder = Object.values(TypeConst) as ProposalType[];
+  const formatOrder = Object.values(FormatConst) as ProposalFormat[];
   const statusOrder = Object.values(StatusConst) as ProposalStatus[];
+  const schemeOrder = Object.values(SchemeConst) as PricingScheme[];
 
   const [companyId, setCompanyId] = React.useState(defaults?.companyId ?? "");
   const [opportunityId, setOpportunityId] = React.useState(defaults?.opportunityId ?? "");
@@ -250,6 +271,27 @@ export function ProposalRecordFormFields({
         </div>
       </div>
 
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Proposal format</label>
+        <select
+          name="format"
+          className={selectClass}
+          defaultValue={defaults?.formatValue ?? "SIMPLE"}
+          aria-invalid={Boolean(fieldErrors?.format)}
+        >
+          {formatOrder.map((f) => (
+            <option key={f} value={f}>
+              {FORMAT_LABELS[f]}
+            </option>
+          ))}
+        </select>
+        {fieldErrors?.format ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.format}
+          </p>
+        ) : null}
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium">Currency</label>
@@ -289,9 +331,31 @@ export function ProposalRecordFormFields({
       <div className="rounded-xl border border-border bg-card p-3 shadow-sm ring-1 ring-foreground/5">
         <p className="text-sm font-medium text-foreground">Pricing inputs</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Deterministic: client monthly = hours × client rate; margin uses internal cost per hour.
+          Deterministic and auditable. Choose scheme, set margin/load/expenses, then save
+          to compute final rates and margin.
         </p>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Pricing scheme</label>
+            <select
+              name="scheme"
+              className={selectClass}
+              defaultValue={defaults?.schemeValue ?? "MIXED"}
+              aria-invalid={Boolean(fieldErrors?.scheme)}
+            >
+              {schemeOrder.map((s) => (
+                <option key={s} value={s}>
+                  {SCHEME_LABELS[s]}
+                </option>
+              ))}
+            </select>
+            {fieldErrors?.scheme ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.scheme}
+              </p>
+            ) : null}
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium">
               Monthly hours <span className="text-destructive">*</span>
@@ -313,39 +377,39 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Client rate (per hour) <span className="text-destructive">*</span>
-            </label>
+            <label className="text-sm font-medium">Margin percent</label>
             <Input
-              name="clientRate"
+              name="marginPercent"
               type="number"
               inputMode="decimal"
               min={0}
-              step={0.01}
-              defaultValue={defaults?.clientRate ?? 100}
-              aria-invalid={Boolean(fieldErrors?.clientRate)}
+              max={95}
+              step={0.1}
+              defaultValue={defaults?.marginPercent ?? ""}
+              aria-invalid={Boolean(fieldErrors?.marginPercent)}
             />
-            {fieldErrors?.clientRate ? (
+            {fieldErrors?.marginPercent ? (
               <p className="text-sm text-destructive" role="alert">
-                {fieldErrors.clientRate}
+                {fieldErrors.marginPercent}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Internal cost (per hour)</label>
+            <label className="text-sm font-medium">Employer load percent (IMSS)</label>
             <Input
-              name="internalCost"
+              name="employerLoadPercent"
               type="number"
               inputMode="decimal"
               min={0}
-              step={0.01}
-              defaultValue={defaults?.internalCost ?? ""}
-              aria-invalid={Boolean(fieldErrors?.internalCost)}
+              max={200}
+              step={0.1}
+              defaultValue={defaults?.employerLoadPercent ?? ""}
+              aria-invalid={Boolean(fieldErrors?.employerLoadPercent)}
             />
-            {fieldErrors?.internalCost ? (
+            {fieldErrors?.employerLoadPercent ? (
               <p className="text-sm text-destructive" role="alert">
-                {fieldErrors.internalCost}
+                {fieldErrors.employerLoadPercent}
               </p>
             ) : null}
           </div>
@@ -388,19 +452,74 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Employer cost (monthly)</label>
+            <label className="text-sm font-medium">Bonuses (monthly)</label>
             <Input
-              name="employerCost"
+              name="bonuses"
               type="number"
               inputMode="decimal"
               min={0}
               step={0.01}
-              defaultValue={defaults?.employerCost ?? ""}
-              aria-invalid={Boolean(fieldErrors?.employerCost)}
+              defaultValue={defaults?.bonuses ?? ""}
+              aria-invalid={Boolean(fieldErrors?.bonuses)}
             />
-            {fieldErrors?.employerCost ? (
+            {fieldErrors?.bonuses ? (
               <p className="text-sm text-destructive" role="alert">
-                {fieldErrors.employerCost}
+                {fieldErrors.bonuses}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Benefits (monthly)</label>
+            <Input
+              name="benefits"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step={0.01}
+              defaultValue={defaults?.benefits ?? ""}
+              aria-invalid={Boolean(fieldErrors?.benefits)}
+            />
+            {fieldErrors?.benefits ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.benefits}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Operating expenses (monthly)</label>
+            <Input
+              name="operatingExpenses"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step={0.01}
+              defaultValue={defaults?.operatingExpenses ?? ""}
+              aria-invalid={Boolean(fieldErrors?.operatingExpenses)}
+            />
+            {fieldErrors?.operatingExpenses ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.operatingExpenses}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Discount percent</label>
+            <Input
+              name="discountPercent"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={100}
+              step={0.1}
+              defaultValue={defaults?.discountPercent ?? ""}
+              aria-invalid={Boolean(fieldErrors?.discountPercent)}
+            />
+            {fieldErrors?.discountPercent ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.discountPercent}
               </p>
             ) : null}
           </div>

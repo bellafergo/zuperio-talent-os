@@ -84,7 +84,7 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
             </TableCell>
             <TableCell>{r.status}</TableCell>
             <TableCell className="text-right text-muted-foreground">
-              {r.clientMonthlyAmountLabel}
+              {r.finalMonthlyRateLabel}
             </TableCell>
             <TableCell className="text-right text-muted-foreground">
               {r.grossMarginPercentLabel}

@@ -1,9 +1,18 @@
 import type {
+  PricingScheme as PrismaPricingScheme,
+  ProposalFormat as PrismaProposalFormat,
   ProposalStatus as PrismaProposalStatus,
   ProposalType as PrismaProposalType,
 } from "@/generated/prisma/enums";
 
-import type { ProposalDetailUi, ProposalListRowUi, ProposalStatusUi, ProposalTypeUi } from "./types";
+import type {
+  PricingSchemeUi,
+  ProposalDetailUi,
+  ProposalFormatUi,
+  ProposalListRowUi,
+  ProposalStatusUi,
+  ProposalTypeUi,
+} from "./types";
 
 const prismaStatusToUi: Record<PrismaProposalStatus, ProposalStatusUi> = {
   DRAFT: "Draft",
@@ -16,17 +25,35 @@ const prismaTypeToUi: Record<PrismaProposalType, ProposalTypeUi> = {
   STAFF_AUG: "Staff augmentation",
 };
 
-function parseDecimal(value: any): number | null {
+const prismaFormatToUi: Record<PrismaProposalFormat, ProposalFormatUi> = {
+  SIMPLE: "Simple",
+  DETAILED: "Detailed",
+};
+
+const prismaSchemeToUi: Record<PrismaPricingScheme, PricingSchemeUi> = {
+  MIXED: "Mixed",
+  FULL_IMSS: "Full IMSS",
+};
+
+/** Prisma `Decimal` or plain number/string from DB/JSON */
+type DecimalSource = { toNumber?: () => number } | number | string | null | undefined;
+
+function parseDecimal(value: DecimalSource): number | null {
   if (value == null) return null;
-  if (typeof value === "object" && value !== null && typeof value.toNumber === "function") {
-    const n = value.toNumber();
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toNumber" in value &&
+    typeof (value as { toNumber: () => number }).toNumber === "function"
+  ) {
+    const n = (value as { toNumber: () => number }).toNumber();
     return Number.isFinite(n) ? n : null;
   }
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
-function formatMoney(amount: number | null, currency: string): string {
+function formatMoneyCompact(amount: number | null, currency: string): string {
   if (amount == null) return "—";
   try {
     return new Intl.NumberFormat("en-US", {
@@ -63,6 +90,7 @@ export type ProposalWithRelations = {
   candidateId: string | null;
   candidate: { id: string; firstName: string; lastName: string } | null;
   type: PrismaProposalType;
+  format: PrismaProposalFormat;
   status: PrismaProposalStatus;
   currency: string;
   validityDays: number;
@@ -71,14 +99,26 @@ export type ProposalWithRelations = {
   scopeNotes: string | null;
   commercialNotes: string | null;
   pricing: {
+    scheme: PrismaPricingScheme;
     monthlyHours: number;
-    candidateNetSalary: any;
-    employerCost: any;
-    internalCost: any;
-    clientRate: any;
-    clientMonthlyAmount: any;
-    grossMarginAmount: any;
-    grossMarginPercent: any;
+    candidateNetSalary: DecimalSource;
+    marginPercent: DecimalSource;
+    employerLoadPercent: DecimalSource;
+    bonuses: DecimalSource;
+    benefits: DecimalSource;
+    operatingExpenses: DecimalSource;
+    discountPercent: DecimalSource;
+
+    grossSalary: DecimalSource;
+    employerCost: DecimalSource;
+    totalBenefits: DecimalSource;
+    totalEmployerLoad: DecimalSource;
+    totalOperatingExpenses: DecimalSource;
+    subtotal: DecimalSource;
+    grossMarginAmount: DecimalSource;
+    grossMarginPercent: DecimalSource;
+    finalMonthlyRate: DecimalSource;
+    finalMonthlyRateWithVAT: DecimalSource;
     estimatedDurationMonths: number;
   } | null;
   updatedAt: Date;
@@ -91,7 +131,8 @@ function candidateName(row: ProposalWithRelations): string {
 
 export function mapProposalToListRowUi(row: ProposalWithRelations): ProposalListRowUi {
   const currency = row.currency?.trim() || "EUR";
-  const clientMonthly = parseDecimal(row.pricing?.clientMonthlyAmount) ?? null;
+  const finalMonthly = parseDecimal(row.pricing?.finalMonthlyRate) ?? null;
+  const finalMonthlyWithVat = parseDecimal(row.pricing?.finalMonthlyRateWithVAT) ?? null;
   const marginPct = parseDecimal(row.pricing?.grossMarginPercent) ?? null;
 
   return {
@@ -108,9 +149,12 @@ export function mapProposalToListRowUi(row: ProposalWithRelations): ProposalList
     statusValue: row.status,
     type: prismaTypeToUi[row.type],
     typeValue: row.type,
+    format: prismaFormatToUi[row.format],
+    formatValue: row.format,
     currency,
     validityDays: row.validityDays,
-    clientMonthlyAmountLabel: formatMoney(clientMonthly, currency),
+    finalMonthlyRateLabel: formatMoneyCompact(finalMonthly, currency),
+    finalMonthlyRateWithVATLabel: formatMoneyCompact(finalMonthlyWithVat, currency),
     grossMarginPercentLabel: formatPercent(marginPct),
     grossMarginPercentAmount: marginPct,
     updatedAtLabel: formatUpdatedAt(row.updatedAt),
@@ -128,14 +172,27 @@ export function mapProposalToDetailUi(row: ProposalWithRelations): ProposalDetai
     commercialNotes: row.commercialNotes?.trim() || null,
     pricing: p
       ? {
+          schemeValue: p.scheme,
+          scheme: prismaSchemeToUi[p.scheme],
           monthlyHours: p.monthlyHours,
           candidateNetSalary: parseDecimal(p.candidateNetSalary),
+          marginPercent: parseDecimal(p.marginPercent),
+          employerLoadPercent: parseDecimal(p.employerLoadPercent),
+          bonuses: parseDecimal(p.bonuses),
+          benefits: parseDecimal(p.benefits),
+          operatingExpenses: parseDecimal(p.operatingExpenses),
+          discountPercent: parseDecimal(p.discountPercent),
+
+          grossSalary: parseDecimal(p.grossSalary),
           employerCost: parseDecimal(p.employerCost),
-          internalCost: parseDecimal(p.internalCost),
-          clientRate: parseDecimal(p.clientRate) ?? 0,
-          clientMonthlyAmount: parseDecimal(p.clientMonthlyAmount) ?? 0,
+          totalBenefits: parseDecimal(p.totalBenefits),
+          totalEmployerLoad: parseDecimal(p.totalEmployerLoad),
+          totalOperatingExpenses: parseDecimal(p.totalOperatingExpenses),
+          subtotal: parseDecimal(p.subtotal),
           grossMarginAmount: parseDecimal(p.grossMarginAmount) ?? 0,
           grossMarginPercent: parseDecimal(p.grossMarginPercent) ?? 0,
+          finalMonthlyRate: parseDecimal(p.finalMonthlyRate),
+          finalMonthlyRateWithVAT: parseDecimal(p.finalMonthlyRateWithVAT),
           estimatedDurationMonths: p.estimatedDurationMonths,
         }
       : null,

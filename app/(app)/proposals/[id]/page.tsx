@@ -77,7 +77,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         <DetailField label="Opportunity" value={proposal.opportunityTitle} href={proposal.opportunityId ? `/opportunities/${proposal.opportunityId}` : undefined} />
         <DetailField label="Vacancy" value={proposal.vacancyTitle} href={proposal.vacancyId ? `/vacancies/${proposal.vacancyId}` : undefined} />
         <DetailField label="Candidate" value={proposal.candidateName} href={proposal.candidateId ? `/candidates/${proposal.candidateId}` : undefined} />
-        <DetailField label="Monthly (client)" value={proposal.clientMonthlyAmountLabel} />
+        <DetailField label="Monthly (client)" value={proposal.finalMonthlyRateLabel} />
         <DetailField label="Gross margin" value={proposal.grossMarginPercentLabel} />
       </div>
 
@@ -91,10 +91,17 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         <CardContent className="pt-4">
           {proposal.pricing ? (
             <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Kpi label="Scheme" value={proposal.pricing.scheme} />
               <Kpi label="Monthly hours" value={String(proposal.pricing.monthlyHours)} />
-              <Kpi label="Client rate" value={String(proposal.pricing.clientRate)} />
-              <Kpi label="Internal cost" value={proposal.pricing.internalCost == null ? "—" : String(proposal.pricing.internalCost)} />
-              <Kpi label="Client monthly" value={String(proposal.pricing.clientMonthlyAmount)} />
+              <Kpi label="Net salary" value={proposal.pricing.candidateNetSalary == null ? "—" : String(proposal.pricing.candidateNetSalary)} />
+              <Kpi label="Gross salary" value={proposal.pricing.grossSalary == null ? "—" : String(proposal.pricing.grossSalary)} />
+              <Kpi label="Employer cost" value={proposal.pricing.employerCost == null ? "—" : String(proposal.pricing.employerCost)} />
+              <Kpi label="Employer load" value={proposal.pricing.totalEmployerLoad == null ? "—" : String(proposal.pricing.totalEmployerLoad)} />
+              <Kpi label="Benefits" value={proposal.pricing.totalBenefits == null ? "—" : String(proposal.pricing.totalBenefits)} />
+              <Kpi label="Opex" value={proposal.pricing.totalOperatingExpenses == null ? "—" : String(proposal.pricing.totalOperatingExpenses)} />
+              <Kpi label="Subtotal" value={proposal.pricing.subtotal == null ? "—" : String(proposal.pricing.subtotal)} />
+              <Kpi label="Final monthly rate" value={proposal.pricing.finalMonthlyRate == null ? "—" : String(proposal.pricing.finalMonthlyRate)} />
+              <Kpi label="Monthly + VAT" value={proposal.pricing.finalMonthlyRateWithVAT == null ? "—" : String(proposal.pricing.finalMonthlyRateWithVAT)} />
               <Kpi label="Gross margin" value={String(proposal.pricing.grossMarginAmount)} />
               <Kpi label="Margin %" value={`${proposal.pricing.grossMarginPercent.toFixed(1)}%`} />
               <Kpi label="Duration (months)" value={String(proposal.pricing.estimatedDurationMonths)} />

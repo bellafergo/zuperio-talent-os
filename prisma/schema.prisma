@@ -82,6 +82,16 @@ enum ProposalType {
   STAFF_AUG
 }
 
+enum ProposalFormat {
+  SIMPLE
+  DETAILED
+}
+
+enum PricingScheme {
+  MIXED
+  FULL_IMSS
+}
+
 enum ProposalStatus {
   DRAFT
   SENT
@@ -402,6 +412,7 @@ model Proposal {
   candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: SetNull)
 
   type        ProposalType
+  format      ProposalFormat @default(SIMPLE)
   status      ProposalStatus @default(DRAFT)
   currency    String @default("EUR")
   validityDays Int @default(14)
@@ -425,6 +436,7 @@ model Proposal {
   @@index([candidateId])
   @@index([status])
   @@index([type])
+  @@index([format])
   @@index([createdById])
 }
 
@@ -434,22 +446,42 @@ model ProposalPricing {
   proposalId String @unique
   proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
 
-  monthlyHours            Int
-  candidateNetSalary      Decimal? @db.Decimal(14, 2)
-  employerCost            Decimal? @db.Decimal(14, 2)
-  internalCost            Decimal? @db.Decimal(14, 2)
-  clientRate              Decimal  @db.Decimal(14, 2)
+  scheme PricingScheme @default(MIXED)
 
-  clientMonthlyAmount     Decimal  @db.Decimal(14, 2)
-  grossMarginAmount       Decimal  @db.Decimal(14, 2)
-  grossMarginPercent      Decimal  @db.Decimal(6, 2)
-
+  monthlyHours       Int
   estimatedDurationMonths Int @default(6)
+
+  // Inputs (manual-first)
+  candidateNetSalary Decimal? @db.Decimal(14, 2)
+  marginPercent      Decimal? @db.Decimal(6, 2)
+  employerLoadPercent Decimal? @db.Decimal(6, 2)
+  bonuses            Decimal? @db.Decimal(14, 2)
+  benefits           Decimal? @db.Decimal(14, 2)
+  operatingExpenses  Decimal? @db.Decimal(14, 2)
+  discountPercent    Decimal? @db.Decimal(6, 2)
+
+  // Outputs (deterministic)
+  grossSalary            Decimal? @db.Decimal(14, 2)
+  employerCost           Decimal? @db.Decimal(14, 2)
+  totalBenefits          Decimal? @db.Decimal(14, 2)
+  totalEmployerLoad      Decimal? @db.Decimal(14, 2)
+  totalOperatingExpenses Decimal? @db.Decimal(14, 2)
+  subtotal               Decimal? @db.Decimal(14, 2)
+  grossMarginAmount      Decimal? @db.Decimal(14, 2)
+  grossMarginPercent     Decimal? @db.Decimal(6, 2)
+  finalMonthlyRate       Decimal? @db.Decimal(14, 2)
+  finalMonthlyRateWithVAT Decimal? @db.Decimal(14, 2)
+
+  // Legacy fields (kept for backwards compatibility; not used by new calculator)
+  internalCost           Decimal? @db.Decimal(14, 2)
+  clientRate             Decimal? @db.Decimal(14, 2)
+  clientMonthlyAmount    Decimal? @db.Decimal(14, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([proposalId])
+  @@index([scheme])
 }
 
 /// Deterministic match row (structured skills v1); recomputed via sync.
