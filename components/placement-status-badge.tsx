@@ -1,19 +1,17 @@
-import { Badge } from "@/components/ui/badge";
+import { TonalBadge } from "@/components/layout";
 import type { PlacementStatusUi } from "@/lib/placements/types";
 
-const variantByStatus: Record<
-  PlacementStatusUi,
-  "default" | "secondary" | "outline" | "destructive"
-> = {
-  Active: "default",
-  Completed: "secondary",
-  Cancelled: "outline",
-};
+const toneByStatus: Record<PlacementStatusUi, "success" | "neutral" | "warning"> =
+  {
+    Active: "success",
+    Completed: "neutral",
+    Cancelled: "warning",
+  };
 
 export function PlacementStatusBadge({ status }: { status: PlacementStatusUi }) {
   return (
-    <Badge variant={variantByStatus[status]} className="whitespace-nowrap">
+    <TonalBadge tone={toneByStatus[status]} className="whitespace-nowrap">
       {status}
-    </Badge>
+    </TonalBadge>
   );
 }

@@ -1,13 +1,7 @@
 import Link from "next/link";
 
+import { EmptyState, SectionCard } from "@/components/layout";
 import { PlacementStatusBadge } from "@/components/placement-status-badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -24,19 +18,19 @@ export function CompanyPlacementsSection({
   placements: PlacementListRowUi[];
 }) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Placements</CardTitle>
-        <CardDescription>
-          Candidates on assignment with this account (active and historical).
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="pt-4">
-        {placements.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No placements recorded for this company yet.
-          </p>
-        ) : (
+    <SectionCard
+      title="Placements"
+      description="Candidates on assignment with this account (active and historical)."
+      contentClassName="pt-4"
+    >
+      {placements.length === 0 ? (
+        <EmptyState
+          variant="embedded"
+          title="No placements yet"
+          description="When candidates are assigned to vacancies for this company, they will appear here."
+        />
+      ) : (
+        <div className="-mx-4 max-w-[calc(100%+2rem)] sm:mx-0 sm:max-w-none">
           <Table>
             <TableHeader>
               <TableRow>
@@ -75,8 +69,8 @@ export function CompanyPlacementsSection({
               ))}
             </TableBody>
           </Table>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </SectionCard>
   );
 }
