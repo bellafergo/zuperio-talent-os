@@ -2,6 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
 import {
   Card,
   CardContent,
@@ -9,13 +10,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { getCandidateByIdForUi } from "@/lib/candidates/queries";
+import { getCandidateEditData } from "@/lib/candidates/queries";
 import { listMatchesForCandidateUi } from "@/lib/matching/queries";
 import { getCurrentAssignmentForCandidateUi } from "@/lib/placements/queries";
-import { listCandidateStructuredSkillsForUi } from "@/lib/skills/queries";
+import { listCandidateStructuredSkillsForUi, listSkillsForVacancyForm } from "@/lib/skills/queries";
 import { listApplicationsForCandidateUi } from "@/lib/vacancy-applications/queries";
 
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
+import { CandidateEditDialog } from "../_components/candidate-edit-dialog";
 import { CandidateApplicationsSection } from "./_components/candidate-applications-section";
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
@@ -29,18 +33,24 @@ type PageProps = {
 
 export default async function CandidateDetailPage({ params }: PageProps) {
   const { id } = await params;
+  const session = await auth();
+  const canManage = canManageCandidates(session?.user?.role);
   const [
     candidate,
     vacancyMatches,
     currentAssignment,
     structuredSkills,
     applications,
+    editData,
+    skillsCatalog,
   ] = await Promise.all([
     getCandidateByIdForUi(id),
     listMatchesForCandidateUi(id),
     getCurrentAssignmentForCandidateUi(id),
     listCandidateStructuredSkillsForUi(id),
     listApplicationsForCandidateUi(id),
+    canManage ? getCandidateEditData(id) : Promise.resolve(null),
+    canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
   ]);
 
   if (!candidate) {
@@ -58,11 +68,16 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {candidate.displayName}
-          </h1>
-          <CandidateAvailabilityBadge status={candidate.availabilityStatus} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              {candidate.displayName}
+            </h1>
+            <CandidateAvailabilityBadge status={candidate.availabilityStatus} />
+          </div>
+          {canManage && editData ? (
+            <CandidateEditDialog candidate={editData} skillsCatalog={skillsCatalog} />
+          ) : null}
         </div>
         <p className="text-sm text-muted-foreground">
           Talent profile · loaded from database

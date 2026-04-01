@@ -2,7 +2,6 @@ import type { UserRole } from "@/generated/prisma/enums";
 
 /** Paths SALES cannot access (recruiting / talent ops). */
 const SALES_BLOCKED_PREFIXES = [
-  "/candidates",
   "/skills",
   "/matching",
   "/applications",
