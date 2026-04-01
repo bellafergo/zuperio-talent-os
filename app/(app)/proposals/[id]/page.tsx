@@ -3,7 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
-import { canManageProposals } from "@/lib/auth/proposal-access";
+import {
+  canManageProposals,
+  canSendProposalClientEmail,
+} from "@/lib/auth/proposal-access";
 import { buildProposalEmailDraft } from "@/lib/proposals/email-draft";
 import {
   listCandidatesForProposalForm,
@@ -18,6 +21,7 @@ import { ProposalDetailTabs } from "../_components/proposal-detail-tabs";
 import { ProposalDocumentPreview } from "../_components/proposal-document-preview";
 import { ProposalEditDialog } from "../_components/proposal-edit-dialog";
 import { ProposalEmailDraftPanel } from "../_components/proposal-email-draft-panel";
+import { ProposalCvDownloadButton } from "../_components/proposal-cv-download-button";
 import { ProposalPdfDownloadButton } from "../_components/proposal-pdf-download-button";
 import {
   ProposalOverviewPanel,
@@ -34,9 +38,12 @@ export default async function ProposalDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();
   const canManage = canManageProposals(session?.user?.role);
+  const canSendEmail = canSendProposalClientEmail(session?.user?.role);
 
   const proposal = await getProposalByIdForUi(id);
   if (!proposal) notFound();
+
+  const hasCandidate = proposal.candidateId != null;
 
   const [companies, opportunities, vacancies, candidates, contact] =
     await Promise.all([
@@ -101,6 +108,9 @@ export default async function ProposalDetailPage({ params }: PageProps) {
           <div className="space-y-6">
             <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5">
               <ProposalPdfDownloadButton proposalId={proposal.id} />
+              {proposal.candidateId ? (
+                <ProposalCvDownloadButton candidateId={proposal.candidateId} />
+              ) : null}
             </div>
             <ProposalDocumentPreview
               proposal={proposal}
@@ -108,7 +118,14 @@ export default async function ProposalDetailPage({ params }: PageProps) {
             />
           </div>
         }
-        emailDraft={<ProposalEmailDraftPanel draft={emailDraft} />}
+        emailDraft={
+          <ProposalEmailDraftPanel
+            draft={emailDraft}
+            proposalId={proposal.id}
+            canSendEmail={canSendEmail}
+            hasCandidate={hasCandidate}
+          />
+        }
       />
     </div>
   );

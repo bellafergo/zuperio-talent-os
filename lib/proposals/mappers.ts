@@ -88,7 +88,12 @@ export type ProposalWithRelations = {
   vacancyId: string | null;
   vacancy: { id: string; title: string } | null;
   candidateId: string | null;
-  candidate: { id: string; firstName: string; lastName: string } | null;
+  candidate: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    candidateCvExportedAt: Date | null;
+  } | null;
   type: PrismaProposalType;
   format: PrismaProposalFormat;
   status: PrismaProposalStatus;
@@ -138,6 +143,8 @@ export function mapProposalToListRowUi(row: ProposalWithRelations): ProposalList
 
   return {
     proposalPdfExportedAt: row.proposalPdfExportedAt?.toISOString() ?? null,
+    candidateCvExportedAt:
+      row.candidate?.candidateCvExportedAt?.toISOString() ?? null,
     id: row.id,
     companyId: row.companyId,
     companyName: row.company.name,

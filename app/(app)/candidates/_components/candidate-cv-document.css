@@ -1,0 +1,53 @@
+.cv-print-root {
+  --cv-border: oklch(0.88 0.006 285);
+  --cv-muted: oklch(0.45 0.02 285);
+  --cv-ink: oklch(0.18 0.006 285);
+}
+
+.cv-print-sheet {
+  color: var(--cv-ink);
+  background: oklch(1 0 0);
+  border: 1px solid var(--cv-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.04);
+}
+
+.cv-print-sheet table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.8125rem;
+}
+
+.cv-print-sheet th,
+.cv-print-sheet td {
+  border-bottom: 1px solid var(--cv-border);
+  padding: 0.45rem 0.35rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.cv-print-sheet th {
+  font-weight: 600;
+  color: var(--cv-muted);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@media print {
+  .cv-print-root .cv-no-print {
+    display: none !important;
+  }
+
+  .cv-print-root .cv-print-sheet {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .cv-print-root {
+    background: white !important;
+  }
+}

@@ -28,6 +28,8 @@ export type ProposalListRowUi = {
   updatedAtLabel: string;
   /** ISO-8601 UTC timestamp of last successful economic PDF export, if any. */
   proposalPdfExportedAt: string | null;
+  /** ISO-8601 UTC timestamp of last CV PDF export for the linked candidate, if any. */
+  candidateCvExportedAt: string | null;
 };
 
 export type ProposalDetailUi = ProposalListRowUi & {

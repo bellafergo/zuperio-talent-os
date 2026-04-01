@@ -19,7 +19,14 @@ const proposalSelect = {
   vacancyId: true,
   vacancy: { select: { id: true, title: true } },
   candidateId: true,
-  candidate: { select: { id: true, firstName: true, lastName: true } },
+  candidate: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      candidateCvExportedAt: true,
+    },
+  },
   type: true,
   format: true,
   status: true,

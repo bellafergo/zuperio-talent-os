@@ -1,16 +1,16 @@
 import puppeteer from "puppeteer";
 
-type RenderProposalPdfParams = {
+export type RenderUrlToPdfParams = {
   printPageUrl: string;
   cookieHeader: string | null;
 };
 
 /**
- * Renders the authenticated document-print URL to a PDF buffer.
- * Relies on the same HTML/CSS as the in-app preview (Chromium print).
+ * Renders an authenticated app URL to a PDF buffer (Chromium print).
+ * Used for proposal and CV templates that match in-app HTML/CSS.
  */
-export async function renderProposalPdfBuffer(
-  params: RenderProposalPdfParams,
+export async function renderUrlToPdfBuffer(
+  params: RenderUrlToPdfParams,
 ): Promise<Buffer> {
   const { printPageUrl, cookieHeader } = params;
 

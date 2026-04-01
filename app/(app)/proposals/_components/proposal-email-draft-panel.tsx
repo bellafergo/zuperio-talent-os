@@ -10,23 +10,57 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { ProposalEmailSendForm } from "./proposal-email-send-form";
+
 function formatExportedAt(iso: string | null): string {
   if (!iso) return "Never exported";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC",
-  }).format(d) + " UTC";
+  return (
+    new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "UTC",
+    }).format(d) + " UTC"
+  );
 }
 
-export function ProposalEmailDraftPanel({ draft }: { draft: ProposalEmailDraft }) {
+export function ProposalEmailDraftPanel({
+  draft,
+  proposalId,
+  canSendEmail,
+  hasCandidate,
+}: {
+  draft: ProposalEmailDraft;
+  proposalId: string;
+  canSendEmail: boolean;
+  hasCandidate: boolean;
+}) {
   return (
     <div className="space-y-4">
+      <Card className="shadow-sm">
+        <CardHeader className="border-b border-border pb-4">
+          <CardTitle className="text-base font-medium">Send email</CardTitle>
+          <CardDescription>
+            Uses the draft below. Both PDFs are attached automatically when you
+            send.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <ProposalEmailSendForm
+            proposalId={proposalId}
+            canSend={canSendEmail}
+            hasCandidate={hasCandidate}
+            defaultTo={draft.recipientEmail}
+            defaultSubject={draft.subject}
+            defaultBody={draft.bodyPlainText}
+          />
+        </CardContent>
+      </Card>
+
       <p className="text-sm text-muted-foreground">
-        Deterministic draft for a future send flow — no mail is sent from Zuperio
-        yet. Copy into your client or wire to an email provider when ready.
+        Deterministic draft — no mail is sent until you use{" "}
+        <span className="font-medium text-foreground">Send email</span> above.
       </p>
       <Card className="shadow-sm">
         <CardHeader className="border-b border-border pb-4">
@@ -44,7 +78,7 @@ export function ProposalEmailDraftPanel({ draft }: { draft: ProposalEmailDraft }
       <Card className="shadow-sm">
         <CardHeader className="border-b border-border pb-4">
           <CardTitle className="text-base font-medium">Body draft</CardTitle>
-          <CardDescription>Template-based plain text.</CardDescription>
+          <CardDescription>Template-based plain text (editable before send).</CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           <pre className="max-h-[min(420px,55vh)] overflow-auto rounded-lg border border-border bg-muted/30 p-4 text-xs leading-relaxed whitespace-pre-wrap text-foreground">
@@ -56,8 +90,8 @@ export function ProposalEmailDraftPanel({ draft }: { draft: ProposalEmailDraft }
         <CardHeader className="border-b border-border pb-4">
           <CardTitle className="text-base font-medium">Attachments</CardTitle>
           <CardDescription>
-            Economic proposal PDF is available from Zuperio; candidate CV PDF export
-            is planned.
+            Export state is tracked per proposal (economic) and per candidate
+            (CV). Sending always regenerates fresh PDFs for the email.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-4">
@@ -83,6 +117,11 @@ export function ProposalEmailDraftPanel({ draft }: { draft: ProposalEmailDraft }
                     <code className="rounded bg-muted px-1 py-0.5 text-[0.7rem]">
                       {a.downloadHref}
                     </code>
+                  </p>
+                ) : a.kind === "CANDIDATE_CV_PDF" ? (
+                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
+                    Assign a candidate on the proposal to enable the CV PDF
+                    endpoint.
                   </p>
                 ) : null}
               </div>

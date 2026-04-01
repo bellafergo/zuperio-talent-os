@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 
 import { auth } from "@/auth";
-import { generateProposalPdfPackage } from "@/lib/proposals/generate-proposal-pdf";
+import { generateCandidateCvPdfPackage } from "@/lib/candidates/generate-candidate-cv-pdf";
 import { resolveAppOriginFromHeaders } from "@/lib/proposals/resolve-app-origin";
 
 export const dynamic = "force-dynamic";
@@ -28,8 +28,8 @@ export async function GET(
   const origin = resolveAppOriginFromHeaders(headersList);
 
   try {
-    const { buffer, filename } = await generateProposalPdfPackage({
-      proposalId: id,
+    const { buffer, filename } = await generateCandidateCvPdfPackage({
+      candidateId: id,
       cookieHeader: cookie,
       origin,
     });
@@ -46,7 +46,7 @@ export async function GET(
     if (e instanceof Error && e.message === "NOT_FOUND") {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    console.error("[proposal-pdf]", e);
+    console.error("[candidate-cv-pdf]", e);
     return NextResponse.json(
       {
         error:

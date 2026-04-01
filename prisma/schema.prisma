@@ -253,6 +253,9 @@ model Candidate {
   currentCompany       String?
   notes                String?
 
+  /// Last successful server-side Zuperio CV PDF export.
+  candidateCvExportedAt DateTime?
+
   vacancyMatches  CandidateVacancyMatch[]
   placements        Placement[]
   structuredSkills  CandidateSkill[]
