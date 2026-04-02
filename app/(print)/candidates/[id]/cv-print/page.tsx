@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { getCandidateCvPrintData } from "@/lib/candidates/get-candidate-cv-print-data";
 
-import { CandidateCvDocument } from "@/app/(app)/candidates/_components/candidate-cv-document";
+import { CandidateCvConsultingDocument } from "@/lib/candidates/pdf-template/candidate-cv-consulting";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,7 @@ export default async function CandidateCvPrintPage({ params }: PageProps) {
 
   return (
     <div className="bg-white px-6 py-8 print:px-0 print:py-0">
-      <CandidateCvDocument data={data} hideHint />
+      <CandidateCvConsultingDocument data={data} />
     </div>
   );
 }

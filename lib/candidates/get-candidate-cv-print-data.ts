@@ -1,3 +1,4 @@
+import type { CandidateAvailabilityStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 
 import { candidateAvailabilityLabel } from "./availability-ui";
@@ -17,6 +18,8 @@ export type CandidateCvPlacementRow = {
   startLabel: string;
   endLabel: string;
   statusLabel: string;
+  /** Impact bullets from recent weekly logs (achievements), curated for PDF. */
+  highlights: string[];
 };
 
 export type CandidateCvPrintData = {
@@ -26,6 +29,7 @@ export type CandidateCvPrintData = {
   phone: string | null;
   role: string;
   seniorityLabel: string;
+  availabilityStatus: CandidateAvailabilityStatus;
   availabilityLabel: string;
   currentCompany: string | null;
   legacySkillsText: string;
@@ -35,10 +39,34 @@ export type CandidateCvPrintData = {
 };
 
 function formatPlacementDate(d: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-MX", {
     month: "short",
     year: "numeric",
   }).format(d);
+}
+
+function achievementBulletsFromLogs(
+  logs: { achievements: string | null }[],
+): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const log of logs) {
+    const raw = log.achievements?.trim();
+    if (!raw) continue;
+    const parts = raw
+      .split(/\r?\n|•/g)
+      .map((s) => s.replace(/^[-*\d.)\s]+/, "").trim())
+      .filter((s) => s.length > 4);
+    for (const p of parts) {
+      if (out.length >= 4) break;
+      const key = p.slice(0, 96).toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(p.length > 160 ? `${p.slice(0, 157)}…` : p);
+    }
+    if (out.length >= 4) break;
+  }
+  return out;
 }
 
 export async function getCandidateCvPrintData(
@@ -68,13 +96,19 @@ export async function getCandidateCvPrintData(
       },
       placements: {
         orderBy: { startDate: "desc" },
-        take: 10,
+        take: 8,
         select: {
           startDate: true,
           endDate: true,
           status: true,
           company: { select: { name: true } },
           vacancy: { select: { title: true } },
+          weeklyLogs: {
+            where: { achievements: { not: null } },
+            orderBy: { weekStart: "desc" },
+            take: 8,
+            select: { achievements: true },
+          },
         },
       },
     },
@@ -95,8 +129,9 @@ export async function getCandidateCvPrintData(
     companyName: p.company.name,
     roleTitle: p.vacancy.title,
     startLabel: formatPlacementDate(p.startDate),
-    endLabel: p.endDate ? formatPlacementDate(p.endDate) : "Present",
+    endLabel: p.endDate ? formatPlacementDate(p.endDate) : "Presente",
     statusLabel: placementStatusLabel(p.status),
+    highlights: achievementBulletsFromLogs(p.weeklyLogs),
   }));
 
   return {
@@ -106,6 +141,7 @@ export async function getCandidateCvPrintData(
     phone: row.phone?.trim() || null,
     role: row.role,
     seniorityLabel: vacancySeniorityLabel(row.seniority),
+    availabilityStatus: row.availabilityStatus,
     availabilityLabel: candidateAvailabilityLabel(row.availabilityStatus),
     currentCompany: row.currentCompany?.trim() || null,
     legacySkillsText: row.skills.trim(),

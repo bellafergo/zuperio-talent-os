@@ -1,0 +1,241 @@
+/* CV layout + CV-only components — tokens & shared patterns from proposal-consulting-pdf.css */
+
+/* Two-column body (under same .consulting-pdf-root as proposals) */
+.consulting-pdf-root .cpdf-cv-body {
+  display: grid;
+  grid-template-columns: minmax(210px, 248px) 1fr;
+  gap: 0;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--cpdf-rule);
+  border-radius: 0.35rem;
+  overflow: hidden;
+}
+
+.consulting-pdf-root .cpdf-cv-sidebar {
+  background: var(--cpdf-surface);
+  border-right: 1px solid var(--cpdf-rule);
+  padding: 1.15rem 1rem 1.35rem;
+}
+
+.consulting-pdf-root .cpdf-cv-main {
+  padding: 1.15rem 1.25rem 1.35rem;
+  background: #fff;
+}
+
+.consulting-pdf-root .cpdf-cv-side-block + .cpdf-cv-side-block {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cpdf-rule);
+}
+
+/* Availability row (sidebar) */
+.consulting-pdf-root .cpdf-cv-avail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.consulting-pdf-root .cpdf-cv-avail-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.consulting-pdf-root .cpdf-cv-avail-dot--now {
+  background: var(--cpdf-match-full);
+  box-shadow: 0 0 0 3px #dcfce7;
+}
+
+.consulting-pdf-root .cpdf-cv-avail-dot--mid {
+  background: #ca8a04;
+}
+
+.consulting-pdf-root .cpdf-cv-avail-dot--off {
+  background: var(--cpdf-muted);
+}
+
+.consulting-pdf-root .cpdf-cv-avail-text {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--cpdf-ink);
+}
+
+/* Sidebar: skill bars */
+.consulting-pdf-root .cpdf-cv-skill-group + .cpdf-cv-skill-group {
+  margin-top: 0.85rem;
+}
+
+.consulting-pdf-root .cpdf-cv-skill-cat {
+  margin: 0 0 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--cpdf-ink);
+}
+
+.consulting-pdf-root .cpdf-cv-skill-row {
+  margin-bottom: 0.5rem;
+}
+
+.consulting-pdf-root .cpdf-cv-skill-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--cpdf-ink);
+}
+
+.consulting-pdf-root .cpdf-cv-skill-meta {
+  font-size: 0.58rem;
+  font-weight: 500;
+  color: var(--cpdf-muted);
+  white-space: nowrap;
+}
+
+.consulting-pdf-root .cpdf-cv-skill-track {
+  margin-top: 0.22rem;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cpdf-rule);
+  overflow: hidden;
+}
+
+.consulting-pdf-root .cpdf-cv-skill-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--cpdf-blue) 0%, var(--cpdf-blue-soft) 100%);
+}
+
+.consulting-pdf-root .cpdf-cv-legacy-compact {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--cpdf-muted);
+  white-space: pre-wrap;
+}
+
+/* Main: tag row (aligned with proposal pill / emphasis) */
+.consulting-pdf-root .cpdf-cv-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.consulting-pdf-root .cpdf-cv-tag {
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.25rem;
+  background: var(--cpdf-blue-pale);
+  color: var(--cpdf-blue);
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+/* Experience blocks — same card rhythm as proposal tables */
+.consulting-pdf-root .cpdf-cv-exp-block {
+  border: 1px solid var(--cpdf-rule);
+  border-radius: 0.35rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.75rem;
+  background: #fff;
+}
+
+.consulting-pdf-root .cpdf-cv-exp-block:last-child {
+  margin-bottom: 0;
+}
+
+.consulting-pdf-root .cpdf-cv-exp-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.consulting-pdf-root .cpdf-cv-exp-role {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--cpdf-ink);
+}
+
+.consulting-pdf-root .cpdf-cv-exp-co {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: var(--cpdf-muted);
+}
+
+.consulting-pdf-root .cpdf-cv-exp-status {
+  margin-top: 0.35rem;
+  font-size: 0.65rem;
+  color: var(--cpdf-muted);
+}
+
+.consulting-pdf-root .cpdf-cv-exp-dates {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--cpdf-blue-soft);
+  white-space: nowrap;
+}
+
+.consulting-pdf-root .cpdf-cv-exp-bullets {
+  margin: 0.55rem 0 0;
+  padding-left: 1rem;
+  font-size: 0.74rem;
+  line-height: 1.55;
+  color: var(--cpdf-ink);
+}
+
+.consulting-pdf-root .cpdf-cv-exp-bullets li {
+  margin-bottom: 0.3rem;
+}
+
+.consulting-pdf-root .cpdf-cv-exp-bullets li::marker {
+  color: var(--cpdf-blue-soft);
+}
+
+.consulting-pdf-root .cpdf-cv-exp-fallback {
+  margin: 0.55rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--cpdf-muted);
+  font-style: italic;
+}
+
+/* Sidebar highlights: same list rhythm as proposal conditions */
+.consulting-pdf-root ul.cpdf-cv-highlight-list {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--cpdf-ink);
+}
+
+.consulting-pdf-root ul.cpdf-cv-highlight-list li {
+  margin-bottom: 0.4rem;
+}
+
+.consulting-pdf-root ul.cpdf-cv-highlight-list li::marker {
+  color: var(--cpdf-blue);
+}
+
+@media print {
+  .consulting-pdf-root .cpdf-cv-exp-block,
+  .consulting-pdf-root .cpdf-cv-body {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  .consulting-pdf-root .cpdf-cv-body {
+    grid-template-columns: 1fr;
+  }
+
+  .consulting-pdf-root .cpdf-cv-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--cpdf-rule);
+  }
+}
