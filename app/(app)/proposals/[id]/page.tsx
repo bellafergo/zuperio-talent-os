@@ -19,7 +19,7 @@ import {
 
 import { ProposalCommercialTracking } from "../_components/proposal-commercial-tracking";
 import { ProposalDetailTabs } from "../_components/proposal-detail-tabs";
-import { ProposalDocumentPreview } from "../_components/proposal-document-preview";
+import { ProposalConsultingPdfDocument } from "@/lib/proposals/pdf-template/proposal-consulting-pdf-document";
 import { ProposalEditDialog } from "../_components/proposal-edit-dialog";
 import { ProposalStatusBadge } from "../_components/proposal-status-badge";
 import { ProposalEmailDraftPanel } from "../_components/proposal-email-draft-panel";
@@ -141,10 +141,14 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         preview={
           <div className="space-y-6">
             <ProposalExportsSection proposal={proposal} />
-            <ProposalDocumentPreview
-              proposal={proposal}
-              preparedByDisplay={preparedByDisplay}
-            />
+            <div className="rounded-xl border border-border/80 bg-white p-6 shadow-sm ring-1 ring-foreground/[0.04]">
+              <ProposalConsultingPdfDocument
+                proposal={proposal}
+                preparedByDisplay={preparedByDisplay}
+                comparisonMatrix={comparisonMatrix}
+                variant="screen"
+              />
+            </div>
           </div>
         }
         emailDraft={

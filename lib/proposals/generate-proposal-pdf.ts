@@ -15,6 +15,11 @@ export async function generateProposalPdfPackage(params: {
   }
 
   const printUrl = `${params.origin}/proposals/${params.proposalId}/document-print`;
+  console.info("[proposal-pdf] render", {
+    proposalId: params.proposalId,
+    printUrl,
+  });
+
   const buffer = await renderUrlToPdfBuffer({
     printPageUrl: printUrl,
     cookieHeader: params.cookieHeader,

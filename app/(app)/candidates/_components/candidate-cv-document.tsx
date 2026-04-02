@@ -43,6 +43,7 @@ export function CandidateCvDocument({
       <article
         className="cv-print-sheet mx-auto max-w-[720px] px-8 py-10"
         aria-label="Candidate CV"
+        data-pdf-print-root="candidate-cv"
       >
         <header className="border-b border-[var(--cv-border)] pb-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

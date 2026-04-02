@@ -21,8 +21,9 @@ export function ProposalPdfDownloadButton({ proposalId }: { proposalId: string }
       if (!res.ok) {
         let message = res.statusText;
         try {
-          const j = (await res.json()) as { error?: string };
+          const j = (await res.json()) as { error?: string; detail?: string };
           if (j.error) message = j.error;
+          if (j.detail) message = `${message} — ${j.detail}`;
         } catch {
           /* plain text body */
         }

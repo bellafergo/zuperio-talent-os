@@ -7,6 +7,8 @@ import type { ProposalDetailUi } from "./types";
 export type ProposalEmailAttachmentPlaceholder = {
   kind: "ECONOMIC_PROPOSAL_PDF" | "CANDIDATE_CV_PDF";
   label: string;
+  /** Short line under the title in the draft UI */
+  subtitle: string;
   filenameSuggestion: string;
   mimeType: "application/pdf";
   /** True after at least one successful server-side export for this attachment type. */
@@ -29,32 +31,33 @@ export type ProposalEmailDraftContext = {
   preparedByDisplay: string;
   recipientDisplayName: string | null;
   recipientEmail: string | null;
+  /** Structured match score (0–100) when candidate + vacancy matrix exists */
+  matchScore?: number | null;
 };
 
 /**
- * Deterministic, template-based copy for a future “send proposal” step.
- * No AI — interpolates saved proposal and CRM fields only.
+ * Deterministic, template-based copy for “send proposal”. No AI.
  */
 export function buildProposalEmailDraft(
   proposal: ProposalDetailUi,
   ctx: ProposalEmailDraftContext,
 ): ProposalEmailDraft {
   const recipientName =
-    ctx.recipientDisplayName?.trim() || "[Recipient name]";
+    ctx.recipientDisplayName?.trim() || "[Nombre del contacto]";
   const recipientEmail =
-    ctx.recipientEmail?.trim() || "[recipient@company.com]";
+    ctx.recipientEmail?.trim() || "[contacto@empresa.com]";
 
   const roleLabel =
     proposal.vacancyTitle !== "—"
       ? proposal.vacancyTitle
       : proposal.opportunityTitle !== "—"
         ? proposal.opportunityTitle
-        : "the agreed role";
+        : "el perfil acordado";
 
   const candidateLine =
     proposal.candidateName !== "—"
       ? proposal.candidateName
-      : "[Candidate — assign on proposal]";
+      : "[Asigne candidato en la propuesta]";
 
   const rateLine = proposal.finalMonthlyRateLabel;
   const rateVatLine = proposal.finalMonthlyRateWithVATLabel;
@@ -66,37 +69,50 @@ export function buildProposalEmailDraft(
     ? `/api/candidates/${proposal.candidateId}/cv-pdf`
     : null;
 
-  const subject = `Commercial proposal — ${proposal.companyName} — ${candidateLine}`;
+  const matchSuffix =
+    ctx.matchScore != null ? ` · Match ${ctx.matchScore}%` : "";
+
+  const subject = `Propuesta comercial · ${roleLabel} · Zuperio${matchSuffix}`;
+
+  const matchParagraph =
+    ctx.matchScore != null
+      ? `El alineamiento estructurado candidato–vacante en Zuperio es del ${ctx.matchScore}% (criterios deterministas, sin IA).`
+      : "";
 
   const bodyPlainText = [
-    `Dear ${recipientName},`,
+    `Estimado/a ${recipientName},`,
     "",
-    `Please find our commercial proposal for ${candidateLine} to support ${roleLabel} with ${proposal.companyName}.`,
+    `Le compartimos nuestra propuesta comercial para ${candidateLine}, orientada a ${roleLabel} con ${proposal.companyName}.`,
+    matchParagraph,
     "",
-    `Format: ${proposal.format} (${proposal.pricing?.scheme ?? "pricing scheme on file"}).`,
-    `Monthly commercial rate (excl. VAT): ${rateLine}`,
-    `Indicative monthly rate (incl. VAT): ${rateVatLine}`,
-    `Proposal validity: ${proposal.validityDays} days from issue.`,
+    `Formato de propuesta: ${proposal.format} (${proposal.pricing?.scheme ?? "esquema en archivo"}).`,
+    `Tarifa mensual comercial (sin IVA): ${rateLine}`,
+    `Tarifa mensual indicativa (con IVA): ${rateVatLine}`,
+    `Vigencia: ${proposal.validityDays} días desde emisión.`,
     "",
-    "Attachments (PDF):",
-    `• ${economicName} — economic proposal (${proposalPdfPath})`,
+    "Adjuntos (PDF):",
+    `• ${economicName} — propuesta económica`,
     proposal.candidateId
-      ? `• ${cvName} — Zuperio CV (${cvPdfPath})`
-      : `• ${cvName} — assign a candidate on the proposal to enable the CV PDF`,
+      ? `• ${cvName} — CV Zuperio`
+      : `• ${cvName} — asigne un candidato para habilitar el CV en PDF`,
+    "",
+    "Los archivos se generan al enviar o al descargar desde la ficha de la propuesta (misma plantilla que el PDF de cliente).",
     "",
     proposal.proposalPdfExportedAt
-      ? `Last economic PDF export (UTC): ${proposal.proposalPdfExportedAt}`
-      : "Economic PDF has not been exported yet.",
+      ? `Última exportación PDF económico (UTC): ${proposal.proposalPdfExportedAt}`
+      : "Aún no hay exportación registrada del PDF económico.",
     proposal.candidateId
       ? proposal.candidateCvExportedAt
-        ? `Last CV PDF export (UTC): ${proposal.candidateCvExportedAt}`
-        : "CV PDF has not been exported yet."
+        ? `Última exportación CV (UTC): ${proposal.candidateCvExportedAt}`
+        : "Aún no hay exportación registrada del CV."
       : "",
     "",
-    `Prepared by: ${ctx.preparedByDisplay}`,
+    `Elaborado por: ${ctx.preparedByDisplay}`,
     "",
-    "Kind regards,",
-    "Zuperio",
+    "Quedamos atentos para una sesión de revisión cuando le sea conveniente.",
+    "",
+    "Saludos cordiales,",
+    "Zuperio · zuperio.com.mx",
   ]
     .filter((line) => line !== "")
     .join("\n");
@@ -108,7 +124,8 @@ export function buildProposalEmailDraft(
   const attachments: ProposalEmailAttachmentPlaceholder[] = [
     {
       kind: "ECONOMIC_PROPOSAL_PDF",
-      label: "Economic proposal (PDF)",
+      label: "Propuesta económica",
+      subtitle: "Documento comercial para su revisión (PDF)",
       filenameSuggestion: economicName,
       mimeType: "application/pdf",
       ready: economicReady,
@@ -117,7 +134,8 @@ export function buildProposalEmailDraft(
     },
     {
       kind: "CANDIDATE_CV_PDF",
-      label: "Candidate CV (Zuperio format, PDF)",
+      label: "CV del candidato",
+      subtitle: "Formato Zuperio (PDF)",
       filenameSuggestion: cvName,
       mimeType: "application/pdf",
       ready: cvReady,

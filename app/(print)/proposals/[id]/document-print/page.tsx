@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
 
+import { getComparisonMatrixForPair } from "@/lib/matching/queries";
 import { getProposalByIdForUi } from "@/lib/proposals/queries";
 
 import { ProposalConsultingPdfDocument } from "@/lib/proposals/pdf-template/proposal-consulting-pdf-document";
@@ -21,6 +22,11 @@ export default async function ProposalDocumentPrintPage({ params }: PageProps) {
   const proposal = await getProposalByIdForUi(id);
   if (!proposal) notFound();
 
+  const comparisonMatrix =
+    proposal.candidateId && proposal.vacancyId
+      ? await getComparisonMatrixForPair(proposal.candidateId, proposal.vacancyId)
+      : null;
+
   const preparedByDisplay =
     session.user.name?.trim() || session.user.email || "Zuperio";
 
@@ -29,6 +35,7 @@ export default async function ProposalDocumentPrintPage({ params }: PageProps) {
       <ProposalConsultingPdfDocument
         proposal={proposal}
         preparedByDisplay={preparedByDisplay}
+        comparisonMatrix={comparisonMatrix}
       />
     </div>
   );
