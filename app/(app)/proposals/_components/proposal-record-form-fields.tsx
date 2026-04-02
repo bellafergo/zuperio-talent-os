@@ -35,12 +35,12 @@ const TYPE_LABELS: Record<ProposalType, string> = {
 };
 
 const STATUS_LABELS: Record<ProposalStatus, string> = {
-  DRAFT: "Draft",
-  SENT: "Sent",
-  VIEWED: "Viewed (tracking)",
-  IN_NEGOTIATION: "In negotiation",
-  WON: "Won",
-  LOST: "Lost",
+  DRAFT: "Borrador",
+  SENT: "Enviada",
+  VIEWED: "Vista (seguimiento)",
+  IN_NEGOTIATION: "En negociación",
+  WON: "Ganada",
+  LOST: "Perdida",
 };
 
 const STATUS_FIELD_ORDER: ProposalStatus[] = [
@@ -53,13 +53,13 @@ const STATUS_FIELD_ORDER: ProposalStatus[] = [
 ];
 
 const FORMAT_LABELS: Record<ProposalFormat, string> = {
-  SIMPLE: "Simple proposal (1-page)",
-  DETAILED: "Detailed proposal (breakdown)",
+  SIMPLE: "Propuesta simple (1 página)",
+  DETAILED: "Propuesta detallada (con desglose)",
 };
 
 const SCHEME_LABELS: Record<PricingScheme, string> = {
-  MIXED: "Mixed",
-  FULL_IMSS: "Full IMSS",
+  MIXED: "Mixto",
+  FULL_IMSS: "IMSS completo",
 };
 
 export type ProposalFormDefaults = {
@@ -140,7 +140,7 @@ export function ProposalRecordFormFields({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            Company <span className="text-destructive">*</span>
+            Empresa <span className="text-destructive">*</span>
           </label>
           <select
             name="companyId"
@@ -154,7 +154,7 @@ export function ProposalRecordFormFields({
             aria-invalid={Boolean(fieldErrors?.companyId)}
           >
             <option value="" disabled>
-              Select a company…
+              Selecciona una empresa…
             </option>
             {companies.map((c) => (
               <option key={c.id} value={c.id}>
@@ -170,7 +170,7 @@ export function ProposalRecordFormFields({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Opportunity</label>
+          <label className="text-sm font-medium">Oportunidad</label>
           <select
             name="opportunityId"
             className={selectClass}
@@ -178,7 +178,7 @@ export function ProposalRecordFormFields({
             onChange={(e) => setOpportunityId(e.target.value)}
             aria-invalid={Boolean(fieldErrors?.opportunityId)}
           >
-            <option value="">No opportunity</option>
+            <option value="">Sin oportunidad</option>
             {filteredOpps.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.title}
@@ -195,14 +195,14 @@ export function ProposalRecordFormFields({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Vacancy</label>
+          <label className="text-sm font-medium">Vacante</label>
           <select
             name="vacancyId"
             className={selectClass}
             defaultValue={defaults?.vacancyId ?? ""}
             aria-invalid={Boolean(fieldErrors?.vacancyId)}
           >
-            <option value="">No vacancy</option>
+            <option value="">Sin vacante</option>
             {filteredVacancies.map((v) => (
               <option key={v.id} value={v.id}>
                 {v.title}
@@ -217,14 +217,14 @@ export function ProposalRecordFormFields({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Candidate</label>
+          <label className="text-sm font-medium">Candidato</label>
           <select
             name="candidateId"
             className={selectClass}
             defaultValue={defaults?.candidateId ?? ""}
             aria-invalid={Boolean(fieldErrors?.candidateId)}
           >
-            <option value="">No candidate</option>
+            <option value="">Sin candidato</option>
             {candidates.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -242,7 +242,7 @@ export function ProposalRecordFormFields({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            Type <span className="text-destructive">*</span>
+            Tipo <span className="text-destructive">*</span>
           </label>
           <select
             name="type"
@@ -266,7 +266,7 @@ export function ProposalRecordFormFields({
 
         <div className="space-y-2">
           <label className="text-sm font-medium">
-            Status <span className="text-destructive">*</span>
+            Estado <span className="text-destructive">*</span>
           </label>
           <select
             name="status"
@@ -290,7 +290,7 @@ export function ProposalRecordFormFields({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Proposal format</label>
+        <label className="text-sm font-medium">Formato de propuesta</label>
         <select
           name="format"
           className={selectClass}
@@ -324,7 +324,7 @@ export function ProposalRecordFormFields({
           ) : null}
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Validity (days)</label>
+          <label className="text-sm font-medium">Vigencia (días)</label>
           <Input
             name="validityDays"
             type="number"
@@ -344,14 +344,14 @@ export function ProposalRecordFormFields({
       </div>
 
       <div className="rounded-xl border border-border bg-card p-3 shadow-sm ring-1 ring-foreground/5">
-        <p className="text-sm font-medium text-foreground">Pricing inputs</p>
+        <p className="text-sm font-medium text-foreground">Datos económicos</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Deterministic and auditable. Choose scheme, set margin/load/expenses, then save
-          to compute final rates and margin.
+          Determinista y auditable. Elige esquema, establece margen/carga/gastos
+          y guarda para calcular tarifas y margen.
         </p>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Pricing scheme</label>
+            <label className="text-sm font-medium">Esquema de precios</label>
             <select
               name="scheme"
               className={selectClass}
@@ -373,7 +373,7 @@ export function ProposalRecordFormFields({
 
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              Monthly hours <span className="text-destructive">*</span>
+              Horas mensuales <span className="text-destructive">*</span>
             </label>
             <Input
               name="monthlyHours"
@@ -392,7 +392,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Margin percent</label>
+            <label className="text-sm font-medium">Margen (%)</label>
             <Input
               name="marginPercent"
               type="number"
@@ -411,7 +411,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Employer load percent (IMSS)</label>
+            <label className="text-sm font-medium">Carga patronal % (IMSS)</label>
             <Input
               name="employerLoadPercent"
               type="number"
@@ -430,7 +430,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Estimated duration (months)</label>
+            <label className="text-sm font-medium">Duración estimada (meses)</label>
             <Input
               name="estimatedDurationMonths"
               type="number"
@@ -449,7 +449,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Candidate net salary (monthly)</label>
+            <label className="text-sm font-medium">Salario neto del candidato (mensual)</label>
             <Input
               name="candidateNetSalary"
               type="number"
@@ -467,7 +467,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Bonuses (monthly)</label>
+            <label className="text-sm font-medium">Bonos (mensual)</label>
             <Input
               name="bonuses"
               type="number"
@@ -485,7 +485,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Benefits (monthly)</label>
+            <label className="text-sm font-medium">Prestaciones (mensual)</label>
             <Input
               name="benefits"
               type="number"
@@ -503,7 +503,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Operating expenses (monthly)</label>
+            <label className="text-sm font-medium">Gastos operativos (mensual)</label>
             <Input
               name="operatingExpenses"
               type="number"
@@ -521,7 +521,7 @@ export function ProposalRecordFormFields({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Discount percent</label>
+            <label className="text-sm font-medium">Descuento (%)</label>
             <Input
               name="discountPercent"
               type="number"
@@ -559,7 +559,7 @@ export function ProposalRecordFormFields({
       />
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Executive summary</label>
+        <label className="text-sm font-medium">Resumen ejecutivo</label>
         <textarea
           name="executiveSummary"
           defaultValue={defaults?.executiveSummary ?? ""}
@@ -574,7 +574,7 @@ export function ProposalRecordFormFields({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Profile summary</label>
+        <label className="text-sm font-medium">Perfil del candidato</label>
         <textarea
           name="profileSummary"
           defaultValue={defaults?.profileSummary ?? ""}
@@ -589,7 +589,7 @@ export function ProposalRecordFormFields({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Scope notes</label>
+        <label className="text-sm font-medium">Alcance y próximos pasos</label>
         <textarea
           name="scopeNotes"
           defaultValue={defaults?.scopeNotes ?? ""}
@@ -604,7 +604,7 @@ export function ProposalRecordFormFields({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Commercial notes</label>
+        <label className="text-sm font-medium">Notas comerciales</label>
         <textarea
           name="commercialNotes"
           defaultValue={defaults?.commercialNotes ?? ""}

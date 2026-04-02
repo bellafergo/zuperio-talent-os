@@ -26,27 +26,27 @@ export function VacancyCandidateMatchesSection({
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Candidate matches</CardTitle>
+        <CardTitle className="text-base font-medium">Candidatos con coincidencia</CardTitle>
         <CardDescription>
-          Structured skills vs vacancy requirements, seniority, availability, and
-          role fit — deterministic, no AI. Re-sync after changing skills or reqs.
+          Skills estructurados vs requisitos de la vacante, seniority, disponibilidad
+          y fit de rol — determinista, sin IA. Resincroniza al cambiar skills o requisitos.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {matches.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No scored matches. Add structured requirements and candidate skills,
-            then run seed or match sync.
+            Sin coincidencias puntuadas. Agrega requisitos estructurados y skills
+            de candidatos para calcular scores.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[200px]">Candidate</TableHead>
-                <TableHead className="w-[64px] text-right">Score</TableHead>
-                <TableHead className="w-[120px]">Match</TableHead>
-                <TableHead className="w-[88px]">Matrix</TableHead>
-                <TableHead className="min-w-[240px]">Explanation</TableHead>
+                <TableHead className="max-w-[200px]">Candidato</TableHead>
+                <TableHead className="w-[64px] text-right">Puntaje</TableHead>
+                <TableHead className="w-[120px]">Coincidencia</TableHead>
+                <TableHead className="w-[88px]">Matriz</TableHead>
+                <TableHead className="min-w-[240px]">Explicación</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,7 +73,7 @@ export function VacancyCandidateMatchesSection({
                       href={`/matching/compare/${m.matchId}`}
                       className="text-sm text-foreground underline-offset-4 hover:underline"
                     >
-                      Matrix
+                      Matriz
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">

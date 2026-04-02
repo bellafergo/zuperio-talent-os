@@ -26,15 +26,15 @@ export function CandidateStructuredSkillsSection({
 
   return (
     <SectionCard
-      title="Skills"
-      description="Structured catalog links with optional years and level. Legacy free-text is kept below for transition."
+      title="Competencias"
+      description="Skills del catálogo con años y nivel opcionales. El texto libre anterior se conserva abajo para transición."
       contentClassName="space-y-6 pt-4"
     >
         {groups.length === 0 ? (
           <EmptyState
             variant="embedded"
-            title="No structured skills yet"
-            description="Add catalog skills on the candidate record to power matching."
+            title="Sin skills estructurados aún"
+            description="Agrega skills del catálogo en el registro del candidato para activar el matching."
           />
         ) : (
           groups.map(([category, items]) => (
@@ -71,7 +71,7 @@ export function CandidateStructuredSkillsSection({
         {hasLegacy ? (
           <div className="border-t border-border pt-4">
             <p className="mb-1 text-xs font-medium text-muted-foreground">
-              Legacy profile text
+              Perfil libre (texto anterior)
             </p>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {legacySkillsLine}

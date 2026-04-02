@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-export function ProposalCvDownloadButton({
+export function CandidateCvDownloadButton({
   candidateId,
 }: {
   candidateId: string;
@@ -54,32 +54,23 @@ export function ProposalCvDownloadButton({
   }
 
   return (
-    <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">CV en PDF</p>
-        <p className="text-xs text-muted-foreground">
-          Misma plantilla que la vista de impresión del candidato (skills,
-          experiencia, notas).
+    <div className="flex flex-col items-end gap-1">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={pending}
+        onClick={onClick}
+        className="gap-1.5"
+      >
+        <DownloadIcon className="size-3.5" aria-hidden />
+        {pending ? "Generando…" : "Descargar CV en formato Zuperio"}
+      </Button>
+      {error ? (
+        <p className="max-w-[min(100%,320px)] text-right text-xs text-destructive">
+          {error}
         </p>
-      </div>
-      <div className="flex flex-col items-stretch gap-2 sm:items-end">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={pending}
-          onClick={onClick}
-          className="gap-1.5"
-        >
-          <DownloadIcon className="size-3.5" aria-hidden />
-          {pending ? "Generando…" : "Descargar CV en formato Zuperio"}
-        </Button>
-        {error ? (
-          <p className="max-w-[min(100%,420px)] text-right text-xs text-destructive">
-            {error}
-          </p>
-        ) : null}
-      </div>
+      ) : null}
     </div>
   );
 }

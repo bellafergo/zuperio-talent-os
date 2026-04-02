@@ -205,12 +205,7 @@ export function ProposalConsultingPdfDocument({
               </div>
               {profileSummary ? (
                 <p className="cpdf-resource-note">{profileSummary}</p>
-              ) : (
-                <p className="cpdf-resource-note cpdf-body--empty">
-                  Perfil narrativo pendiente de completar en el registro de la
-                  propuesta.
-                </p>
-              )}
+              ) : null}
             </div>
           </div>
         </section>
@@ -329,12 +324,6 @@ export function ProposalConsultingPdfDocument({
                 <tr>
                   <td className="cpdf-kv-key">Formato de documento</td>
                   <td className="cpdf-kv-val">{proposal.format}</td>
-                </tr>
-                <tr>
-                  <td className="cpdf-kv-key">Margen bruto (referencia)</td>
-                  <td className="cpdf-kv-val">
-                    {proposal.grossMarginPercentLabel}
-                  </td>
                 </tr>
               </tbody>
             </table>

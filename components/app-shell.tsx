@@ -23,8 +23,8 @@ function titleForPath(pathname: string, navItems: NavItemDef[]): string {
   if (/^\/candidates\/.+/.test(pathname)) return "Candidato";
   if (/^\/proposals\/.+/.test(pathname)) return "Propuesta";
   if (/^\/matching\/compare\/.+/.test(pathname)) return "Comparar match";
-  if (pathname === "/matching") return "Matching";
-  if (pathname === "/skills") return "Skills";
+  if (pathname === "/matching") return "Matching de talento";
+  if (pathname === "/skills") return "Catálogo de skills";
   if (pathname === "/applications") return "Postulaciones";
   if (pathname.startsWith("/admin/users")) return "Usuarios";
   return "Zuperio Talent OS";

@@ -17,6 +17,7 @@ import { listApplicationsForCandidateUi } from "@/lib/vacancy-applications/queri
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
 import { CandidateEditDialog } from "../_components/candidate-edit-dialog";
 import { CandidateApplicationsSection } from "./_components/candidate-applications-section";
+import { CandidateCvDownloadButton } from "./_components/candidate-cv-download-button";
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
@@ -63,9 +64,12 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         description="Perfil de talento, skills estructurados, postulaciones y matches deterministas con vacantes."
         meta={<CandidateAvailabilityBadge status={candidate.availabilityStatus} />}
         actions={
-          canManage && editData ? (
-            <CandidateEditDialog candidate={editData} skillsCatalog={skillsCatalog} />
-          ) : null
+          <div className="flex items-center gap-2">
+            <CandidateCvDownloadButton candidateId={id} />
+            {canManage && editData ? (
+              <CandidateEditDialog candidate={editData} skillsCatalog={skillsCatalog} />
+            ) : null}
+          </div>
         }
       />
 

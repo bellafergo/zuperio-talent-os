@@ -103,7 +103,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
             <span className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{proposal.currency}</span>
               {" · "}
-              valid {proposal.validityDays}d · {proposal.format}
+              vigencia {proposal.validityDays}d · {proposal.format}
             </span>
           </div>
         }

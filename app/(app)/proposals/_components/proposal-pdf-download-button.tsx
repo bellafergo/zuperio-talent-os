@@ -69,7 +69,7 @@ export function ProposalPdfDownloadButton({ proposalId }: { proposalId: string }
           className="gap-1.5"
         >
           <DownloadIcon className="size-3.5" aria-hidden />
-          {pending ? "Generando…" : "Descargar PDF"}
+          {pending ? "Generando…" : "Descargar propuesta en PDF"}
         </Button>
         {error ? (
           <p className="max-w-[min(100%,420px)] text-right text-xs text-destructive">

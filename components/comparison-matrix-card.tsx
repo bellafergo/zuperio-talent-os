@@ -16,10 +16,10 @@ import type { MatchRecommendationUi } from "@/lib/matching/types";
 import { cn } from "@/lib/utils";
 
 const LEVEL_LABEL: Record<ComparisonRowMatchLevel, string> = {
-  MET: "Met",
-  PARTIAL: "Partial",
-  GAP: "Gap",
-  OPEN: "Open",
+  MET: "Cumple",
+  PARTIAL: "Parcial",
+  GAP: "Brecha",
+  OPEN: "Abierto",
 };
 
 function MatchLevelBadge({ level }: { level: ComparisonRowMatchLevel }) {
@@ -66,7 +66,7 @@ function ScoreCluster({
         )}
       >
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Score
+          Puntaje
         </span>
         <span
           className={cn(
@@ -102,7 +102,7 @@ export function ComparisonMatrixCard({
   );
 
   const title =
-    layout === "focus" ? "Structured fit breakdown" : "Candidate vs vacancy matrix";
+    layout === "focus" ? "Análisis de encaje estructurado" : "Matriz candidato vs vacante";
 
   const description =
     layout === "focus" ? (
@@ -115,8 +115,8 @@ export function ComparisonMatrixCard({
       </span>
     ) : (
       <span className="text-pretty">
-        {candidateName} · {vacancyTitle} ({companyName}). Same structured inputs
-        as the match score — deterministic, no AI.
+        {candidateName} · {vacancyTitle} ({companyName}). Mismas entradas
+        estructuradas que el puntaje — determinista, sin IA.
       </span>
     );
 
@@ -150,11 +150,11 @@ export function ComparisonMatrixCard({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[200px]">Requirement</TableHead>
-              <TableHead className="min-w-[160px]">Candidate</TableHead>
-              <TableHead className="w-[100px]">Match</TableHead>
-              <TableHead className="w-[88px] text-right">Points</TableHead>
-              <TableHead className="min-w-[220px]">Note</TableHead>
+              <TableHead className="min-w-[200px]">Requerimiento</TableHead>
+              <TableHead className="min-w-[160px]">Candidato</TableHead>
+              <TableHead className="w-[100px]">Coincidencia</TableHead>
+              <TableHead className="w-[88px] text-right">Puntos</TableHead>
+              <TableHead className="min-w-[220px]">Nota</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

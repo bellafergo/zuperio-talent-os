@@ -12,8 +12,8 @@ export default async function SkillsCatalogPage() {
     <div className="space-y-8">
       <PageHeader
         variant="list"
-        title="Skills catalog"
-        description="Normalized skill names used on candidate profiles and vacancy requirements. Read-only reference for recruiters and sourcing."
+        title="Catálogo de skills"
+        description="Nombres normalizados de skills usados en perfiles de candidatos y requisitos de vacantes. Referencia de solo lectura para reclutamiento."
       />
       <DataTableShell paddingClassName="p-4 sm:p-6">
         <SkillsCatalog groups={groups} />

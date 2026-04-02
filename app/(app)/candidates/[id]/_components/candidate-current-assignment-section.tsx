@@ -18,16 +18,15 @@ export function CandidateCurrentAssignmentSection({
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Current assignment</CardTitle>
+        <CardTitle className="text-base font-medium">Asignación actual</CardTitle>
         <CardDescription>
-          Active placement on a client account (staff augmentation).
+          Colocación activa en cuenta de cliente (staff augmentation).
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {assignment == null ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            No active placement. This candidate is not currently on an assignment
-            in the system.
+            Sin asignación activa. El candidato no tiene colocación vigente en el sistema.
           </p>
         ) : (
           <div className="space-y-4">
@@ -37,7 +36,7 @@ export function CandidateCurrentAssignmentSection({
             <dl className="grid gap-3 sm:grid-cols-2">
               <div>
                 <dt className="text-xs font-medium text-muted-foreground">
-                  Client
+                  Cliente
                 </dt>
                 <dd className="mt-1 text-sm font-medium text-foreground">
                   <Link
@@ -50,7 +49,7 @@ export function CandidateCurrentAssignmentSection({
               </div>
               <div>
                 <dt className="text-xs font-medium text-muted-foreground">
-                  Role (vacancy)
+                  Rol (vacante)
                 </dt>
                 <dd className="mt-1 text-sm font-medium text-foreground">
                   <Link
@@ -63,7 +62,7 @@ export function CandidateCurrentAssignmentSection({
               </div>
               <div>
                 <dt className="text-xs font-medium text-muted-foreground">
-                  Start date
+                  Fecha de inicio
                 </dt>
                 <dd className="mt-1 text-sm text-foreground">
                   {assignment.startDateLabel}
@@ -72,7 +71,7 @@ export function CandidateCurrentAssignmentSection({
               {assignment.endDateLabel ? (
                 <div>
                   <dt className="text-xs font-medium text-muted-foreground">
-                    End date
+                    Fecha de fin
                   </dt>
                   <dd className="mt-1 text-sm text-foreground">
                     {assignment.endDateLabel}

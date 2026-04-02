@@ -12,8 +12,8 @@ export default async function ApplicationsPage() {
     <div className="space-y-8">
       <PageHeader
         variant="list"
-        title="Applications"
-        description="All vacancy–candidate pipeline rows. One active application per pair is enforced in the database; closed rows keep history."
+        title="Postulaciones"
+        description="Todos los pares vacante–candidato del pipeline. Solo se permite una postulación activa por par; las cerradas conservan el historial."
       />
       <DataTableShell>
         <ApplicationsDataTable rows={rows} />

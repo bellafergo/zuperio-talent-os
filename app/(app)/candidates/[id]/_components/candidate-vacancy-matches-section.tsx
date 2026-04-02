@@ -26,27 +26,27 @@ export function CandidateVacancyMatchesSection({
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Matching vacancies</CardTitle>
+        <CardTitle className="text-base font-medium">Vacantes con match</CardTitle>
         <CardDescription>
-          Ranked by structured skill coverage, seniority, availability, and role
-          overlap (same engine as vacancy view).
+          Ordenadas por cobertura de skills estructurados, seniority, disponibilidad
+          y alineación de rol (mismo motor que la vista de vacante).
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {matches.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No scored vacancy matches yet.
+            Sin matches puntuados todavía.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[200px]">Vacancy</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead className="w-[64px] text-right">Score</TableHead>
-                <TableHead className="w-[120px]">Match</TableHead>
-                <TableHead className="w-[88px]">Matrix</TableHead>
-                <TableHead className="min-w-[220px]">Explanation</TableHead>
+                <TableHead className="max-w-[200px]">Vacante</TableHead>
+                <TableHead>Empresa</TableHead>
+                <TableHead className="w-[64px] text-right">Puntaje</TableHead>
+                <TableHead className="w-[120px]">Nivel</TableHead>
+                <TableHead className="w-[88px]">Matriz</TableHead>
+                <TableHead className="min-w-[220px]">Explicación</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -76,7 +76,7 @@ export function CandidateVacancyMatchesSection({
                       href={`/matching/compare/${m.matchId}`}
                       className="text-sm text-foreground underline-offset-4 hover:underline"
                     >
-                      Matrix
+                      Matriz
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">

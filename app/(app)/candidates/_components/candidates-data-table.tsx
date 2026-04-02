@@ -41,7 +41,7 @@ export function CandidatesDataTable({ candidates }: { candidates: CandidateUi[] 
         <TableRow>
           <TableHead>Candidato</TableHead>
           <TableHead>Rol</TableHead>
-          <TableHead className="max-w-[280px]">Skills</TableHead>
+          <TableHead className="max-w-[280px]">Competencias</TableHead>
           <TableHead className="w-[90px]">Senioridad</TableHead>
           <TableHead className="w-[120px]">Estado</TableHead>
           <TableHead className="w-[100px]">Actualizado</TableHead>

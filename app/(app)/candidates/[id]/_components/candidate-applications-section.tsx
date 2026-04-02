@@ -27,25 +27,25 @@ export function CandidateApplicationsSection({
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Applications</CardTitle>
+        <CardTitle className="text-base font-medium">Postulaciones</CardTitle>
         <CardDescription>
-          Vacancy pipelines this candidate is or was in (independent from
-          matching and placements).
+          Pipelines de reclutamiento en los que el candidato participa o participó
+          (independiente de matches y colocaciones).
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {applications.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No vacancy applications on file.
+            Sin postulaciones registradas.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[220px]">Vacancy</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead className="w-[160px]">Stage</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="max-w-[220px]">Vacante</TableHead>
+                <TableHead>Empresa</TableHead>
+                <TableHead className="w-[160px]">Etapa</TableHead>
+                <TableHead className="w-[100px]">Estado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

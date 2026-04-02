@@ -22,24 +22,24 @@ export function ProposalOverviewPanel({
 }) {
   const contextItems = [
     {
-      label: "Company",
+      label: "Empresa",
       value: proposal.companyName,
       href: `/companies/${proposal.companyId}`,
     },
     {
-      label: "Opportunity",
+      label: "Oportunidad",
       value: proposal.opportunityTitle,
       href: proposal.opportunityId
         ? `/opportunities/${proposal.opportunityId}`
         : undefined,
     },
     {
-      label: "Vacancy",
+      label: "Vacante",
       value: proposal.vacancyTitle,
       href: proposal.vacancyId ? `/vacancies/${proposal.vacancyId}` : undefined,
     },
     {
-      label: "Candidate",
+      label: "Candidato",
       value: proposal.candidateName,
       href: proposal.candidateId ? `/candidates/${proposal.candidateId}` : undefined,
     },
@@ -49,16 +49,16 @@ export function ProposalOverviewPanel({
     <div className="space-y-8">
       <div className="space-y-3">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Commercial snapshot
+          Resumen comercial
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <KPIStatCard
-            label="Monthly rate (client)"
+            label="Tarifa mensual (cliente)"
             value={proposal.finalMonthlyRateLabel}
             emphasis
           />
           <KPIStatCard
-            label="Gross margin"
+            label="Margen bruto"
             value={proposal.grossMarginPercentLabel}
             emphasis
           />
@@ -67,7 +67,7 @@ export function ProposalOverviewPanel({
 
       <div className="space-y-3">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Deal context
+          Contexto del trato
         </p>
         <DetailGrid items={contextItems} />
       </div>
@@ -76,10 +76,10 @@ export function ProposalOverviewPanel({
         <ComparisonMatrixCard bundle={comparisonMatrix} />
       ) : null}
 
-      <TextSection title="Executive summary" value={proposal.executiveSummary} />
-      <TextSection title="Profile summary" value={proposal.profileSummary} />
-      <TextSection title="Scope notes" value={proposal.scopeNotes} />
-      <TextSection title="Commercial notes" value={proposal.commercialNotes} />
+      <TextSection title="Resumen ejecutivo" value={proposal.executiveSummary} />
+      <TextSection title="Perfil del candidato" value={proposal.profileSummary} />
+      <TextSection title="Alcance y próximos pasos" value={proposal.scopeNotes} />
+      <TextSection title="Notas comerciales" value={proposal.commercialNotes} />
     </div>
   );
 }
@@ -88,26 +88,26 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
   const currency = proposal.currency?.trim() || "MXN";
   return (
     <SectionCard
-      title="Pricing summary"
-      description="Computed outputs from saved inputs — auditable and reproducible."
+      title="Resumen de precios"
+      description="Cálculo determinista a partir de los datos guardados — auditable y reproducible."
     >
       {proposal.pricing ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Kpi label="Scheme" value={proposal.pricing.scheme} />
-          <Kpi label="Monthly hours" value={String(proposal.pricing.monthlyHours)} />
+          <Kpi label="Esquema" value={proposal.pricing.scheme} />
+          <Kpi label="Horas mensuales" value={String(proposal.pricing.monthlyHours)} />
           <Kpi
-            label="Net salary"
+            label="Salario neto"
             value={formatProposalCurrencyAmount(
               proposal.pricing.candidateNetSalary,
               currency,
             )}
           />
           <Kpi
-            label="Gross salary"
+            label="Salario bruto"
             value={formatProposalCurrencyAmount(proposal.pricing.grossSalary, currency)}
           />
           <Kpi
-            label="Full IMSS factor (stored)"
+            label="Factor IMSS completo"
             value={
               proposal.pricing.fullImssGrossFactor == null
                 ? "—"
@@ -115,29 +115,29 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
             }
           />
           <Kpi
-            label="Employer cost"
+            label="Costo patronal"
             value={formatProposalCurrencyAmount(proposal.pricing.employerCost, currency)}
           />
           <Kpi
-            label="Employer load"
+            label="Carga patronal"
             value={formatProposalCurrencyAmount(
               proposal.pricing.totalEmployerLoad,
               currency,
             )}
           />
           <Kpi
-            label="Benefits"
+            label="Prestaciones"
             value={formatProposalCurrencyAmount(proposal.pricing.totalBenefits, currency)}
           />
           <Kpi
-            label="Total bonuses (monthly)"
+            label="Bonos (mensual)"
             value={formatProposalCurrencyAmount(
               proposal.pricing.totalBonuses ?? proposal.pricing.bonuses,
               currency,
             )}
           />
           <Kpi
-            label="Opex"
+            label="Gastos operativos"
             value={formatProposalCurrencyAmount(
               proposal.pricing.totalOperatingExpenses,
               currency,
@@ -148,7 +148,7 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
             value={formatProposalCurrencyAmount(proposal.pricing.subtotal, currency)}
           />
           <Kpi
-            label="Base rate (before discount)"
+            label="Tarifa base (antes de descuento)"
             value={formatProposalCurrencyAmount(
               proposal.pricing.baseMonthlyRateBeforeDiscount,
               currency,
@@ -156,7 +156,7 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
             )}
           />
           <Kpi
-            label="Final monthly rate"
+            label="Tarifa mensual final"
             value={formatProposalCurrencyAmount(
               proposal.pricing.finalMonthlyRate,
               currency,
@@ -165,7 +165,7 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
             highlight
           />
           <Kpi
-            label="Monthly + VAT"
+            label="Tarifa mensual + IVA"
             value={formatProposalCurrencyAmount(
               proposal.pricing.finalMonthlyRateWithVAT,
               currency,
@@ -174,31 +174,31 @@ export function ProposalPricingPanel({ proposal }: { proposal: ProposalDetailUi 
             highlight
           />
           <Kpi
-            label="VAT % (stored)"
+            label="IVA %"
             value={formatProposalPercent(proposal.pricing.vatPercent)}
           />
           <Kpi
-            label="Gross margin"
+            label="Margen bruto (monto)"
             value={formatProposalCurrencyAmount(
               proposal.pricing.grossMarginAmount,
               currency,
             )}
           />
           <Kpi
-            label="Margin %"
+            label="Margen %"
             value={formatProposalPercent(proposal.pricing.grossMarginPercent)}
             highlight
           />
           <Kpi
-            label="Duration (months)"
+            label="Duración estimada (meses)"
             value={String(proposal.pricing.estimatedDurationMonths)}
           />
         </div>
       ) : (
         <EmptyState
           variant="embedded"
-          title="No pricing recorded"
-          description="Add pricing on the proposal record to populate this summary."
+          title="Sin datos de precios"
+          description="Ingresa los datos económicos en la propuesta para ver este resumen."
         />
       )}
     </SectionCard>
@@ -241,14 +241,14 @@ function TextSection({ title, value }: { title: string; value: string | null }) 
   return (
     <SectionCard
       title={title}
-      description="Narrative fields for client-ready copy."
+      description="Texto narrativo de la propuesta para el cliente."
     >
       {value ? (
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
           {value}
         </p>
       ) : (
-        <EmptyState variant="embedded" title="Not filled yet" />
+        <EmptyState variant="embedded" title="Pendiente de completar" />
       )}
     </SectionCard>
   );
