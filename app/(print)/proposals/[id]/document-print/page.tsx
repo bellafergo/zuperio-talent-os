@@ -3,7 +3,7 @@ import { redirect, notFound } from "next/navigation";
 
 import { getProposalByIdForUi } from "@/lib/proposals/queries";
 
-import { ProposalDocumentPreview } from "@/app/(app)/proposals/_components/proposal-document-preview";
+import { ProposalConsultingPdfDocument } from "@/lib/proposals/pdf-template/proposal-consulting-pdf-document";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +26,9 @@ export default async function ProposalDocumentPrintPage({ params }: PageProps) {
 
   return (
     <div className="bg-white px-6 py-8 print:px-0 print:py-0">
-      <ProposalDocumentPreview
+      <ProposalConsultingPdfDocument
         proposal={proposal}
         preparedByDisplay={preparedByDisplay}
-        hidePrintHint
       />
     </div>
   );

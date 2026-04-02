@@ -69,15 +69,30 @@ export default async function ProposalDetailPage({ params }: PageProps) {
     recipientEmail: contact?.email ?? null,
   });
 
+  const identityParts: string[] = [];
+  if (proposal.candidateName.trim() && proposal.candidateName !== "—") {
+    identityParts.push(`Candidato: ${proposal.candidateName}`);
+  }
+  if (proposal.opportunityTitle.trim() && proposal.opportunityTitle !== "—") {
+    identityParts.push(`Oportunidad: ${proposal.opportunityTitle}`);
+  }
+  if (proposal.vacancyTitle.trim() && proposal.vacancyTitle !== "—") {
+    identityParts.push(`Vacante: ${proposal.vacancyTitle}`);
+  }
+  const identityLine = identityParts.join(" · ");
+  const detailDescription = identityLine
+    ? `${identityLine}. Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.`
+    : "Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.";
+
   return (
     <div className="space-y-8">
       <PageHeader
         variant="detail"
-        eyebrow="Propuesta comercial"
+        eyebrow="Detalle de propuesta"
         backHref="/proposals"
         backLabel="Volver a propuestas"
         title={proposal.companyName}
-        description="Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial."
+        description={detailDescription}
         meta={
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <ProposalStatusBadge label={proposal.status} value={proposal.statusValue} />

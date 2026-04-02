@@ -144,6 +144,15 @@ model User {
   passwordHash String?
   /// Internal admin can deactivate; inactive users cannot sign in.
   isActive  Boolean  @default(true)
+  /// Soft / administrative removal after two-step director approval (row retained for audit).
+  isDeleted Boolean  @default(false)
+
+  deletionRequestedAt   DateTime?
+  deletionRequestedById String?
+  deletionRequester     User?    @relation("UserDeletionRequest", fields: [deletionRequestedById], references: [id], onDelete: SetNull)
+  deletionApprovedAt    DateTime?
+  deletionApprovedById  String?
+  deletionApprover      User?    @relation("UserDeletionApprove", fields: [deletionApprovedById], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -154,6 +163,11 @@ model User {
   proposalsCreated Proposal[] @relation("ProposalCreatedBy")
 
   contactMethodsCreated ContactMethod[] @relation("ContactMethodCreatedBy")
+
+  /// Users for whom this director initiated removal (audit inverse).
+  usersDeletionRequested User[] @relation("UserDeletionRequest")
+  /// Users whose removal this director approved (audit inverse).
+  usersDeletionApproved  User[] @relation("UserDeletionApprove")
 }
 
 model Company {

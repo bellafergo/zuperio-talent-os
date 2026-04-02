@@ -52,7 +52,11 @@ export function ProposalsNewProposalDialog({
       if (result.ok) {
         setOpen(false);
         form.reset();
-        router.refresh();
+        if (result.proposalId) {
+          router.push(`/proposals/${result.proposalId}`);
+        } else {
+          router.refresh();
+        }
       }
     });
   }

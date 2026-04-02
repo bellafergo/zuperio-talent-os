@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,6 +18,7 @@ import type { ProposalListRowUi } from "@/lib/proposals/types";
 import { ProposalStatusBadge } from "./proposal-status-badge";
 
 export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
+  const router = useRouter();
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center text-sm text-muted-foreground">
@@ -28,6 +31,7 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[148px]">Propuesta</TableHead>
           <TableHead className="max-w-[240px]">Empresa</TableHead>
           <TableHead className="max-w-[220px]">Oportunidad</TableHead>
           <TableHead className="max-w-[220px]">Vacante</TableHead>
@@ -41,11 +45,32 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
       </TableHeader>
       <TableBody>
         {rows.map((r) => (
-          <TableRow key={r.id}>
+          <TableRow
+            key={r.id}
+            className="cursor-pointer transition-colors hover:bg-muted/40"
+            tabIndex={0}
+            aria-label={`Abrir propuesta: ${r.companyName}`}
+            onClick={() => router.push(`/proposals/${r.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                router.push(`/proposals/${r.id}`);
+              }
+            }}
+          >
+            <TableCell
+              className="align-middle"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button asChild size="sm" variant="default" className="whitespace-nowrap">
+                <Link href={`/proposals/${r.id}`}>Ver propuesta</Link>
+              </Button>
+            </TableCell>
             <TableCell className="font-medium">
               <Link
-                href={`/proposals/${r.id}`}
+                href={`/companies/${r.companyId}`}
                 className="text-foreground underline-offset-4 hover:underline"
+                onClick={(e) => e.stopPropagation()}
               >
                 {r.companyName}
               </Link>
@@ -55,6 +80,7 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
                 <Link
                   href={`/opportunities/${r.opportunityId}`}
                   className="underline-offset-4 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <span className="line-clamp-1">{r.opportunityTitle}</span>
                 </Link>
@@ -67,6 +93,7 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
                 <Link
                   href={`/vacancies/${r.vacancyId}`}
                   className="underline-offset-4 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <span className="line-clamp-1">{r.vacancyTitle}</span>
                 </Link>
@@ -79,6 +106,7 @@ export function ProposalsTable({ rows }: { rows: ProposalListRowUi[] }) {
                 <Link
                   href={`/candidates/${r.candidateId}`}
                   className="underline-offset-4 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <span className="line-clamp-1">{r.candidateName}</span>
                 </Link>

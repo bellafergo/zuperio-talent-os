@@ -1,16 +1,36 @@
 import { prisma } from "@/lib/prisma";
 
-import type { AdminUserRow } from "./types";
+import type { AdminUserDisplayStatus, AdminUserRow } from "./types";
 
-function formatCreatedAt(d: Date) {
+function formatAt(d: Date) {
   return new Intl.DateTimeFormat("es-MX", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(d);
 }
 
-export async function listUsersForAdmin(): Promise<AdminUserRow[]> {
+function actorLabel(name: string | null, email: string): string {
+  const n = name?.trim();
+  return n || email;
+}
+
+function deriveDisplayStatus(r: {
+  isDeleted: boolean;
+  isActive: boolean;
+  deletionRequestedAt: Date | null;
+  deletionApprovedAt: Date | null;
+}): AdminUserDisplayStatus {
+  if (r.isDeleted) return "removed";
+  if (r.deletionRequestedAt && !r.deletionApprovedAt) return "pending_removal";
+  if (!r.isActive) return "inactive";
+  return "active";
+}
+
+export async function listUsersForAdmin(options: {
+  includeRemoved: boolean;
+}): Promise<AdminUserRow[]> {
   const rows = await prisma.user.findMany({
+    where: options.includeRemoved ? {} : { isDeleted: false },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -18,7 +38,17 @@ export async function listUsersForAdmin(): Promise<AdminUserRow[]> {
       email: true,
       role: true,
       isActive: true,
+      isDeleted: true,
       createdAt: true,
+      deletionRequestedAt: true,
+      deletionRequestedById: true,
+      deletionApprovedAt: true,
+      deletionRequester: {
+        select: { name: true, email: true },
+      },
+      deletionApprover: {
+        select: { name: true, email: true },
+      },
     },
   });
 
@@ -28,6 +58,26 @@ export async function listUsersForAdmin(): Promise<AdminUserRow[]> {
     email: r.email,
     role: r.role,
     isActive: r.isActive,
-    createdAtLabel: formatCreatedAt(r.createdAt),
+    isDeleted: r.isDeleted,
+    createdAtLabel: formatAt(r.createdAt),
+    displayStatus: deriveDisplayStatus({
+      isDeleted: r.isDeleted,
+      isActive: r.isActive,
+      deletionRequestedAt: r.deletionRequestedAt,
+      deletionApprovedAt: r.deletionApprovedAt,
+    }),
+    deletionRequestedById: r.deletionRequestedById,
+    deletionRequestedAtLabel: r.deletionRequestedAt
+      ? formatAt(r.deletionRequestedAt)
+      : null,
+    deletionRequesterLabel: r.deletionRequester
+      ? actorLabel(r.deletionRequester.name, r.deletionRequester.email)
+      : null,
+    deletionApprovedAtLabel: r.deletionApprovedAt
+      ? formatAt(r.deletionApprovedAt)
+      : null,
+    deletionApproverLabel: r.deletionApprover
+      ? actorLabel(r.deletionApprover.name, r.deletionApprover.email)
+      : null,
   }));
 }

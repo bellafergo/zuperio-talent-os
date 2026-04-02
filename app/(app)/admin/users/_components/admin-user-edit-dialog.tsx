@@ -43,6 +43,10 @@ export function AdminUserEditDialog({
 
   const isSelf = user.id === currentUserId;
 
+  if (user.isDeleted) {
+    return null;
+  }
+
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;

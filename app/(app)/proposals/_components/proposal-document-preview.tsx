@@ -1,10 +1,8 @@
-import type { ReactNode } from "react";
-
 import type { ProposalDetailUi } from "@/lib/proposals/types";
 import {
-  formatProposalCurrencyAmount,
-  formatProposalPercent,
-} from "@/lib/proposals/presentation";
+  DetailedPricingTable,
+  SimplePricingTable,
+} from "@/lib/proposals/pdf-template/proposal-pricing-blocks";
 
 import "./proposal-document.css";
 
@@ -15,10 +13,10 @@ type ProposalDocumentPreviewProps = {
   hidePrintHint?: boolean;
 };
 
-const STANDARD_CONDITIONS = [
-  "This commercial proposal is indicative and subject to contract. Pricing reflects the assumptions and inputs recorded in Zuperio at the time of issue.",
-  "Engagement terms, notice periods, and deliverables will be confirmed in the master services agreement or statement of work.",
-  "This proposal remains valid for the validity period stated on this document unless withdrawn in writing earlier.",
+const STANDARD_CONDITIONS_ES = [
+  "Esta propuesta comercial es orientativa y queda sujeta a contrato. Los montos reflejan los supuestos e información registrados en Zuperio a la fecha de emisión.",
+  "Las condiciones de prestación del servicio, plazos de aviso y entregables se confirmarán en el contrato marco o en el anexo / statement of work correspondiente.",
+  "Esta propuesta conserva su vigencia durante el plazo indicado en el documento, salvo revocación previa por escrito.",
 ];
 
 export function ProposalDocumentPreview({
@@ -40,11 +38,12 @@ export function ProposalDocumentPreview({
     <div className="proposal-print-root space-y-3">
       {!hidePrintHint ? (
         <p className="proposal-no-print text-xs text-muted-foreground">
-          Fixed Zuperio layout — use{" "}
-          <span className="font-medium text-foreground">Download PDF</span> on
-          this page, or your browser{" "}
-          <span className="font-medium text-foreground">Print</span> →{" "}
-          <span className="font-medium text-foreground">Save as PDF</span>.
+          Vista previa — use{" "}
+          <span className="font-medium text-foreground">Descargar PDF</span> en
+          esta página, o{" "}
+          <span className="font-medium text-foreground">Imprimir</span> →{" "}
+          <span className="font-medium text-foreground">Guardar como PDF</span>{" "}
+          para conservar el diseño de alta calidad del documento.
         </p>
       ) : null}
       <article
@@ -97,7 +96,7 @@ export function ProposalDocumentPreview({
         </section>
 
         <section className="mt-8">
-            <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
+          <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
             Recurso propuesto
           </h3>
           <table className="mt-3">
@@ -138,7 +137,7 @@ export function ProposalDocumentPreview({
             )
           ) : (
             <p className="mt-3 text-sm text-muted-foreground">
-              No pricing block on this proposal yet.
+              Aún no hay bloque de precios en esta propuesta.
             </p>
           )}
         </section>
@@ -147,17 +146,17 @@ export function ProposalDocumentPreview({
 
         <section className="mt-8">
           <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
-            Conditions
+            Condiciones generales
           </h3>
           <ul className="mt-3 list-inside list-disc space-y-1.5 text-xs leading-relaxed text-muted-foreground">
-            {STANDARD_CONDITIONS.map((line) => (
+            {STANDARD_CONDITIONS_ES.map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
           {proposal.commercialNotes?.trim() ? (
             <div className="mt-4 rounded-md border border-[var(--proposal-doc-border)] bg-muted/20 px-3 py-2 text-xs leading-relaxed text-foreground">
               <p className="font-semibold text-muted-foreground">
-                Commercial remarks
+                Observaciones comerciales
               </p>
               <p className="mt-1 whitespace-pre-wrap">{proposal.commercialNotes}</p>
             </div>
@@ -166,31 +165,31 @@ export function ProposalDocumentPreview({
 
         <section className="mt-10 border-t border-[var(--proposal-doc-border)] pt-6">
           <h3 className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">
-            Acceptance
+            Aceptación
           </h3>
           <p className="mt-3 text-xs text-muted-foreground">
-            By signing below, the client confirms acceptance of this commercial
-            proposal subject to final contract.
+            Al firmar abajo, el cliente confirma la aceptación de esta propuesta
+            comercial, sujeta al contrato definitivo.
           </p>
           <div className="mt-8 grid gap-10 sm:grid-cols-2">
             <div>
               <p className="text-xs font-medium text-foreground">
-                For {proposal.companyName}
+                Por {proposal.companyName}
               </p>
               <div className="mt-10 border-b border-foreground/40 pb-1 text-xs text-muted-foreground">
-                {"Name & title"}
+                Nombre y cargo
               </div>
               <div className="mt-6 border-b border-foreground/40 pb-1 text-xs text-muted-foreground">
-                {"Signature & date"}
+                Firma y fecha
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-foreground">For Zuperio</p>
+              <p className="text-xs font-medium text-foreground">Por Zuperio</p>
               <div className="mt-10 border-b border-foreground/40 pb-1 text-xs text-muted-foreground">
-                {"Name & title"}
+                Nombre y cargo
               </div>
               <div className="mt-6 border-b border-foreground/40 pb-1 text-xs text-muted-foreground">
-                {"Signature & date"}
+                Firma y fecha
               </div>
             </div>
           </div>
@@ -200,247 +199,15 @@ export function ProposalDocumentPreview({
   );
 }
 
-function SimplePricingTable({
-  proposal,
-  currency,
-}: {
-  proposal: ProposalDetailUi;
-  currency: string;
-}) {
-  const p = proposal.pricing!;
-  const rows: { label: string; value: string }[] = [
-    { label: "Pricing scheme", value: p.scheme },
-    {
-      label: "Monthly commercial rate (excl. VAT)",
-      value: formatProposalCurrencyAmount(p.finalMonthlyRate, currency, 0),
-    },
-    {
-      label: "Indicative monthly rate (incl. VAT)",
-      value: formatProposalCurrencyAmount(p.finalMonthlyRateWithVAT, currency, 0),
-    },
-    {
-      label: "Gross margin",
-      value: formatProposalPercent(p.grossMarginPercent),
-    },
-    {
-      label: "Estimated duration (months)",
-      value: String(p.estimatedDurationMonths),
-    },
-    {
-      label: "Proposal validity (days)",
-      value: String(proposal.validityDays),
-    },
-  ];
-  return (
-    <table className="mt-3">
-      <tbody>
-        {rows.map((r) => (
-          <tr key={r.label}>
-            <td className="w-[55%] text-muted-foreground">{r.label}</td>
-            <td className="num font-medium text-foreground">{r.value}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-function DetailedPricingTable({
-  proposal,
-  currency,
-}: {
-  proposal: ProposalDetailUi;
-  currency: string;
-}) {
-  const p = proposal.pricing!;
-  const totalBonuses = p.totalBonuses ?? p.bonuses;
-
-  const estEmployeeDeductions =
-    p.grossSalary != null && p.candidateNetSalary != null
-      ? Math.round((p.grossSalary - p.candidateNetSalary) * 100) / 100
-      : null;
-  const showEstDeductions =
-    estEmployeeDeductions != null && Math.abs(estEmployeeDeductions) > 0.005;
-
-  return (
-    <div className="proposal-doc-economic mt-3 space-y-0">
-      <p className="proposal-doc-note">
-        <span className="font-medium text-foreground">Context:</span>{" "}
-        {p.scheme} · {p.monthlyHours} h/month · proposal validity{" "}
-        {proposal.validityDays} days. Amounts are monthly unless stated.
-        Informative lines do not change the commercial calculation.
-      </p>
-
-      <p className="proposal-doc-block-title">A. Compensation base</p>
-      <EconBlockTable currency={currency}>
-        <EconRow
-          label="Net salary (candidate take-home)"
-          value={formatProposalCurrencyAmount(p.candidateNetSalary, currency)}
-        />
-        <EconRow
-          label="Gross salary (payroll basis)"
-          value={formatProposalCurrencyAmount(p.grossSalary, currency)}
-        />
-        {showEstDeductions ? (
-          <EconRow
-            label="Est. employee deductions (informative: gross − net)"
-            value={formatProposalCurrencyAmount(estEmployeeDeductions, currency)}
-          />
-        ) : null}
-      </EconBlockTable>
-
-      <p className="proposal-doc-block-title">B. Bonuses</p>
-      <EconBlockTable currency={currency}>
-        <EconRow
-          label="Bonuses (monthly accrual)"
-          value={formatProposalCurrencyAmount(p.bonuses, currency)}
-        />
-        <EconRow
-          label="Total bonuses (loaded into cost)"
-          value={formatProposalCurrencyAmount(totalBonuses, currency)}
-        />
-      </EconBlockTable>
-
-      <p className="proposal-doc-block-title">C. Benefits</p>
-      <EconBlockTable currency={currency}>
-        <EconRow
-          label="Benefits (monthly accrual)"
-          value={formatProposalCurrencyAmount(p.benefits, currency)}
-        />
-        <EconRow
-          label="Total benefits (loaded into cost)"
-          value={formatProposalCurrencyAmount(p.totalBenefits, currency)}
-        />
-      </EconBlockTable>
-
-      <p className="proposal-doc-block-title">D. Employer load</p>
-      <EconBlockTable currency={currency}>
-        <EconRow
-          label="Employer load rate (% of gross)"
-          value={formatProposalPercent(p.employerLoadPercent)}
-        />
-        <EconRow
-          label="Employer load (IMSS, payroll taxes, statutory — amount)"
-          value={formatProposalCurrencyAmount(p.totalEmployerLoad, currency)}
-        />
-        <EconRow
-          label="Employer cost (gross + employer load)"
-          value={formatProposalCurrencyAmount(p.employerCost, currency)}
-        />
-      </EconBlockTable>
-
-      <p className="proposal-doc-block-title">E. Operating expenses</p>
-      <EconBlockTable currency={currency}>
-        <EconRow
-          label="Operating expenses (monthly)"
-          value={formatProposalCurrencyAmount(p.operatingExpenses, currency)}
-        />
-        <EconRow
-          label="Total operating expenses (loaded)"
-          value={formatProposalCurrencyAmount(p.totalOperatingExpenses, currency)}
-        />
-      </EconBlockTable>
-
-      <p className="proposal-doc-block-title">F. Commercial result</p>
-      <EconBlockTable currency={currency}>
-        <EconRow
-          label="Internal monthly cost (subtotal)"
-          value={formatProposalCurrencyAmount(p.subtotal, currency)}
-          rowClassName="proposal-doc-divider proposal-doc-strong"
-        />
-        <EconRow
-          label="Target margin on cost (policy %)"
-          value={formatProposalPercent(p.marginPercent)}
-        />
-        <EconRow
-          label="Fee before commercial discount"
-          value={formatProposalCurrencyAmount(
-            p.baseMonthlyRateBeforeDiscount,
-            currency,
-            0,
-          )}
-        />
-        <EconRow
-          label="Commercial discount"
-          value={formatProposalPercent(p.discountPercent ?? 0)}
-        />
-        <EconRow
-          label="Final monthly fee (excl. VAT)"
-          value={formatProposalCurrencyAmount(p.finalMonthlyRate, currency, 0)}
-          rowClassName="proposal-doc-strong"
-        />
-        <EconRow
-          label="Gross margin on revenue (amount)"
-          value={formatProposalCurrencyAmount(p.grossMarginAmount, currency)}
-        />
-        <EconRow
-          label="Gross margin on revenue (% of fee)"
-          value={formatProposalPercent(p.grossMarginPercent)}
-        />
-        <EconRow
-          label="VAT rate (on fee)"
-          value={formatProposalPercent(p.vatPercent)}
-        />
-        <EconRow
-          label="Final monthly fee (incl. VAT)"
-          value={formatProposalCurrencyAmount(
-            p.finalMonthlyRateWithVAT,
-            currency,
-            0,
-          )}
-          rowClassName="proposal-doc-strong"
-        />
-      </EconBlockTable>
-    </div>
-  );
-}
-
-function EconBlockTable({
-  currency,
-  children,
-}: {
-  currency: string;
-  children: ReactNode;
-}) {
-  return (
-    <table className="proposal-doc-block-table">
-      <thead>
-        <tr>
-          <th>Concept</th>
-          <th className="num">Amount ({currency})</th>
-        </tr>
-      </thead>
-      <tbody>{children}</tbody>
-    </table>
-  );
-}
-
-function EconRow({
-  label,
-  value,
-  rowClassName,
-}: {
-  label: string;
-  value: string;
-  rowClassName?: string;
-}) {
-  return (
-    <tr className={rowClassName}>
-      <td className="text-muted-foreground">{label}</td>
-      <td className="num font-medium text-foreground">{value}</td>
-    </tr>
-  );
-}
-
 function ProposalNarrativeSections({
   proposal,
 }: {
   proposal: ProposalDetailUi;
 }) {
   const blocks: { title: string; body: string | null }[] = [
-    { title: "Executive summary", body: proposal.executiveSummary },
-    { title: "Profile summary", body: proposal.profileSummary },
-    { title: "Scope", body: proposal.scopeNotes },
+    { title: "Resumen ejecutivo", body: proposal.executiveSummary },
+    { title: "Perfil del candidato", body: proposal.profileSummary },
+    { title: "Alcance", body: proposal.scopeNotes },
   ];
   const filled = blocks.filter((b) => b.body?.trim());
   if (filled.length === 0) return null;
