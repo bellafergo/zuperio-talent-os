@@ -1,6 +1,9 @@
 import type { ProposalDetailUi } from "@/lib/proposals/types";
 import type { ComparisonMatrixBundle } from "@/lib/matching/queries";
-import { formatProposalCurrencyAmount } from "@/lib/proposals/presentation";
+import {
+  formatProposalCurrencyAmount,
+  formatProposalPercent,
+} from "@/lib/proposals/presentation";
 
 import {
   DetailedPricingTable,
@@ -14,10 +17,14 @@ import {
 import "@/app/(app)/proposals/_components/proposal-document.css";
 import "./proposal-consulting-pdf.css";
 
+/** Short items (2–3 líneas c/u) for two-column términos per design spec */
 const STANDARD_CONDITIONS_ES = [
-  "Esta propuesta comercial es orientativa y queda sujeta a contrato. Los montos reflejan los supuestos e información registrados en Zuperio a la fecha de emisión.",
-  "Las condiciones de prestación del servicio, plazos de aviso y entregables se confirmarán en el contrato marco o en el anexo / statement of work correspondiente.",
-  "Esta propuesta conserva su vigencia durante el plazo indicado en el documento, salvo revocación previa por escrito.",
+  "Propuesta orientativa y sujeta al contrato definitivo que suscriban las partes.",
+  "Los montos reflejan los supuestos e información registrados en Zuperio a la fecha de emisión.",
+  "Condiciones de prestación, plazos de aviso y entregables se confirman en el contrato marco o anexo / statement of work.",
+  "La vigencia indicada en el documento aplica salvo revocación previa por escrito.",
+  "Los anexos técnicos o de alcance, cuando existan, complementan esta propuesta comercial.",
+  "Modificaciones económicas requieren acuerdo expreso por escrito entre cliente y Zuperio.",
 ];
 
 export type ProposalConsultingPdfDocumentProps = {
@@ -87,10 +94,6 @@ export function ProposalConsultingPdfDocument({
     p?.finalMonthlyRate != null
       ? formatProposalCurrencyAmount(p.finalMonthlyRate, currency, 0)
       : "—";
-  const rateIncl =
-    p?.finalMonthlyRateWithVAT != null
-      ? formatProposalCurrencyAmount(p.finalMonthlyRateWithVAT, currency, 0)
-      : "—";
 
   const { left: termsLeft, right: termsRight } =
     splitTermsForColumns(STANDARD_CONDITIONS_ES);
@@ -121,14 +124,11 @@ export function ProposalConsultingPdfDocument({
         </header>
         <div className="cpdf-rule-blue" aria-hidden />
 
-        <div className="cpdf-title-block">
+        <div className="cpdf-title-block cpdf-title-block--economic">
           <div className="cpdf-title-accent" aria-hidden />
           <div className="cpdf-title-inner">
-            <h1 className="cpdf-doc-title">Propuesta económica</h1>
-            <p className="cpdf-doc-subtitle">Servicio especializado · Staff augmentation</p>
-            <p className="cpdf-doc-kicker">
-              {proposal.companyName} · {proposalName}
-            </p>
+            <h1 className="cpdf-doc-title">Propuesta Económica</h1>
+            <p className="cpdf-doc-subtitle">Servicio Especializado</p>
           </div>
         </div>
 
@@ -152,9 +152,11 @@ export function ProposalConsultingPdfDocument({
             <p className="cpdf-party-label">Elabora</p>
             <p className="cpdf-party-name">{preparedByDisplay}</p>
             <p className="cpdf-party-lines">
-              Zuperio · Account management
+              Zuperio · Gestión comercial
               <br />
-              zuperio.com.mx
+              <a className="cpdf-party-email" href="mailto:contacto@zuperio.com.mx">
+                contacto@zuperio.com.mx
+              </a>
             </p>
           </div>
         </div>
@@ -197,14 +199,28 @@ export function ProposalConsultingPdfDocument({
               <div className="cpdf-resource-head">
                 <div>
                   <p className="cpdf-resource-name">{proposal.candidateName}</p>
-                  <p className="cpdf-resource-role">{roleLine}</p>
+                  <p className="cpdf-resource-role">
+                    {profileSummary
+                      ? profileSummary.split(/\n/)[0].trim().slice(0, 140)
+                      : proposal.opportunityTitle !== "—"
+                        ? proposal.opportunityTitle
+                        : roleLine}
+                  </p>
                 </div>
                 {proposal.vacancyTitle !== "—" ? (
                   <span className="cpdf-pill">{proposal.vacancyTitle}</span>
                 ) : null}
               </div>
-              {profileSummary ? (
-                <p className="cpdf-resource-note">{profileSummary}</p>
+              {profileSummary &&
+              profileSummary.split(/\n/).filter((l) => l.trim()).length > 1 ? (
+                <p className="cpdf-resource-note">
+                  {profileSummary
+                    .split(/\n/)
+                    .map((l) => l.trim())
+                    .filter(Boolean)
+                    .slice(1)
+                    .join("\n\n")}
+                </p>
               ) : null}
             </div>
           </div>
@@ -273,10 +289,7 @@ export function ProposalConsultingPdfDocument({
                       <>
                         <div className="cpdf-rate-big">{rateExcl}</div>
                         <div className="cpdf-rate-sub">
-                          {currency} / mes · sin IVA
-                        </div>
-                        <div className="cpdf-rate-sub">
-                          Indicativo con IVA: {rateIncl}
+                          {currency} / mes · IVA no incluido
                         </div>
                       </>
                     ) : (
@@ -324,6 +337,14 @@ export function ProposalConsultingPdfDocument({
                 <tr>
                   <td className="cpdf-kv-key">Formato de documento</td>
                   <td className="cpdf-kv-val">{proposal.format}</td>
+                </tr>
+                <tr>
+                  <td className="cpdf-kv-key">IVA</td>
+                  <td className="cpdf-kv-val">
+                    {p.vatPercent != null
+                      ? formatProposalPercent(p.vatPercent)
+                      : "—"}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -389,23 +410,27 @@ export function ProposalConsultingPdfDocument({
         <section className="cpdf-accept">
           <p className="cpdf-accept-label">Aceptación</p>
           <p className="cpdf-accept-intro">
-            Al firmar, el cliente confirma la aceptación de esta propuesta
-            comercial, sin perjuicio del contrato definitivo que las partes
-            suscriban.
+            Al firmar, el cliente confirma la aceptación de esta propuesta, sin
+            perjuicio del contrato definitivo.
           </p>
           <div className="cpdf-sign-grid">
             <div className="cpdf-sign-card">
               <div className="cpdf-sign-bar">{proposal.companyName}</div>
               <div className="cpdf-sign-body">
-                <div className="cpdf-sign-line">Nombre y cargo</div>
-                <div className="cpdf-sign-line">Firma y fecha</div>
+                <div className="cpdf-sign-inkline" />
+                <p className="cpdf-sign-name-slot">Nombre y firma</p>
+                <p className="cpdf-sign-role-slot">Cargo</p>
               </div>
             </div>
             <div className="cpdf-sign-card">
               <div className="cpdf-sign-bar">Zuperio</div>
               <div className="cpdf-sign-body">
-                <div className="cpdf-sign-line">Nombre y cargo</div>
-                <div className="cpdf-sign-line">Firma y fecha</div>
+                <div className="cpdf-sign-inkline" />
+                <p className="cpdf-sign-name-slot">Nombre y firma</p>
+                <p className="cpdf-sign-role-slot">Cargo</p>
+                <p className="cpdf-sign-fecha">
+                  Fecha de aceptación: ___________
+                </p>
               </div>
             </div>
           </div>
@@ -413,9 +438,9 @@ export function ProposalConsultingPdfDocument({
 
         <footer className="cpdf-doc-footer">
           <span>
-            {refCode} · Confidencial · {today}
+            Propuesta {refCode} · Confidencial · {today}
           </span>
-          <span>
+          <span className="cpdf-footer-brand">
             ZUPERIO ·{" "}
             <a href="https://zuperio.com.mx" target="_blank" rel="noreferrer">
               zuperio.com.mx

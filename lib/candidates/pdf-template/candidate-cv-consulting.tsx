@@ -48,15 +48,6 @@ function skillBarPercent(s: CvSkillRow): number {
   return 38;
 }
 
-function placementStatusEs(en: string): string {
-  const m: Record<string, string> = {
-    Active: "Activo",
-    Completed: "Completado",
-    Cancelled: "Cancelado",
-  };
-  return m[en] ?? en;
-}
-
 function buildExecutiveParagraph(data: CandidateCvPrintData): string {
   const mx = maxSkillYears(data.structuredSkills);
   const top = topSkills(data.structuredSkills, 4).map((s) => s.name);
@@ -125,15 +116,24 @@ function buildHighlightBullets(data: CandidateCvPrintData): string[] {
   return bullets.slice(0, 6);
 }
 
-function contextLine(data: CandidateCvPrintData): string | null {
-  const p0 = data.placements[0];
-  if (p0) {
-    return `Contexto reciente: ${p0.roleTitle} · ${p0.companyName}`;
-  }
-  if (data.currentCompany?.trim()) {
-    return `Organización actual: ${data.currentCompany.trim()}`;
-  }
-  return null;
+function applyingRoleLabel(data: CandidateCvPrintData): string {
+  return data.placements[0]?.roleTitle?.trim() || data.role;
+}
+
+function heroMetaLine(data: CandidateCvPrintData, mx: number): string {
+  const bits: string[] = [];
+  if (data.currentCompany?.trim()) bits.push(data.currentCompany.trim());
+  if (mx > 0) bits.push(`${mx}+ años de experiencia`);
+  bits.push(data.availabilityLabel);
+  return bits.join(" · ");
+}
+
+function highlightsAsSoftPills(highlights: string[]): string[] {
+  return highlights.slice(0, 8).map((h) => {
+    const t = h.trim();
+    if (t.length <= 42) return t;
+    return `${t.slice(0, 39)}…`;
+  });
 }
 
 function formatTodayEsMx(): string {
@@ -161,10 +161,9 @@ export function CandidateCvConsultingDocument({
   const skillGroups = groupSkillsByCategory(data.structuredSkills);
   const executive = buildExecutiveParagraph(data);
   const highlights = buildHighlightBullets(data);
-  const context = contextLine(data);
+  const softPills = highlightsAsSoftPills(highlights);
   const today = formatTodayEsMx();
   const refCode = `ZCV-${data.id.slice(0, 8).toUpperCase()}`;
-  const tagSkills = topSkills(data.structuredSkills, 10);
   const mx = maxSkillYears(data.structuredSkills);
 
   return (
@@ -182,57 +181,24 @@ export function CandidateCvConsultingDocument({
           <div className="cpdf-top-meta">
             <strong>{refCode}</strong>
             <span>{today}</span>
-            <span>Perfil del recurso</span>
             <span>Pág. 1 de 1</span>
+            <span>Vigencia conforme uso comercial</span>
           </div>
         </header>
         <div className="cpdf-rule-blue" aria-hidden />
 
-        <div className="cpdf-title-block">
-          <div className="cpdf-title-accent" aria-hidden />
-          <div className="cpdf-title-inner">
-            <h1 className="cpdf-doc-title">{data.fullName}</h1>
-            <p className="cpdf-doc-subtitle">{data.role}</p>
-            <p className="cpdf-doc-kicker">
-              Perfil del recurso · Staff augmentation · {data.seniorityLabel}
-            </p>
+        <section className="cpdf-cv-hero" aria-label="Identidad del candidato">
+          <div className="cpdf-cv-hero-name-wrap">
+            <h1 className="cpdf-cv-hero-name">{data.fullName}</h1>
           </div>
-        </div>
-
-        <div className="cpdf-party-grid">
-          <div className="cpdf-party">
-            <p className="cpdf-party-label">Identidad</p>
-            <p className="cpdf-party-name">{data.fullName}</p>
-            <p className="cpdf-party-lines">
-              Especialización: {data.role}
-              {context ? (
-                <>
-                  <br />
-                  {context}
-                </>
-              ) : null}
-            </p>
-          </div>
-          <div className="cpdf-party">
-            <p className="cpdf-party-label">Estado comercial</p>
-            <p className="cpdf-party-name">{data.availabilityLabel}</p>
-            <p className="cpdf-party-lines">
-              Nivel: {data.seniorityLabel}
-              {mx > 0 ? (
-                <>
-                  <br />
-                  Hasta {mx}+ años en competencias clave registradas.
-                </>
-              ) : null}
-              {data.currentCompany?.trim() ? (
-                <>
-                  <br />
-                  {data.currentCompany.trim()}
-                </>
-              ) : null}
-            </p>
-          </div>
-        </div>
+          <p className="cpdf-cv-hero-title">{data.role}</p>
+          <p className="cpdf-cv-apply-wrap">
+            <span className="cpdf-cv-apply-pill">
+              Aplicando a: <strong>{applyingRoleLabel(data)}</strong>
+            </span>
+          </p>
+          <p className="cpdf-cv-hero-meta">{heroMetaLine(data, mx)}</p>
+        </section>
 
         <div className="cpdf-cv-body">
           <aside className="cpdf-cv-sidebar">
@@ -245,16 +211,21 @@ export function CandidateCvConsultingDocument({
                 />
                 <span className="cpdf-cv-avail-text">{data.availabilityLabel}</span>
               </div>
+              <p className="cpdf-cv-avail-sub">{data.seniorityLabel}</p>
             </div>
 
-            <div className="cpdf-cv-side-block">
-              <p className="cpdf-sec-label">Highlights</p>
-              <ul className="cpdf-cv-highlight-list">
-                {highlights.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            </div>
+            {softPills.length > 0 ? (
+              <div className="cpdf-cv-side-block">
+                <p className="cpdf-sec-label">Habilidades blandas detectadas</p>
+                <div className="cpdf-cv-soft-pills">
+                  {softPills.map((label, idx) => (
+                    <span key={`${idx}-${label}`} className="cpdf-cv-soft-pill">
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {skillGroups.length > 0 ? (
               <div className="cpdf-cv-side-block">
@@ -267,10 +238,13 @@ export function CandidateCvConsultingDocument({
                         <div className="cpdf-cv-skill-name">
                           <span>{s.name}</span>
                           <span className="cpdf-cv-skill-meta">
-                            {s.yearsExperience != null
-                              ? `${s.yearsExperience}a`
-                              : ""}
-                            {s.level ? ` · ${s.level}` : ""}
+                            {s.level
+                              ? s.yearsExperience != null
+                                ? `${s.level} · ${s.yearsExperience}a`
+                                : s.level
+                              : s.yearsExperience != null
+                                ? `${s.yearsExperience}a`
+                                : ""}
                           </span>
                         </div>
                         <div className="cpdf-cv-skill-track">
@@ -288,7 +262,7 @@ export function CandidateCvConsultingDocument({
 
             {data.legacySkillsText.trim() && skillGroups.length === 0 ? (
               <div className="cpdf-cv-side-block">
-                <p className="cpdf-sec-label">Resumen de competencias</p>
+                <p className="cpdf-sec-label">Skills técnicos</p>
                 <p className="cpdf-cv-legacy-compact">{data.legacySkillsText}</p>
               </div>
             ) : null}
@@ -298,29 +272,17 @@ export function CandidateCvConsultingDocument({
             <section className="cpdf-section">
               <p className="cpdf-sec-label">Perfil ejecutivo</p>
               <p className="cpdf-intro">{executive}</p>
-              {tagSkills.length > 0 ? (
-                <div className="cpdf-cv-tag-row" aria-label="Skills destacados">
-                  {tagSkills.map((s) => (
-                    <span key={s.name} className="cpdf-cv-tag">
-                      {s.name}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
             </section>
 
             {data.notes?.trim() ? (
               <section className="cpdf-section">
                 <p className="cpdf-sec-label">Por qué este perfil</p>
-                <div className="cpdf-remark">
-                  <p className="cpdf-remark-label">Valoración comercial</p>
-                  <p className="cpdf-remark-body">{data.notes.trim()}</p>
-                </div>
+                <p className="cpdf-cv-why">{data.notes.trim()}</p>
               </section>
             ) : null}
 
             <section className="cpdf-section">
-              <p className="cpdf-sec-label">Experiencia relevante</p>
+              <p className="cpdf-sec-label">Experiencia laboral</p>
               {data.placements.length > 0 ? (
                 data.placements.map((p, i) => (
                   <div key={`${p.companyName}-${i}`} className="cpdf-cv-exp-block">
@@ -328,9 +290,6 @@ export function CandidateCvConsultingDocument({
                       <div>
                         <p className="cpdf-cv-exp-role">{p.roleTitle}</p>
                         <p className="cpdf-cv-exp-co">{p.companyName}</p>
-                        <p className="cpdf-cv-exp-status">
-                          Estado: {placementStatusEs(p.statusLabel)}
-                        </p>
                       </div>
                       <span className="cpdf-cv-exp-dates">
                         {p.startLabel} — {p.endLabel}
@@ -348,6 +307,10 @@ export function CandidateCvConsultingDocument({
                         impacto se nutre de las bitácoras registradas en Zuperio.
                       </p>
                     )}
+                    <div className="cpdf-cv-exp-tags">
+                      <span className="cpdf-cv-exp-tag">{p.companyName}</span>
+                      <span className="cpdf-cv-exp-tag">{p.roleTitle}</span>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -370,11 +333,10 @@ export function CandidateCvConsultingDocument({
 
         <footer className="cpdf-doc-footer">
           <span>
-            Documento generado en Zuperio · Confidencial · Los datos de contacto
-            del candidato se comparten bajo acuerdo comercial · {refCode} ·{" "}
-            {today}
+            Documento generado por plataforma Zuperio · Confidencial · Datos de
+            contacto resguardados por Zuperio · {refCode} · {today}
           </span>
-          <span>
+          <span className="cpdf-footer-brand">
             ZUPERIO ·{" "}
             <a href="https://zuperio.com.mx" target="_blank" rel="noreferrer">
               zuperio.com.mx

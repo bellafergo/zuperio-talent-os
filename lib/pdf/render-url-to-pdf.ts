@@ -26,16 +26,32 @@ export async function renderUrlToPdfBuffer(
 
   const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH?.trim() || undefined;
 
+  // Resolve which binary Puppeteer would fall back to when no override is set.
+  // This path may not exist if `npx puppeteer browsers install chrome` was never run.
+  let puppeteerDefaultPath: string | undefined;
+  try {
+    puppeteerDefaultPath = puppeteer.executablePath();
+  } catch {
+    puppeteerDefaultPath = undefined;
+  }
+
+  const resolvedPath = executablePath ?? puppeteerDefaultPath;
+
   console.info("[pdf-render] start", {
     printPageUrl,
     waitSelector,
     hasCookie: Boolean(cookieHeader?.length),
-    executablePath: executablePath ? "(custom)" : "(bundled)",
+    executablePathOverride: executablePath ?? null,
+    puppeteerDefaultPath: puppeteerDefaultPath ?? null,
+    resolvedPath: resolvedPath ?? null,
+    hint: !executablePath
+      ? "Set PUPPETEER_EXECUTABLE_PATH in .env to override (see .env.example)"
+      : undefined,
   });
 
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: executablePath || undefined,
+    executablePath,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -86,7 +102,7 @@ export async function renderUrlToPdfBuffer(
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "12mm", right: "12mm", bottom: "12mm", left: "12mm" },
+      margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
     });
 
     const buf = Buffer.from(pdf);
@@ -99,7 +115,11 @@ export async function renderUrlToPdfBuffer(
   } catch (e) {
     console.error("[pdf-render] failed", {
       printPageUrl,
+      resolvedPath: resolvedPath ?? null,
       message: e instanceof Error ? e.message : String(e),
+      hint: !executablePath
+        ? "Puppeteer used its bundled path (may not be installed). Set PUPPETEER_EXECUTABLE_PATH in .env."
+        : "Custom PUPPETEER_EXECUTABLE_PATH was set — verify the path is correct and executable.",
     });
     throw e;
   } finally {
