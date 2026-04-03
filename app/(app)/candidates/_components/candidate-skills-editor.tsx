@@ -7,6 +7,22 @@ import type { SkillOption } from "@/lib/skills/queries";
 import type { CandidateSkillDraft } from "@/lib/candidates/validation";
 import { cn } from "@/lib/utils";
 
+/** Deterministic skill templates per role profile. Values are Skill.id from the catalog. */
+const ROLE_SKILL_TEMPLATES: Record<string, string[]> = {
+  "Backend Developer": ["skill_node", "skill_rest", "skill_graphql", "skill_typescript", "skill_microservices", "skill_docker", "skill_aws", "skill_postgres", "skill_git"],
+  "Frontend Developer": ["skill_react", "skill_nextjs", "skill_javascript", "skill_typescript", "skill_tailwind", "skill_git"],
+  "Full Stack Developer": ["skill_react", "skill_nextjs", "skill_typescript", "skill_javascript", "skill_node", "skill_rest", "skill_postgres", "skill_docker", "skill_git"],
+  "Data Engineer": ["skill_python", "skill_sql", "skill_postgres", "skill_bigquery", "skill_snowflake", "skill_dbt", "skill_airflow", "skill_kafka", "skill_docker"],
+  "Data Analyst": ["skill_python", "skill_sql", "skill_excel", "skill_bigquery", "skill_looker", "skill_snowflake"],
+  "QA Engineer": ["skill_jest", "skill_cypress", "skill_selenium", "skill_scrum", "skill_jira"],
+  "DevOps / SRE": ["skill_docker", "skill_kubernetes", "skill_terraform", "skill_aws", "skill_cicd", "skill_prometheus", "skill_kafka", "skill_linux", "skill_git"],
+  "Mobile (React Native)": ["skill_react_native", "skill_javascript", "skill_typescript", "skill_git"],
+  "iOS Developer": ["skill_swift", "skill_git"],
+  "Android Developer": ["skill_kotlin_mobile", "skill_git"],
+  "Project Manager / PM": ["skill_agile", "skill_scrum", "skill_jira", "skill_stakeholder", "skill_risk", "skill_figma"],
+  "Tech Lead / Architect": ["skill_typescript", "skill_node", "skill_react", "skill_microservices", "skill_docker", "skill_kubernetes", "skill_aws", "skill_postgres", "skill_git"],
+};
+
 function groupSkills(skills: SkillOption[]) {
   const byCat = new Map<string, SkillOption[]>();
   for (const s of skills) {
@@ -64,17 +80,62 @@ export function CandidateSkillsEditor({
     onChange([...next.values()]);
   };
 
+  const applyTemplate = (templateName: string) => {
+    const templateIds = ROLE_SKILL_TEMPLATES[templateName];
+    if (!templateIds) return;
+    const catalogIds = new Set(skills.map((s) => s.id));
+    const validIds = templateIds.filter((id) => catalogIds.has(id));
+    // Merge: keep existing selections, add template skills not yet selected
+    const next = new Map(selectedById);
+    for (const skillId of validIds) {
+      if (!next.has(skillId)) {
+        next.set(skillId, { skillId, yearsExperience: null, level: null });
+      }
+    }
+    onChange([...next.values()]);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-end justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-sm font-medium">Structured skills</p>
+          <p className="text-sm font-medium">Competencias estructuradas</p>
           <p className="text-xs text-muted-foreground">
-            Select skills from the catalog and optionally add experience and
-            level.
+            Selecciona competencias del catálogo y añade experiencia y nivel opcionalmente.
           </p>
         </div>
-        <p className="text-xs text-muted-foreground">{value.length} selected</p>
+        <p className="text-xs text-muted-foreground">{value.length} seleccionadas</p>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <select
+          className={cn(
+            "h-8 flex-1 min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-xs transition-colors outline-none",
+            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "dark:bg-input/30",
+          )}
+          defaultValue=""
+          onChange={(e) => {
+            if (e.target.value) {
+              applyTemplate(e.target.value);
+              e.target.value = "";
+            }
+          }}
+        >
+          <option value="" disabled>Cargar plantilla de perfil…</option>
+          {Object.keys(ROLE_SKILL_TEMPLATES).map((name) => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+        </select>
+        {value.length > 0 ? (
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-destructive underline underline-offset-2 shrink-0"
+            onClick={() => onChange([])}
+          >
+            Limpiar
+          </button>
+        ) : null}
       </div>
 
       {error ? (
@@ -119,7 +180,7 @@ export function CandidateSkillsEditor({
                         <div className="mt-2 grid grid-cols-2 gap-2">
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">
-                              Years
+                              Años
                             </span>
                             <Input
                               type="number"
@@ -145,7 +206,7 @@ export function CandidateSkillsEditor({
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">
-                              Level
+                              Nivel
                             </span>
                             <Input
                               value={selected.level ?? ""}
@@ -154,7 +215,7 @@ export function CandidateSkillsEditor({
                                   level: e.target.value.trim() ? e.target.value : null,
                                 })
                               }
-                              placeholder="e.g. Senior"
+                              placeholder="ej. Senior"
                               className="h-7"
                             />
                           </div>

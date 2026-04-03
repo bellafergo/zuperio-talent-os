@@ -308,6 +308,11 @@ model Candidate {
   /// Last successful server-side Zuperio CV PDF export.
   candidateCvExportedAt DateTime?
 
+  /// Original CV file uploaded by recruiter/director.
+  cvFileName   String?   /// Original filename as uploaded by the user.
+  cvFileKey    String?   /// Storage key (UUID-based filename on disk).
+  cvUploadedAt DateTime? /// When the file was last uploaded.
+
   vacancyMatches  CandidateVacancyMatch[]
   placements        Placement[]
   structuredSkills  CandidateSkill[]

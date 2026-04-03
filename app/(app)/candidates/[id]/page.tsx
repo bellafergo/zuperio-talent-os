@@ -8,7 +8,7 @@ import {
   SectionCard,
 } from "@/components/layout";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
-import { getCandidateByIdForUi, getCandidateEditData } from "@/lib/candidates/queries";
+import { getCandidateByIdForUi, getCandidateEditData, getCandidateCvFileInfo } from "@/lib/candidates/queries";
 import { listMatchesForCandidateUi } from "@/lib/matching/queries";
 import { getCurrentAssignmentForCandidateUi } from "@/lib/placements/queries";
 import { listCandidateStructuredSkillsForUi, listSkillsForVacancyForm } from "@/lib/skills/queries";
@@ -18,6 +18,8 @@ import { CandidateAvailabilityBadge } from "../_components/candidate-availabilit
 import { CandidateEditDialog } from "../_components/candidate-edit-dialog";
 import { CandidateApplicationsSection } from "./_components/candidate-applications-section";
 import { CandidateCvDownloadButton } from "./_components/candidate-cv-download-button";
+import { CandidateCvFileSection } from "./_components/candidate-cv-file-section";
+import { CandidateWhatsAppButton } from "./_components/candidate-whatsapp-button";
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
@@ -32,6 +34,8 @@ export default async function CandidateDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();
   const canManage = canManageCandidates(session?.user?.role);
+  const isDirector = session?.user?.role === "DIRECTOR";
+
   const [
     candidate,
     vacancyMatches,
@@ -40,6 +44,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     applications,
     editData,
     skillsCatalog,
+    cvFileInfo,
   ] = await Promise.all([
     getCandidateByIdForUi(id),
     listMatchesForCandidateUi(id),
@@ -48,6 +53,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     listApplicationsForCandidateUi(id),
     canManage ? getCandidateEditData(id) : Promise.resolve(null),
     canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
+    canManage ? getCandidateCvFileInfo(id) : Promise.resolve(null),
   ]);
 
   if (!candidate) {
@@ -65,6 +71,9 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         meta={<CandidateAvailabilityBadge status={candidate.availabilityStatus} />}
         actions={
           <div className="flex items-center gap-2">
+            {candidate.phone ? (
+              <CandidateWhatsAppButton phone={candidate.phone} />
+            ) : null}
             <CandidateCvDownloadButton candidateId={id} />
             {canManage && editData ? (
               <CandidateEditDialog candidate={editData} skillsCatalog={skillsCatalog} />
@@ -94,6 +103,21 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       >
         <p className="text-sm leading-relaxed text-muted-foreground">{candidate.notes}</p>
       </SectionCard>
+
+      {canManage ? (
+        <SectionCard
+          title="CV original"
+          description="Archivo CV subido por el equipo de reclutamiento."
+        >
+          <CandidateCvFileSection
+            candidateId={id}
+            cvFileName={cvFileInfo?.cvFileName ?? null}
+            cvUploadedAt={cvFileInfo?.cvUploadedAt ?? null}
+            canUpload={canManage}
+            canDelete={isDirector}
+          />
+        </SectionCard>
+      ) : null}
 
       <CandidateCurrentAssignmentSection assignment={currentAssignment} />
 

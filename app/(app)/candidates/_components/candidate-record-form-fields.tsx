@@ -74,7 +74,7 @@ export function CandidateRecordFormFields({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor={candidateId ? `edit-first-${candidateId}` : "new-first"} className="text-sm font-medium">
-            First name <span className="text-destructive">*</span>
+            Nombre <span className="text-destructive">*</span>
           </label>
           <Input
             id={candidateId ? `edit-first-${candidateId}` : "new-first"}

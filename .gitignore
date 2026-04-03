@@ -43,6 +43,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local file uploads (CV originals — not committed)
+/uploads/cv/*.pdf
+/uploads/cv/*.doc
+/uploads/cv/*.docx
+/uploads/cv/*.txt
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

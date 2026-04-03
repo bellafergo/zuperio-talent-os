@@ -11,6 +11,11 @@ export async function listCandidatesForUi(): Promise<CandidateUi[]> {
   return rows.map((row) => mapCandidateToUi(row as CandidateRow));
 }
 
+export type CandidateCvFileInfo = {
+  cvFileName: string;
+  cvUploadedAt: Date;
+} | null;
+
 export async function getCandidateByIdForUi(
   id: string,
 ): Promise<CandidateUi | null> {
@@ -18,6 +23,17 @@ export async function getCandidateByIdForUi(
     where: { id },
   });
   return row ? mapCandidateToUi(row as CandidateRow) : null;
+}
+
+export async function getCandidateCvFileInfo(
+  id: string,
+): Promise<CandidateCvFileInfo> {
+  const row = await prisma.candidate.findUnique({
+    where: { id },
+    select: { cvFileName: true, cvUploadedAt: true },
+  });
+  if (!row?.cvFileName || !row.cvUploadedAt) return null;
+  return { cvFileName: row.cvFileName, cvUploadedAt: row.cvUploadedAt };
 }
 
 export type CandidateEditData = {

@@ -57,7 +57,7 @@ export function CandidateEditDialog({
         onClick={() => setOpen(true)}
       >
         <PencilIcon className="size-3.5" aria-hidden />
-        Edit
+        Editar
       </Button>
       <Dialog
         open={open}
@@ -69,33 +69,37 @@ export function CandidateEditDialog({
           }
         }}
       >
-        <DialogContent className="sm:max-w-2xl" showCloseButton>
-          <DialogHeader>
-            <DialogTitle>Edit candidate</DialogTitle>
+        <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90dvh] overflow-hidden" showCloseButton>
+          <DialogHeader className="shrink-0">
+            <DialogTitle>Editar candidato</DialogTitle>
             <DialogDescription>
-              Update profile details and structured skills.
+              Actualiza el perfil, datos de contacto y competencias estructuradas.
             </DialogDescription>
           </DialogHeader>
-          <form key={formKey} onSubmit={onSubmit} className="space-y-4">
-            <CandidateRecordFormFields
-              skillsCatalog={skillsCatalog}
-              defaults={candidate}
-              candidateId={candidate.id}
-              fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
-            />
-            {state?.ok === false && state.message ? (
-              <p className="text-sm text-destructive" role="alert">
-                {state.message}
-              </p>
-            ) : null}
-            <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
+          <form key={formKey} onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto -mx-4 px-4 py-1">
+              <div className="space-y-4 pb-2">
+                <CandidateRecordFormFields
+                  skillsCatalog={skillsCatalog}
+                  defaults={candidate}
+                  candidateId={candidate.id}
+                  fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
+                />
+                {state?.ok === false && state.message ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {state.message}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <DialogFooter className="shrink-0 sm:justify-end gap-2 sm:gap-2">
               <DialogClose asChild>
                 <Button type="button" variant="secondary" disabled={pending}>
-                  Cancel
+                  Cancelar
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={pending}>
-                {pending ? "Saving…" : "Save changes"}
+                {pending ? "Guardando…" : "Guardar cambios"}
               </Button>
             </DialogFooter>
           </form>
