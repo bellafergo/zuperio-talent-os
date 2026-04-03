@@ -4,24 +4,12 @@ import * as React from "react";
 
 import { Input } from "@/components/ui/input";
 import type { SkillOption } from "@/lib/skills/queries";
+import {
+  ROLE_SKILL_TEMPLATE_NAMES,
+  ROLE_SKILL_TEMPLATES,
+} from "@/lib/skills/role-skill-templates";
 import type { CandidateSkillDraft } from "@/lib/candidates/validation";
 import { cn } from "@/lib/utils";
-
-/** Deterministic skill templates per role profile. Values are Skill.id from the catalog. */
-const ROLE_SKILL_TEMPLATES: Record<string, string[]> = {
-  "Backend Developer": ["skill_node", "skill_rest", "skill_graphql", "skill_typescript", "skill_microservices", "skill_docker", "skill_aws", "skill_postgres", "skill_git"],
-  "Frontend Developer": ["skill_react", "skill_nextjs", "skill_javascript", "skill_typescript", "skill_tailwind", "skill_git"],
-  "Full Stack Developer": ["skill_react", "skill_nextjs", "skill_typescript", "skill_javascript", "skill_node", "skill_rest", "skill_postgres", "skill_docker", "skill_git"],
-  "Data Engineer": ["skill_python", "skill_sql", "skill_postgres", "skill_bigquery", "skill_snowflake", "skill_dbt", "skill_airflow", "skill_kafka", "skill_docker"],
-  "Data Analyst": ["skill_python", "skill_sql", "skill_excel", "skill_bigquery", "skill_looker", "skill_snowflake"],
-  "QA Engineer": ["skill_jest", "skill_cypress", "skill_selenium", "skill_scrum", "skill_jira"],
-  "DevOps / SRE": ["skill_docker", "skill_kubernetes", "skill_terraform", "skill_aws", "skill_cicd", "skill_prometheus", "skill_kafka", "skill_linux", "skill_git"],
-  "Mobile (React Native)": ["skill_react_native", "skill_javascript", "skill_typescript", "skill_git"],
-  "iOS Developer": ["skill_swift", "skill_git"],
-  "Android Developer": ["skill_kotlin_mobile", "skill_git"],
-  "Project Manager / PM": ["skill_agile", "skill_scrum", "skill_jira", "skill_stakeholder", "skill_risk", "skill_figma"],
-  "Tech Lead / Architect": ["skill_typescript", "skill_node", "skill_react", "skill_microservices", "skill_docker", "skill_kubernetes", "skill_aws", "skill_postgres", "skill_git"],
-};
 
 function groupSkills(skills: SkillOption[]) {
   const byCat = new Map<string, SkillOption[]>();
@@ -123,8 +111,10 @@ export function CandidateSkillsEditor({
           }}
         >
           <option value="" disabled>Cargar plantilla de perfil…</option>
-          {Object.keys(ROLE_SKILL_TEMPLATES).map((name) => (
-            <option key={name} value={name}>{name}</option>
+          {ROLE_SKILL_TEMPLATE_NAMES.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
           ))}
         </select>
         {value.length > 0 ? (

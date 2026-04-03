@@ -37,7 +37,8 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Prisma generated client (restored via `npm install` → postinstall)
+# Prisma generated client — recreated by `postinstall`, `npm run dev`, and `npm run build`.
+# If you see PrismaClientValidationError on new schema fields, run: npx prisma generate
 /generated/
 
 # vercel
@@ -52,5 +53,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-/generated/prisma

@@ -67,6 +67,12 @@ export default async function ProposalDetailPage({ params }: PageProps) {
     preparedByDisplay,
     recipientDisplayName: contact?.displayName ?? null,
     recipientEmail: contact?.email ?? null,
+    matchScore:
+      comparisonMatrix?.skillMatchActive === true
+        ? comparisonMatrix.computedMatch.score
+        : null,
+    vacancyTitleForMatch:
+      proposal.vacancyTitle !== "—" ? proposal.vacancyTitle : null,
   });
 
   const identityParts: string[] = [];

@@ -3,13 +3,9 @@ import type {
   VacancySeniority,
 } from "@/generated/prisma/enums";
 
-import { MATCH_WEIGHTS } from "./constants";
 import {
-  computeStructuredCandidateVacancyMatch,
+  computeSkillCoverageOnlyMatch,
   mapCandidateSkillsForMatch,
-  structuredAvailabilityContribution,
-  structuredRoleOverlapContribution,
-  structuredSeniorityContribution,
   type ComputedMatch,
   type MatchCandidateStructuredInput,
   type MatchPlacementContext,
@@ -22,17 +18,17 @@ export type ComparisonRowMatchLevel = "MET" | "PARTIAL" | "GAP" | "OPEN";
 
 export type ComparisonMatrixRow = {
   id: string;
-  category: "skills" | "seniority" | "availability" | "role";
+  category: "skills" | "context";
   requirement: string;
   candidateValue: string;
   matchLevel: ComparisonRowMatchLevel;
-  /** Optional component points vs max (same weight buckets as the match engine). */
+  /** Unused for skill-only scoring; kept for PDF helpers that read points ratios. */
   pointsLabel: string | null;
   note: string;
 };
 
 const SENIORITY_LABELS: Record<VacancySeniority, string> = {
-  INTERN: "Intern",
+  INTERN: "Interno",
   JUNIOR: "Junior",
   MID: "Mid",
   SENIOR: "Senior",
@@ -41,56 +37,43 @@ const SENIORITY_LABELS: Record<VacancySeniority, string> = {
 };
 
 const AVAILABILITY_LABELS: Record<CandidateAvailabilityStatus, string> = {
-  AVAILABLE: "Available",
-  IN_PROCESS: "In process",
-  ASSIGNED: "Assigned",
-  NOT_AVAILABLE: "Not available",
+  AVAILABLE: "Disponible",
+  IN_PROCESS: "En proceso",
+  ASSIGNED: "Asignado",
+  NOT_AVAILABLE: "No disponible",
 };
 
-function dimensionLevel(
-  points: number,
-  max: number,
-): ComparisonRowMatchLevel {
-  if (max <= 0) return "OPEN";
-  if (points >= max) return "MET";
-  if (points <= 0) return "GAP";
-  return "PARTIAL";
-}
+const NO_REQUIRED_FALLBACK: ComputedMatch = {
+  score: 0,
+  recommendation: "LOW_MATCH",
+  explanation:
+    "La vacante no tiene skills marcados como requeridos. Defina requisitos estructurados para calcular el match por cobertura.",
+};
 
-function roleLevel(points: number, max: number): ComparisonRowMatchLevel {
-  if (max <= 0) return "OPEN";
-  if (points <= 0) return "GAP";
-  if (points >= 8) return "MET";
-  return "PARTIAL";
-}
-
-/**
- * Per-requirement rows: coverage and minimum-years bars align with how
- * `scoreSkillsStructured` counts matches (no change to scoring formulas).
- */
 function buildSkillRequirementRows(
   requirements: VacancyRequirementForMatch[],
   candidate: MatchCandidateStructuredInput,
   skillNameById: Map<string, string>,
 ): ComparisonMatrixRow[] {
   const map = mapCandidateSkillsForMatch(candidate.skills);
+  const required = requirements.filter((r) => r.required);
+  const optional = requirements.filter((r) => !r.required);
 
-  if (requirements.length === 0) {
+  if (required.length === 0 && optional.length === 0) {
     return [
       {
         id: "skills-none",
         category: "skills",
-        requirement: "Structured skill requirements (vacancy)",
+        requirement: "Skills requeridos (vacante)",
         candidateValue: "—",
         matchLevel: "OPEN",
-        pointsLabel: `0 / ${MATCH_WEIGHTS.skillsMax}`,
-        note:
-          "No structured requirements on this vacancy; the engine awards no skill points.",
+        pointsLabel: null,
+        note: "Agrega al menos un skill requerido para activar el match por cobertura.",
       },
     ];
   }
 
-  const sorted = [...requirements].sort((a, b) => {
+  const sorted = [...required, ...optional].sort((a, b) => {
     if (a.required !== b.required) return a.required ? -1 : 1;
     const na = skillNameById.get(a.skillId)?.trim() || a.skillId;
     const nb = skillNameById.get(b.skillId)?.trim() || b.skillId;
@@ -99,8 +82,8 @@ function buildSkillRequirementRows(
 
   return sorted.map((r) => {
     const name = skillNameById.get(r.skillId)?.trim() || r.skillId;
-    const reqLabel = `${name} · ${r.required ? "Required" : "Optional"}${
-      r.minimumYears != null ? ` · min ${r.minimumYears} yrs` : ""
+    const reqLabel = `${name} · ${r.required ? "Requerido" : "Deseable"}${
+      r.minimumYears != null ? ` · mín. ${r.minimumYears} años` : ""
     }`;
 
     const entry = map.get(r.skillId);
@@ -109,11 +92,11 @@ function buildSkillRequirementRows(
 
     let candidateValue: string;
     if (!has) {
-      candidateValue = "Not on profile";
+      candidateValue = "No en perfil";
     } else if (years != null) {
-      candidateValue = `${years} yrs`;
+      candidateValue = `${years} años`;
     } else {
-      candidateValue = "On profile (years not set)";
+      candidateValue = "En perfil (años no indicados)";
     }
 
     let matchLevel: ComparisonRowMatchLevel;
@@ -122,7 +105,7 @@ function buildSkillRequirementRows(
     if (r.required) {
       if (!has) {
         matchLevel = "GAP";
-        note = "Required skill missing from structured profile.";
+        note = "Skill requerido ausente en el perfil estructurado.";
       } else if (
         r.minimumYears != null &&
         (years == null || years < r.minimumYears)
@@ -130,27 +113,27 @@ function buildSkillRequirementRows(
         matchLevel = "PARTIAL";
         note =
           years == null
-            ? "Years not recorded; minimum bar not demonstrated."
-            : `Below minimum (${years} < ${r.minimumYears} yrs).`;
+            ? "Cubre el skill; falta acreditar años frente al mínimo."
+            : `Cubre el skill; años por debajo del mínimo (${years} < ${r.minimumYears}).`;
       } else {
         matchLevel = "MET";
         note =
           r.minimumYears != null
-            ? `Meets or exceeds minimum (${r.minimumYears} yrs).`
-            : "Required skill present on profile.";
+            ? `Cumple presencia y mínimo de ${r.minimumYears} años.`
+            : "Cumple presencia del skill requerido.";
       }
     } else if (!has) {
       matchLevel = "OPEN";
-      note = "Optional — not listed; does not block fit.";
+      note = "Deseable — no afecta el porcentaje de cobertura.";
     } else if (
       r.minimumYears != null &&
       (years == null || years < r.minimumYears)
     ) {
       matchLevel = "PARTIAL";
-      note = "Optional skill present but below stated minimum years.";
+      note = "Deseable presente; años por debajo del mínimo indicado.";
     } else {
       matchLevel = "MET";
-      note = "Optional skill present.";
+      note = "Deseable cubierto.";
     }
 
     return {
@@ -165,14 +148,39 @@ function buildSkillRequirementRows(
   });
 }
 
+function buildContextRow(
+  candidate: MatchCandidateStructuredInput,
+  vacancy: MatchVacancyStructuredInput,
+  placement: MatchPlacementContext,
+): ComparisonMatrixRow {
+  const busyNote = placement.busyOnOtherVacancy
+    ? " Asignación activa en otra vacante (contexto operativo)."
+    : "";
+
+  return {
+    id: "context",
+    category: "context",
+    requirement: "Contexto (no suma al % de cobertura)",
+    candidateValue: [
+      `Senioridad: ${SENIORITY_LABELS[candidate.seniority]}`,
+      AVAILABILITY_LABELS[candidate.availabilityStatus],
+      candidate.role.trim() || "—",
+    ].join(" · "),
+    matchLevel: "OPEN",
+    pointsLabel: null,
+    note: `Vacante · nivel ${SENIORITY_LABELS[vacancy.seniority]} · ${vacancy.title.trim()}.${busyNote}`,
+  };
+}
+
 export type CandidateVacancyComparisonMatrix = {
   rows: ComparisonMatrixRow[];
   computedMatch: ComputedMatch;
+  /** True cuando hay ≥1 skill requerido y aplica el score por cobertura. */
+  skillMatchActive: boolean;
 };
 
 /**
- * Full matrix + overall score from a single `computeStructuredCandidateVacancyMatch` call
- * so the total always matches stored match rows / list explanations.
+ * Matriz de detalle + puntaje global (mismo motor que sync).
  */
 export function buildCandidateVacancyComparisonMatrix(
   candidate: MatchCandidateStructuredInput,
@@ -180,11 +188,12 @@ export function buildCandidateVacancyComparisonMatrix(
   placement: MatchPlacementContext,
   requirementSkillNames: Map<string, string>,
 ): CandidateVacancyComparisonMatrix {
-  const computedMatch = computeStructuredCandidateVacancyMatch(
-    candidate,
-    vacancy,
-    placement,
+  const skillComputed = computeSkillCoverageOnlyMatch(
+    vacancy.requirements,
+    candidate.skills,
   );
+  const skillMatchActive = skillComputed != null;
+  const computedMatch = skillComputed ?? NO_REQUIRED_FALLBACK;
 
   const skillRows = buildSkillRequirementRows(
     vacancy.requirements,
@@ -192,53 +201,11 @@ export function buildCandidateVacancyComparisonMatrix(
     requirementSkillNames,
   );
 
-  const sen = structuredSeniorityContribution(
-    candidate.seniority,
-    vacancy.seniority,
-  );
-  const seniorityRow: ComparisonMatrixRow = {
-    id: "seniority",
-    category: "seniority",
-    requirement: `Vacancy level: ${SENIORITY_LABELS[vacancy.seniority]}`,
-    candidateValue: SENIORITY_LABELS[candidate.seniority],
-    matchLevel: dimensionLevel(sen.points, sen.max),
-    pointsLabel: `${sen.points} / ${sen.max}`,
-    note: sen.phrase,
-  };
-
-  const av = structuredAvailabilityContribution(
-    candidate.availabilityStatus,
-    placement.busyOnOtherVacancy,
-  );
-  const availabilityRow: ComparisonMatrixRow = {
-    id: "availability",
-    category: "availability",
-    requirement: "Availability for new work",
-    candidateValue: AVAILABILITY_LABELS[candidate.availabilityStatus],
-    matchLevel: dimensionLevel(av.points, av.max),
-    pointsLabel: `${av.points} / ${av.max}`,
-    note: av.phrase,
-  };
-
-  const skillNames = candidate.skills.map((s) => s.skillName);
-  const role = structuredRoleOverlapContribution(
-    candidate.role,
-    skillNames,
-    vacancy.title,
-    vacancy.roleSummary,
-  );
-  const roleRow: ComparisonMatrixRow = {
-    id: "role",
-    category: "role",
-    requirement: `Role / title fit vs “${vacancy.title.trim()}”`,
-    candidateValue: candidate.role.trim() || "—",
-    matchLevel: roleLevel(role.points, role.max),
-    pointsLabel: `${role.points} / ${role.max}`,
-    note: role.phrase || "No role keywords extracted from vacancy title/summary.",
-  };
+  const contextRow = buildContextRow(candidate, vacancy, placement);
 
   return {
-    rows: [...skillRows, seniorityRow, availabilityRow, roleRow],
+    rows: [...skillRows, contextRow],
     computedMatch,
+    skillMatchActive,
   };
 }

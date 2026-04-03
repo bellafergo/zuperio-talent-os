@@ -1,6 +1,6 @@
 export type MatchRecommendationUi =
-  | "Match fuerte"
-  | "Match parcial"
+  | "Match alto"
+  | "Match medio"
   | "Match bajo";
 
 /** Row for vacancy detail — matched candidates. */

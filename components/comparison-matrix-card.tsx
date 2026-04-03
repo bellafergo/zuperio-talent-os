@@ -16,10 +16,10 @@ import type { MatchRecommendationUi } from "@/lib/matching/types";
 import { cn } from "@/lib/utils";
 
 const LEVEL_LABEL: Record<ComparisonRowMatchLevel, string> = {
-  MET: "Cumple",
-  PARTIAL: "Parcial",
-  GAP: "Brecha",
-  OPEN: "Abierto",
+  MET: "✔ Cumple",
+  PARTIAL: "◐ Parcial",
+  GAP: "✖ Falta",
+  OPEN: "—",
 };
 
 function MatchLevelBadge({ level }: { level: ComparisonRowMatchLevel }) {
@@ -66,7 +66,7 @@ function ScoreCluster({
         )}
       >
         <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Puntaje
+          Cobertura
         </span>
         <span
           className={cn(
@@ -74,7 +74,7 @@ function ScoreCluster({
             size === "hero" ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl",
           )}
         >
-          {score}
+          {score}%
         </span>
       </div>
       <div className="flex justify-end">
@@ -94,15 +94,24 @@ export function ComparisonMatrixCard({
   className?: string;
   layout?: "default" | "focus";
 }) {
-  const { rows, computedMatch, candidateName, vacancyTitle, companyName } =
-    bundle;
+  const {
+    rows,
+    computedMatch,
+    candidateName,
+    vacancyTitle,
+    companyName,
+    skillMatchActive,
+    skillBreakdown,
+  } = bundle;
 
   const recommendationUi = mapMatchRecommendationToUi(
     computedMatch.recommendation,
   );
 
   const title =
-    layout === "focus" ? "Análisis de encaje estructurado" : "Matriz candidato vs vacante";
+    layout === "focus"
+      ? "Detalle de match (skills)"
+      : "Matriz candidato vs vacante";
 
   const description =
     layout === "focus" ? (
@@ -115,8 +124,8 @@ export function ComparisonMatrixCard({
       </span>
     ) : (
       <span className="text-pretty">
-        {candidateName} · {vacancyTitle} ({companyName}). Mismas entradas
-        estructuradas que el puntaje — determinista, sin IA.
+        {candidateName} · {vacancyTitle} ({companyName}). Puntaje = cobertura de
+        skills requeridos; contexto de senioridad y disponibilidad no suma al %.
       </span>
     );
 
@@ -130,11 +139,18 @@ export function ComparisonMatrixCard({
       title={title}
       description={description}
       headerAction={
-        <ScoreCluster
-          score={computedMatch.score}
-          recommendation={recommendationUi}
-          size={layout === "focus" ? "hero" : "default"}
-        />
+        skillMatchActive ? (
+          <ScoreCluster
+            score={computedMatch.score}
+            recommendation={recommendationUi}
+            size={layout === "focus" ? "hero" : "default"}
+          />
+        ) : (
+          <div className="max-w-[220px] rounded-xl border border-dashed border-border bg-muted/25 px-3 py-2 text-right text-xs leading-snug text-muted-foreground">
+            Sin skills marcados como requeridos en la vacante: no hay % de
+            cobertura.
+          </div>
+        )
       }
       contentClassName={cn("space-y-4", layout === "focus" && "pt-5")}
     >
@@ -146,15 +162,66 @@ export function ComparisonMatrixCard({
       >
         {computedMatch.explanation}
       </div>
+
+      {skillBreakdown ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-emerald-600/20 bg-emerald-50/40 px-3 py-3 dark:bg-emerald-950/20">
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-900 dark:text-emerald-100">
+              Skills requeridos cubiertos ({skillBreakdown.met.length})
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-foreground">
+              {skillBreakdown.met.length === 0 ? (
+                <li className="text-muted-foreground">—</li>
+              ) : (
+                skillBreakdown.met.map((s) => (
+                  <li key={s.skillId}>
+                    <span className="text-emerald-700 dark:text-emerald-400">
+                      ✔
+                    </span>{" "}
+                    {s.skillName}
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+          <div className="rounded-lg border border-rose-600/20 bg-rose-50/40 px-3 py-3 dark:bg-rose-950/20">
+            <p className="text-xs font-semibold uppercase tracking-wide text-rose-900 dark:text-rose-100">
+              Skills requeridos que faltan ({skillBreakdown.missing.length})
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-foreground">
+              {skillBreakdown.missing.length === 0 ? (
+                <li className="text-muted-foreground">—</li>
+              ) : (
+                skillBreakdown.missing.map((s) => (
+                  <li key={s.skillId}>
+                    <span className="text-rose-700 dark:text-rose-400">✖</span>{" "}
+                    {s.skillName}
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+          <div className="sm:col-span-2 rounded-lg border border-border/60 bg-card px-3 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Skills en perfil del candidato ({skillBreakdown.candidateSkillNames.length})
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground">
+              {skillBreakdown.candidateSkillNames.length === 0
+                ? "—"
+                : skillBreakdown.candidateSkillNames.join(" · ")}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <div className="-mx-4 max-w-[calc(100%+2rem)] sm:mx-0 sm:max-w-none">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[200px]">Requerimiento</TableHead>
-              <TableHead className="min-w-[160px]">Candidato</TableHead>
-              <TableHead className="w-[100px]">Coincidencia</TableHead>
-              <TableHead className="w-[88px] text-right">Puntos</TableHead>
-              <TableHead className="min-w-[220px]">Nota</TableHead>
+              <TableHead className="min-w-[200px]">Requisito</TableHead>
+              <TableHead className="min-w-[160px]">Perfil candidato</TableHead>
+              <TableHead className="w-[120px]">Estado</TableHead>
+              <TableHead className="min-w-[200px]">Nota</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -168,9 +235,6 @@ export function ComparisonMatrixCard({
                 </TableCell>
                 <TableCell className="align-top">
                   <MatchLevelBadge level={r.matchLevel} />
-                </TableCell>
-                <TableCell className="align-top text-right tabular-nums text-sm text-muted-foreground">
-                  {r.pointsLabel ?? "—"}
                 </TableCell>
                 <TableCell className="align-top text-sm leading-relaxed text-muted-foreground">
                   {r.note}

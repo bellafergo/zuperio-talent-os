@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { computeStructuredCandidateVacancyMatch } from "./compute";
 
 /**
- * Recomputes every candidate × vacancy pair from structured skills + core attributes.
- * Upserts rows when score > 0; deletes when 0.
+ * Recomputes every candidate × vacancy pair: match = cobertura de skills requeridos (%).
+ * Sin skills requeridos en la vacante → no fila. Score 0 → elimina fila.
  */
 export async function syncAllCandidateVacancyMatches(): Promise<number> {
   const [candidates, vacancies, activePlacements] = await Promise.all([
@@ -77,7 +77,7 @@ export async function syncAllCandidateVacancyMatches(): Promise<number> {
         },
       );
 
-      if (computed.score <= 0) {
+      if (computed == null || computed.score <= 0) {
         await prisma.candidateVacancyMatch.deleteMany({
           where: { candidateId: c.id, vacancyId: v.id },
         });

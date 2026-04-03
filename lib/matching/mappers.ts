@@ -11,8 +11,8 @@ const prismaRecommendationToUi: Record<
   PrismaMatchRecommendation,
   MatchRecommendationUi
 > = {
-  STRONG_MATCH: "Match fuerte",
-  PARTIAL_MATCH: "Match parcial",
+  STRONG_MATCH: "Match alto",
+  PARTIAL_MATCH: "Match medio",
   LOW_MATCH: "Match bajo",
 };
 

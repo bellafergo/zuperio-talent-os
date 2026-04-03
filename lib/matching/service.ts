@@ -3,6 +3,7 @@
  * Implementations: `compute.ts` (pure scoring), `sync.ts` (Prisma persistence).
  */
 export {
+  computeSkillCoverageOnlyMatch,
   computeStructuredCandidateVacancyMatch,
   type ComputedMatch,
   type MatchCandidateStructuredInput,

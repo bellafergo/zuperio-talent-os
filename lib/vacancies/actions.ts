@@ -5,8 +5,15 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { canManageVacancies } from "@/lib/auth/vacancy-access";
 import { prisma } from "@/lib/prisma";
+import { syncAllCandidateVacancyMatches } from "@/lib/matching/sync";
 
 import { parseVacancyForm } from "./validation";
+
+function scheduleMatchResync() {
+  void syncAllCandidateVacancyMatches().catch((err) => {
+    console.error("[matching] sync after vacancy mutation failed", err);
+  });
+}
 
 export type VacancyActionState =
   | { ok: true; vacancyId?: string }
@@ -103,6 +110,8 @@ export async function createVacancy(
 
     revalidatePath("/vacancies");
     revalidatePath(`/vacancies/${created.id}`);
+    revalidatePath("/matching");
+    scheduleMatchResync();
     return { ok: true, vacancyId: created.id };
   } catch {
     return { ok: false, message: "Could not create the vacancy. Try again." };
@@ -186,6 +195,8 @@ export async function updateVacancy(
 
     revalidatePath("/vacancies");
     revalidatePath(`/vacancies/${vacancyId}`);
+    revalidatePath("/matching");
+    scheduleMatchResync();
     return { ok: true, vacancyId };
   } catch {
     return { ok: false, message: "Could not update the vacancy. Try again." };

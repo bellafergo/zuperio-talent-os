@@ -20,7 +20,7 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
       <EmptyState
         variant="embedded"
         title="Sin matches puntuados"
-        description="Ejecuta el seed o una sincronización de matching para llenar puntuaciones candidato–vacante."
+        description="Las vacantes necesitan skills requeridos y los candidatos perfil estructurado. Ejecuta sincronización de matching desde el flujo de datos o seed."
       />
     );
   }
@@ -32,10 +32,10 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
           <TableHead className="max-w-[140px]">Candidato</TableHead>
           <TableHead className="max-w-[160px]">Vacante</TableHead>
           <TableHead>Empresa</TableHead>
-          <TableHead className="w-[72px] text-right">Score</TableHead>
-          <TableHead className="w-[108px]">Match</TableHead>
-          <TableHead className="w-[88px]">Matriz</TableHead>
-          <TableHead className="min-w-[200px]">Explicación</TableHead>
+          <TableHead className="w-[80px] text-right">Match</TableHead>
+          <TableHead className="w-[120px]">Nivel</TableHead>
+          <TableHead className="w-[100px]">Detalle</TableHead>
+          <TableHead className="min-w-[200px]">Resumen</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -60,8 +60,8 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
             <TableCell className="text-muted-foreground">
               {r.companyName}
             </TableCell>
-            <TableCell className="bg-muted/15 text-right tabular-nums font-semibold text-foreground">
-              {r.score}
+            <TableCell className="bg-muted/15 text-right tabular-nums text-base font-semibold text-foreground">
+              {r.score}%
             </TableCell>
             <TableCell>
               <MatchRecommendationBadge recommendation={r.recommendation} />
@@ -71,7 +71,7 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
                 href={`/matching/compare/${r.matchId}`}
                 className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
               >
-                Matriz
+                Ver detalle
               </Link>
             </TableCell>
             <TableCell className="text-muted-foreground">

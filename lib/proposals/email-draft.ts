@@ -31,8 +31,10 @@ export type ProposalEmailDraftContext = {
   preparedByDisplay: string;
   recipientDisplayName: string | null;
   recipientEmail: string | null;
-  /** Structured match score (0–100) when candidate + vacancy matrix exists */
+  /** Cobertura % (skills requeridos) cuando la vacante tiene requisitos y hay matriz */
   matchScore?: number | null;
+  /** Nombre de vacante para copy comercial del párrafo de match */
+  vacancyTitleForMatch?: string | null;
 };
 
 /**
@@ -74,9 +76,14 @@ export function buildProposalEmailDraft(
 
   const subject = `Propuesta comercial · ${roleLabel} · Zuperio${matchSuffix}`;
 
+  const vacRef =
+    ctx.vacancyTitleForMatch?.trim() && ctx.vacancyTitleForMatch !== "—"
+      ? ` «${ctx.vacancyTitleForMatch.trim()}»`
+      : "";
+
   const matchParagraph =
     ctx.matchScore != null
-      ? `El alineamiento estructurado candidato–vacante en Zuperio es del ${ctx.matchScore}% (criterios deterministas, sin IA).`
+      ? `Consideramos un match del ${ctx.matchScore}% con la vacante${vacRef}, calculado por cobertura de skills requeridos (determinista, sin IA).`
       : "";
 
   const bodyPlainText = [

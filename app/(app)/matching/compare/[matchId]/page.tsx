@@ -23,7 +23,7 @@ export default async function MatchingComparePage({ params }: PageProps) {
         backLabel="Volver a matching"
         eyebrow="Inteligencia de match"
         title="Candidato vs vacante"
-        description="Comparación estructurada completa: mismo motor determinista que los scores del embudo. Detalle abajo."
+        description="Cobertura de skills requeridos (%), listas de cumplidos y faltantes, y contexto de senioridad/disponibilidad (sin sumar al %)."
       />
       <ComparisonMatrixCard bundle={bundle} layout="focus" />
     </div>

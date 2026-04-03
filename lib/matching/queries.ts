@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
+import { buildSkillCoverageBreakdown } from "./compute";
 import {
   buildCandidateVacancyComparisonMatrix,
   type CandidateVacancyComparisonMatrix,
@@ -73,6 +74,12 @@ export type ComparisonMatrixBundle = CandidateVacancyComparisonMatrix & {
   candidateName: string;
   vacancyTitle: string;
   companyName: string;
+  /** Skills requeridos cumplidos / faltantes (solo si `skillMatchActive`). */
+  skillBreakdown: {
+    met: { skillId: string; skillName: string }[];
+    missing: { skillId: string; skillName: string }[];
+    candidateSkillNames: string[];
+  } | null;
 };
 
 function busyOnOtherVacancy(
@@ -150,26 +157,30 @@ export async function getComparisonMatrixForPair(
     requirementSkillNames.set(r.skillId, r.skill.name);
   }
 
+  const candidateSkillsInput = candidate.structuredSkills.map((cs) => ({
+    skillId: cs.skillId,
+    skillName: cs.skill.name,
+    yearsExperience: cs.yearsExperience,
+  }));
+
+  const vacancyReqsInput = vacancy.skillRequirements.map((r) => ({
+    skillId: r.skillId,
+    required: r.required,
+    minimumYears: r.minimumYears,
+  }));
+
   const matrix = buildCandidateVacancyComparisonMatrix(
     {
       seniority: candidate.seniority,
       availabilityStatus: candidate.availabilityStatus,
       role: candidate.role,
-      skills: candidate.structuredSkills.map((cs) => ({
-        skillId: cs.skillId,
-        skillName: cs.skill.name,
-        yearsExperience: cs.yearsExperience,
-      })),
+      skills: candidateSkillsInput,
     },
     {
       seniority: vacancy.seniority,
       title: vacancy.title,
       roleSummary: vacancy.roleSummary,
-      requirements: vacancy.skillRequirements.map((r) => ({
-        skillId: r.skillId,
-        required: r.required,
-        minimumYears: r.minimumYears,
-      })),
+      requirements: vacancyReqsInput,
     },
     placementCtx,
     requirementSkillNames,
@@ -178,11 +189,25 @@ export async function getComparisonMatrixForPair(
   const candidateName =
     `${candidate.firstName} ${candidate.lastName}`.trim() || "Candidate";
 
+  const skillBreakdown = matrix.skillMatchActive
+    ? {
+        ...buildSkillCoverageBreakdown(
+          vacancyReqsInput,
+          candidateSkillsInput,
+          requirementSkillNames,
+        ),
+        candidateSkillNames: [...candidateSkillsInput.map((s) => s.skillName)].sort(
+          (a, b) => a.localeCompare(b),
+        ),
+      }
+    : null;
+
   return {
     ...matrix,
     candidateName,
     vacancyTitle: vacancy.title,
     companyName: vacancy.opportunity.company.name,
+    skillBreakdown,
   };
 }
 

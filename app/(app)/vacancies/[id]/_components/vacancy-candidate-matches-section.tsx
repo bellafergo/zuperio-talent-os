@@ -26,27 +26,29 @@ export function VacancyCandidateMatchesSection({
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Candidatos con coincidencia</CardTitle>
+        <CardTitle className="text-base font-medium">
+          Candidatos con match
+        </CardTitle>
         <CardDescription>
-          Skills estructurados vs requisitos de la vacante, seniority, disponibilidad
-          y fit de rol — determinista, sin IA. Resincroniza al cambiar skills o requisitos.
+          Cobertura de tus skills requeridos vs el perfil estructurado de cada
+          candidato. Sin requisitos requeridos no hay puntaje.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {matches.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Sin coincidencias puntuadas. Agrega requisitos estructurados y skills
-            de candidatos para calcular scores.
+            Sin coincidencias puntuadas. Agrega skills{" "}
+            <span className="font-medium">requeridos</span> a la vacante y
+            sincroniza matching.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="max-w-[200px]">Candidato</TableHead>
-                <TableHead className="w-[64px] text-right">Puntaje</TableHead>
-                <TableHead className="w-[120px]">Coincidencia</TableHead>
-                <TableHead className="w-[88px]">Matriz</TableHead>
-                <TableHead className="min-w-[240px]">Explicación</TableHead>
+                <TableHead className="w-[88px] text-right">Match</TableHead>
+                <TableHead className="w-[120px]">Nivel</TableHead>
+                <TableHead className="w-[100px]">Detalle</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -60,8 +62,10 @@ export function VacancyCandidateMatchesSection({
                       {m.candidateName}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {m.score}
+                  <TableCell className="text-right">
+                    <span className="tabular-nums text-base font-semibold text-foreground">
+                      {m.score}%
+                    </span>
                   </TableCell>
                   <TableCell>
                     <MatchRecommendationBadge
@@ -71,18 +75,10 @@ export function VacancyCandidateMatchesSection({
                   <TableCell>
                     <Link
                       href={`/matching/compare/${m.matchId}`}
-                      className="text-sm text-foreground underline-offset-4 hover:underline"
+                      className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
                     >
-                      Matriz
+                      Ver detalle
                     </Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    <span
-                      className="line-clamp-3 text-sm leading-relaxed"
-                      title={m.explanation}
-                    >
-                      {m.explanation}
-                    </span>
                   </TableCell>
                 </TableRow>
               ))}

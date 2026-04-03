@@ -5,8 +5,15 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { prisma } from "@/lib/prisma";
+import { syncAllCandidateVacancyMatches } from "@/lib/matching/sync";
 
 import { parseCandidateForm } from "./validation";
+
+function scheduleMatchResync() {
+  void syncAllCandidateVacancyMatches().catch((err) => {
+    console.error("[matching] sync after candidate mutation failed", err);
+  });
+}
 
 export type CandidateActionState =
   | { ok: true; candidateId?: string }
@@ -79,6 +86,8 @@ export async function createCandidate(
       });
       revalidatePath("/candidates");
       revalidatePath(`/candidates/${created.id}`);
+      revalidatePath("/matching");
+      scheduleMatchResync();
       return { ok: true, candidateId: created.id };
     } catch {
       return { ok: false, message: "Could not create the candidate. Try again." };
@@ -103,6 +112,8 @@ export async function createCandidate(
     });
     revalidatePath("/candidates");
     revalidatePath(`/candidates/${created.id}`);
+    revalidatePath("/matching");
+    scheduleMatchResync();
     return { ok: true, candidateId: created.id };
   } catch {
     return { ok: false, message: "Could not create the candidate. Try again." };
@@ -177,6 +188,8 @@ export async function updateCandidate(
 
     revalidatePath("/candidates");
     revalidatePath(`/candidates/${candidateId}`);
+    revalidatePath("/matching");
+    scheduleMatchResync();
     return { ok: true, candidateId };
   } catch {
     return { ok: false, message: "Could not update the candidate. Try again." };

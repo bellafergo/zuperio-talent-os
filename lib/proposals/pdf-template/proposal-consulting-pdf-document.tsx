@@ -173,16 +173,16 @@ export function ProposalConsultingPdfDocument({
               al perfil{" "}
               <span className="cpdf-em">{roleLine}</span> para{" "}
               <span className="cpdf-em">{proposal.companyName}</span>.
-              {comparisonMatrix ? (
+              {comparisonMatrix?.skillMatchActive ? (
                 <>
                   {" "}
-                  El <span className="cpdf-em">match estructurado</span>{" "}
-                  registrado para este par candidato–vacante es del{" "}
+                  La <span className="cpdf-em">cobertura de skills requeridos</span>{" "}
+                  para este par candidato–vacante es del{" "}
                   <span className="cpdf-em">
                     {comparisonMatrix.computedMatch.score}%
                   </span>
-                  , con base en los mismos criterios deterministas que el tablero
-                  de matching en Zuperio.
+                  , calculada de forma determinista en Zuperio (sin IA), igual
+                  que en el detalle de matching.
                 </>
               ) : null}
             </p>
@@ -253,9 +253,17 @@ export function ProposalConsultingPdfDocument({
               </table>
             </div>
             <p className="cpdf-match-summary">
-              <strong>Match global {comparisonMatrix.computedMatch.score}%</strong>
-              {" — "}
-              {comparisonMatrix.computedMatch.explanation}
+              {comparisonMatrix.skillMatchActive ? (
+                <>
+                  <strong>
+                    Cobertura de skills {comparisonMatrix.computedMatch.score}%
+                  </strong>
+                  {" — "}
+                  {comparisonMatrix.computedMatch.explanation}
+                </>
+              ) : (
+                <>{comparisonMatrix.computedMatch.explanation}</>
+              )}
             </p>
           </section>
         ) : null}

@@ -4,6 +4,10 @@ import * as React from "react";
 
 import { Input } from "@/components/ui/input";
 import type { SkillOption } from "@/lib/skills/queries";
+import {
+  ROLE_SKILL_TEMPLATE_NAMES,
+  ROLE_SKILL_TEMPLATES,
+} from "@/lib/skills/role-skill-templates";
 import type { VacancyRequirementDraft } from "@/lib/vacancies/types";
 import { cn } from "@/lib/utils";
 
@@ -64,19 +68,67 @@ export function VacancyRequirementsEditor({
     onChange([...next.values()]);
   };
 
+  const applyRoleTemplate = (templateName: string) => {
+    const ids = ROLE_SKILL_TEMPLATES[templateName];
+    if (!ids?.length) return;
+    const catalogIds = new Set(skills.map((s) => s.id));
+    const next = new Map(selectedById);
+    for (const skillId of ids) {
+      if (!catalogIds.has(skillId)) continue;
+      if (!next.has(skillId)) {
+        next.set(skillId, { skillId, required: true, minimumYears: null });
+      }
+    }
+    onChange([...next.values()]);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-end justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-sm font-medium">Structured requirements</p>
+          <p className="text-sm font-medium">Skills requeridos y deseables</p>
           <p className="text-xs text-muted-foreground">
-            Select skills from the catalog. Mark required vs nice-to-have and
-            optionally set minimum experience.
+            Mismo catálogo que candidatos. El match se calcula solo con skills
+            marcados como requeridos (cobertura %, determinista).
           </p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {value.length} selected
-        </p>
+        <p className="text-xs text-muted-foreground">{value.length} en lista</p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          className={cn(
+            "h-8 min-w-[200px] flex-1 rounded-lg border border-input bg-transparent px-2.5 py-1 text-xs transition-colors outline-none",
+            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "dark:bg-input/30",
+          )}
+          defaultValue=""
+          aria-label="Plantilla de rol para skills"
+          onChange={(e) => {
+            if (e.target.value) {
+              applyRoleTemplate(e.target.value);
+              e.target.value = "";
+            }
+          }}
+        >
+          <option value="" disabled>
+            Autocompletar desde rol (plantilla)…
+          </option>
+          {ROLE_SKILL_TEMPLATE_NAMES.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+        {value.length > 0 ? (
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-destructive underline underline-offset-2"
+            onClick={() => onChange([])}
+          >
+            Quitar todos
+          </button>
+        ) : null}
       </div>
 
       {error ? (
@@ -128,11 +180,11 @@ export function VacancyRequirementsEditor({
                                 setReq(skill.id, { required: e.target.checked })
                               }
                             />
-                            Required
+                            Requerido
                           </label>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">
-                              Min years
+                              Años mín.
                             </span>
                             <Input
                               type="number"
