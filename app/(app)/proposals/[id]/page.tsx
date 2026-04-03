@@ -17,6 +17,8 @@ import {
   getProposalByIdForUi,
 } from "@/lib/proposals/queries";
 
+import { getCandidateCvPrintData } from "@/lib/candidates/get-candidate-cv-print-data";
+import { CandidateCvConsultingDocument } from "@/lib/candidates/pdf-template/candidate-cv-consulting";
 import { ProposalCommercialTracking } from "../_components/proposal-commercial-tracking";
 import { ProposalDetailTabs } from "../_components/proposal-detail-tabs";
 import { ProposalConsultingPdfDocument } from "@/lib/proposals/pdf-template/proposal-consulting-pdf-document";
@@ -46,7 +48,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
 
   const hasCandidate = proposal.candidateId != null;
 
-  const [companies, opportunities, vacancies, candidates, contact, comparisonMatrix] =
+  const [companies, opportunities, vacancies, candidates, contact, comparisonMatrix, cvPrintData] =
     await Promise.all([
       canManage ? listCompaniesForProposalForm() : Promise.resolve([]),
       canManage ? listOpportunitiesForProposalForm() : Promise.resolve([]),
@@ -55,6 +57,9 @@ export default async function ProposalDetailPage({ params }: PageProps) {
       getCompanyPreferredContactForProposalEmail(proposal.companyId),
       proposal.candidateId && proposal.vacancyId
         ? getComparisonMatrixForPair(proposal.candidateId, proposal.vacancyId)
+        : Promise.resolve(null),
+      proposal.candidateId
+        ? getCandidateCvPrintData(proposal.candidateId)
         : Promise.resolve(null),
     ]);
 
@@ -147,14 +152,34 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         preview={
           <div className="space-y-6">
             <ProposalExportsSection proposal={proposal} />
-            <div className="rounded-xl border border-border/80 bg-white p-6 shadow-sm ring-1 ring-foreground/[0.04]">
-              <ProposalConsultingPdfDocument
-                proposal={proposal}
-                preparedByDisplay={preparedByDisplay}
-                comparisonMatrix={comparisonMatrix}
-                variant="screen"
-              />
+
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Propuesta Económica
+              </p>
+              <div className="rounded-xl border border-border/80 bg-white p-6 shadow-sm ring-1 ring-foreground/[0.04]">
+                <ProposalConsultingPdfDocument
+                  proposal={proposal}
+                  preparedByDisplay={preparedByDisplay}
+                  comparisonMatrix={comparisonMatrix}
+                  variant="screen"
+                />
+              </div>
             </div>
+
+            {cvPrintData ? (
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  CV del Candidato (PDF)
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Misma plantilla que la vista de impresión del candidato — skills estructurados, experiencia registrada y perfil ejecutivo generado por la plataforma.
+                </p>
+                <div className="rounded-xl border border-border/80 bg-white p-6 shadow-sm ring-1 ring-foreground/[0.04]">
+                  <CandidateCvConsultingDocument data={cvPrintData} />
+                </div>
+              </div>
+            ) : null}
           </div>
         }
         emailDraft={

@@ -100,7 +100,7 @@ export async function renderUrlToPdfBuffer(
     await new Promise((r) => setTimeout(r, 250));
 
     const pdf = await page.pdf({
-      format: "A4",
+      format: "Letter",
       printBackground: true,
       margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
     });

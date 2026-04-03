@@ -38,8 +38,9 @@ function topSkills(skills: CandidateCvPrintData["structuredSkills"], n: number):
 function skillBarPercent(s: CvSkillRow): number {
   const lv = (s.level || "").toLowerCase();
   if (lv.includes("expert") || lv.includes("principal")) return 100;
-  if (lv.includes("advanced") || lv.includes("avanz")) return 82;
-  if (lv.includes("intermediate") || lv.includes("intermed")) return 58;
+  if (lv.includes("advanced") || lv.includes("avanz")) return 80;
+  if (lv.includes("intermediate") || lv.includes("intermed")) return 55;
+  if (lv.includes("basic") || lv.includes("básic") || lv.includes("basico")) return 30;
   if (lv.length > 0) return 45;
   const y = s.yearsExperience;
   if (y != null && y >= 10) return 92;

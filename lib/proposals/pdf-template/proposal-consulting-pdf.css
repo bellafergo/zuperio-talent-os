@@ -1,5 +1,10 @@
 /* Zuperio client documents — brand tokens per spec (proposal + shared CV) */
 
+@page {
+  size: Letter;
+  margin: 15mm;
+}
+
 .consulting-pdf-root {
   --cpdf-primary: #1565c0;
   --cpdf-secondary: #1e88e5;
@@ -791,6 +796,18 @@ a.cpdf-party-email,
   .consulting-pdf-doc {
     max-width: none !important;
     padding: 0 !important;
+  }
+
+  /* Fixed footer repeats on every printed page */
+  .cpdf-doc-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 0;
+    border-top: 1px solid var(--cpdf-rule);
+    background: #fff;
+    margin-top: 0;
   }
 
   .cpdf-resource-card,
