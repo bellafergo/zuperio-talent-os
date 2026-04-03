@@ -2,29 +2,30 @@
 
 /* Hero (post-header): nombre, especialización, pill “Aplicando a”, meta chips */
 .consulting-pdf-root .cpdf-cv-hero {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.35rem;
 }
 
 .consulting-pdf-root .cpdf-cv-hero-name-wrap {
-  border-left: 4px solid var(--cpdf-primary);
-  padding-left: 0.85rem;
-  margin-bottom: 0.35rem;
+  border-left: 3px solid var(--cpdf-primary);
+  padding-left: 0.9rem;
+  margin-bottom: 0.3rem;
 }
 
 .consulting-pdf-root .cpdf-cv-hero-name {
   margin: 0;
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  letter-spacing: -0.028em;
+  line-height: 1.08;
   color: var(--cpdf-ink);
 }
 
 .consulting-pdf-root .cpdf-cv-hero-title {
-  margin: 0.25rem 0 0;
-  padding-left: calc(4px + 0.85rem);
-  font-size: 14px;
+  margin: 0.2rem 0 0;
+  padding-left: calc(3px + 0.9rem);
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--cpdf-secondary);
 }
 
@@ -34,14 +35,14 @@
 
 .consulting-pdf-root .cpdf-cv-apply-pill {
   display: inline-block;
-  margin: 0.65rem 0 0;
-  padding: 4px 12px;
-  border-radius: 20px;
+  margin: 0.55rem 0 0;
+  padding: 5px 14px;
+  border-radius: 999px;
   background: var(--cpdf-primary);
   color: #fff;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
 }
 
 .consulting-pdf-root .cpdf-cv-apply-pill strong {
@@ -49,19 +50,19 @@
 }
 
 .consulting-pdf-root .cpdf-cv-hero-meta {
-  margin: 0.5rem 0 0;
-  padding-left: calc(4px + 0.85rem);
-  font-size: 12px;
-  line-height: 1.45;
+  margin: 0.45rem 0 0;
+  padding-left: calc(3px + 0.9rem);
+  font-size: 11.5px;
+  line-height: 1.5;
   color: var(--cpdf-muted);
 }
 
 /* Cuerpo 28% / 72% */
 .consulting-pdf-root .cpdf-cv-body {
   display: grid;
-  grid-template-columns: 28% 72%;
+  grid-template-columns: minmax(0, 27%) minmax(0, 73%);
   gap: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   border: none;
   border-radius: 0;
   overflow: visible;
@@ -70,11 +71,11 @@
 .consulting-pdf-root .cpdf-cv-sidebar {
   background: #fff;
   border-right: 1px solid var(--cpdf-sidebar-rule);
-  padding: 0 0.85rem 1.25rem 0;
+  padding: 0 0.95rem 1.1rem 0;
 }
 
 .consulting-pdf-root .cpdf-cv-main {
-  padding: 0 0 1.25rem 1.15rem;
+  padding: 0 0 1.1rem 1.2rem;
   background: #fff;
 }
 
@@ -90,7 +91,7 @@
 }
 
 .consulting-pdf-root .cpdf-cv-side-block + .cpdf-cv-side-block {
-  margin-top: 1rem;
+  margin-top: 0.9rem;
   padding-top: 0;
   border-top: none;
 }
@@ -144,6 +145,98 @@
   font-size: 12px;
   color: var(--cpdf-muted);
   line-height: 1.4;
+}
+
+/* Idiomas */
+.consulting-pdf-root .cpdf-cv-lang-list {
+  margin: 0.15rem 0 0;
+}
+
+.consulting-pdf-root .cpdf-cv-lang-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--cpdf-sidebar-rule);
+}
+
+.consulting-pdf-root .cpdf-cv-lang-row:last-child {
+  border-bottom: none;
+}
+
+.consulting-pdf-root .cpdf-cv-lang-name {
+  font-weight: 600;
+  color: var(--cpdf-ink);
+}
+
+.consulting-pdf-root .cpdf-cv-lang-level {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cpdf-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Certificaciones */
+.consulting-pdf-root .cpdf-cv-cert-list {
+  margin: 0.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consulting-pdf-root .cpdf-cv-cert-line {
+  position: relative;
+  margin: 0 0 0.35rem;
+  padding-left: 0.75rem;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--cpdf-ink);
+}
+
+.consulting-pdf-root .cpdf-cv-cert-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cpdf-primary);
+}
+
+/* Industrias */
+.consulting-pdf-root .cpdf-cv-industry-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.15rem 0 0;
+}
+
+.consulting-pdf-root .cpdf-cv-industry-pill {
+  display: inline-block;
+  padding: 0.2rem 0.45rem;
+  border-radius: 3px;
+  background: var(--cpdf-primary);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Formación */
+.consulting-pdf-root .cpdf-cv-edu-block {
+  margin: 0 0 0.55rem;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cpdf-ink);
+  white-space: pre-wrap;
+}
+
+.consulting-pdf-root .cpdf-cv-edu-block:last-child {
+  margin-bottom: 0;
 }
 
 /* Habilidades blandas — pills */
@@ -347,14 +440,75 @@
 }
 
 .consulting-pdf-root .cpdf-cv-main .cpdf-section {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.1rem;
+}
+
+.consulting-pdf-root--cv-consulting .cpdf-cv-main .cpdf-intro {
+  line-height: 1.58;
 }
 
 @media print {
-  .consulting-pdf-root .cpdf-cv-exp-block,
+  /* Allow the two-column layout to paginate; do not force entire CV onto one page */
   .consulting-pdf-root .cpdf-cv-body {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .consulting-pdf-root .cpdf-cv-sidebar,
+  .consulting-pdf-root .cpdf-cv-main {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .consulting-pdf-root .cpdf-cv-hero {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  /* Keep role/company line with the start of the entry */
+  .consulting-pdf-root .cpdf-cv-exp-head {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .consulting-pdf-root .cpdf-cv-exp-block {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .consulting-pdf-root .cpdf-cv-exp-bullets li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    orphans: 2;
+    widows: 2;
+  }
+
+  .consulting-pdf-root .cpdf-cv-edu-block {
+    break-inside: auto;
+    page-break-inside: auto;
+    orphans: 2;
+    widows: 2;
+  }
+
+  .consulting-pdf-root .cpdf-cv-cert-line {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .consulting-pdf-root .cpdf-cv-lang-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .consulting-pdf-root .cpdf-cv-skill-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .consulting-pdf-root .cpdf-cv-why,
+  .consulting-pdf-root .cpdf-cv-main .cpdf-intro {
+    orphans: 2;
+    widows: 2;
   }
 }
 

@@ -24,7 +24,7 @@ const prismaStatusToUi: Record<PrismaProposalStatus, ProposalStatusUi> = {
   VIEWED: "Vista",
   IN_NEGOTIATION: "En negociación",
   WON: "Ganada",
-  LOST: "Perdida",
+  LOST: "Pérdida",
 };
 
 const prismaTypeToUi: Record<PrismaProposalType, ProposalTypeUi> = {

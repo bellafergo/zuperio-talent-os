@@ -37,7 +37,7 @@ function statusLabel(s: ProposalStatus): string {
     VIEWED: "Vista",
     IN_NEGOTIATION: "En negociación",
     WON: "Ganada",
-    LOST: "Perdida",
+    LOST: "Pérdida",
   };
   return m[s];
 }

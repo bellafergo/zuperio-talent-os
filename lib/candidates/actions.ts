@@ -71,6 +71,12 @@ export async function createCandidate(
             currentCompany: data.currentCompany,
             notes: data.notes,
             skills: legacy,
+            locationCity: data.locationCity,
+            workModality: data.workModality,
+            cvLanguagesText: data.cvLanguagesText,
+            cvCertificationsText: data.cvCertificationsText,
+            cvIndustriesText: data.cvIndustriesText,
+            cvEducationText: data.cvEducationText,
           },
           select: { id: true },
         });
@@ -107,6 +113,12 @@ export async function createCandidate(
         currentCompany: data.currentCompany,
         notes: data.notes,
         skills: "",
+        locationCity: data.locationCity,
+        workModality: data.workModality,
+        cvLanguagesText: data.cvLanguagesText,
+        cvCertificationsText: data.cvCertificationsText,
+        cvIndustriesText: data.cvIndustriesText,
+        cvEducationText: data.cvEducationText,
       },
       select: { id: true },
     });
@@ -170,6 +182,12 @@ export async function updateCandidate(
           currentCompany: data.currentCompany,
           notes: data.notes,
           skills: legacySkills,
+          locationCity: data.locationCity,
+          workModality: data.workModality,
+          cvLanguagesText: data.cvLanguagesText,
+          cvCertificationsText: data.cvCertificationsText,
+          cvIndustriesText: data.cvIndustriesText,
+          cvEducationText: data.cvEducationText,
         },
       });
 

@@ -1,6 +1,13 @@
 import type { CandidateAvailabilityStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 
+import {
+  parseCvCertificationLines,
+  parseCvEducationBlocks,
+  parseCvIndustriesText,
+  parseCvLanguagesText,
+  type CvLanguageEntry,
+} from "./cv-print-parsing";
 import { candidateAvailabilityLabel } from "./availability-ui";
 import { placementStatusLabel } from "./placement-status-ui";
 import { vacancySeniorityLabel } from "./seniority-ui";
@@ -36,6 +43,14 @@ export type CandidateCvPrintData = {
   notes: string | null;
   structuredSkills: CandidateCvSkillRow[];
   placements: CandidateCvPlacementRow[];
+  /** Hero / chips — optional structured fields */
+  locationCity: string | null;
+  workModality: string | null;
+  languages: CvLanguageEntry[];
+  certifications: string[];
+  /** Industrias declaradas + organizaciones de placements (deduplicado) */
+  industries: string[];
+  educationBlocks: string[];
 };
 
 function formatPlacementDate(d: Date): string {
@@ -86,6 +101,12 @@ export async function getCandidateCvPrintData(
       availabilityStatus: true,
       currentCompany: true,
       notes: true,
+      locationCity: true,
+      workModality: true,
+      cvLanguagesText: true,
+      cvCertificationsText: true,
+      cvIndustriesText: true,
+      cvEducationText: true,
       structuredSkills: {
         select: {
           yearsExperience: true,
@@ -134,6 +155,14 @@ export async function getCandidateCvPrintData(
     highlights: achievementBulletsFromLogs(p.weeklyLogs),
   }));
 
+  const declaredIndustries = parseCvIndustriesText(row.cvIndustriesText);
+  const orgsFromPlacements = [
+    ...new Set(placements.map((p) => p.companyName)),
+  ];
+  const industriesMerged = [
+    ...new Set([...declaredIndustries, ...orgsFromPlacements]),
+  ].slice(0, 14);
+
   return {
     id: row.id,
     fullName: `${row.firstName} ${row.lastName}`.trim(),
@@ -148,5 +177,11 @@ export async function getCandidateCvPrintData(
     notes: row.notes?.trim() || null,
     structuredSkills,
     placements,
+    locationCity: row.locationCity?.trim() || null,
+    workModality: row.workModality?.trim() || null,
+    languages: parseCvLanguagesText(row.cvLanguagesText),
+    certifications: parseCvCertificationLines(row.cvCertificationsText),
+    industries: industriesMerged,
+    educationBlocks: parseCvEducationBlocks(row.cvEducationText),
   };
 }

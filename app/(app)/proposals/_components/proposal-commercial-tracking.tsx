@@ -61,8 +61,6 @@ export function ProposalCommercialTracking({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const terminal = statusValue === "WON" || statusValue === "LOST";
-
   function run(action: () => Promise<{ ok: boolean; message?: string }>) {
     setError(null);
     startTransition(async () => {
@@ -111,7 +109,7 @@ export function ProposalCommercialTracking({
               type="button"
               size="sm"
               variant="outline"
-              disabled={pending || terminal}
+              disabled={pending || statusValue === "IN_NEGOTIATION"}
               onClick={() =>
                 run(() => setProposalPipelineStatus(proposalId, "IN_NEGOTIATION"))
               }
@@ -125,7 +123,7 @@ export function ProposalCommercialTracking({
               disabled={pending || statusValue === "WON"}
               onClick={() => run(() => setProposalPipelineStatus(proposalId, "WON"))}
             >
-              Marcar ganada
+              Marcar como ganada
             </Button>
             <Button
               type="button"
@@ -134,13 +132,13 @@ export function ProposalCommercialTracking({
               disabled={pending || statusValue === "LOST"}
               onClick={() => run(() => setProposalPipelineStatus(proposalId, "LOST"))}
             >
-              Marcar perdida
+              Marcar como pérdida
             </Button>
             <Button
               type="button"
               size="sm"
               variant="secondary"
-              disabled={pending || terminal}
+              disabled={pending}
               onClick={() => run(() => markProposalFollowUpSent(proposalId))}
             >
               Registrar seguimiento enviado

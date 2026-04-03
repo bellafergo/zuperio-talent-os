@@ -157,7 +157,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
               <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Propuesta Económica
               </p>
-              <div className="rounded-xl border border-border/80 bg-white p-6 shadow-sm ring-1 ring-foreground/[0.04]">
+              <div className="mx-auto w-full max-w-[210mm] rounded-xl border border-border/80 bg-white p-4 shadow-sm ring-1 ring-foreground/[0.04] sm:p-6">
                 <ProposalConsultingPdfDocument
                   proposal={proposal}
                   preparedByDisplay={preparedByDisplay}
@@ -175,8 +175,11 @@ export default async function ProposalDetailPage({ params }: PageProps) {
                 <p className="text-xs text-muted-foreground">
                   Misma plantilla que la vista de impresión del candidato — skills estructurados, experiencia registrada y perfil ejecutivo generado por la plataforma.
                 </p>
-                <div className="rounded-xl border border-border/80 bg-white p-6 shadow-sm ring-1 ring-foreground/[0.04]">
-                  <CandidateCvConsultingDocument data={cvPrintData} />
+                <div className="mx-auto w-full max-w-[210mm] rounded-xl border border-border/80 bg-white p-4 shadow-sm ring-1 ring-foreground/[0.04] sm:p-6">
+                  <CandidateCvConsultingDocument
+                    data={cvPrintData}
+                    variant="screen"
+                  />
                 </div>
               </div>
             ) : null}

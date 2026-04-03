@@ -1,3 +1,7 @@
+/**
+ * Economic proposal PDF body — print route: app/(print)/proposals/[id]/document-print/page.tsx
+ * (Puppeteer loads that URL). In-app preview: ProposalConsultingPdfDocument variant="screen".
+ */
 import type { ProposalDetailUi } from "@/lib/proposals/types";
 import type { ComparisonMatrixBundle } from "@/lib/matching/queries";
 import {
@@ -5,33 +9,21 @@ import {
   formatProposalPercent,
 } from "@/lib/proposals/presentation";
 
-import {
-  DetailedPricingTable,
-  SimplePricingTable,
-} from "@/lib/proposals/pdf-template/proposal-pricing-blocks";
-import {
-  pdfMatchPercentDisplay,
-  pdfMatchToneClass,
-} from "@/lib/proposals/pdf-template/proposal-pdf-match-display";
-
-import "@/app/(app)/proposals/_components/proposal-document.css";
 import "./proposal-consulting-pdf.css";
 
-/** Short items (2–3 líneas c/u) for two-column términos per design spec */
+/** Términos compactos (PDF ejecutivo 1 página) */
 const STANDARD_CONDITIONS_ES = [
-  "Propuesta orientativa y sujeta al contrato definitivo que suscriban las partes.",
-  "Los montos reflejan los supuestos e información registrados en Zuperio a la fecha de emisión.",
-  "Condiciones de prestación, plazos de aviso y entregables se confirman en el contrato marco o anexo / statement of work.",
-  "La vigencia indicada en el documento aplica salvo revocación previa por escrito.",
-  "Los anexos técnicos o de alcance, cuando existan, complementan esta propuesta comercial.",
-  "Modificaciones económicas requieren acuerdo expreso por escrito entre cliente y Zuperio.",
+  "Propuesta orientativa y sujeta al contrato definitivo entre las partes.",
+  "Montos según supuestos registrados en Zuperio a la fecha de emisión.",
+  "Condiciones de servicio y entregables se formalizan en contrato marco o anexo.",
+  "Vigencia según este documento; modificaciones económicas por acuerdo escrito.",
 ];
 
 export type ProposalConsultingPdfDocumentProps = {
   proposal: ProposalDetailUi;
   preparedByDisplay: string;
   comparisonMatrix?: ComparisonMatrixBundle | null;
-  /** `screen` — in-app preview (slightly relaxed sizing). */
+  /** `screen` — vista previa en la app (misma escala base que PDF vía CSS). */
   variant?: "pdf" | "screen";
 };
 
@@ -64,6 +56,28 @@ function splitTermsForColumns(
   return { left: lines.slice(0, mid), right: lines.slice(mid) };
 }
 
+function isPlaceholderDash(s: string): boolean {
+  return !s.trim() || s.trim() === "—";
+}
+
+/** Vacancy / opportunity / neutral fallback — never bare "—" in PDF copy */
+function proposalPerfilLabel(p: ProposalDetailUi): string {
+  if (!isPlaceholderDash(p.vacancyTitle)) return p.vacancyTitle.trim();
+  if (!isPlaceholderDash(p.opportunityTitle)) return p.opportunityTitle.trim();
+  return "Perfil comercial (definir con el cliente)";
+}
+
+function proposalCandidateDisplay(p: ProposalDetailUi): string {
+  const n = p.candidateName.trim();
+  if (!n || isPlaceholderDash(n)) return "Candidato por asignar";
+  return n;
+}
+
+function proposalCompanyDisplay(p: ProposalDetailUi): string {
+  const n = p.companyName.trim();
+  return n || "Cliente";
+}
+
 export function ProposalConsultingPdfDocument({
   proposal,
   preparedByDisplay,
@@ -71,20 +85,13 @@ export function ProposalConsultingPdfDocument({
   variant = "pdf",
 }: ProposalConsultingPdfDocumentProps) {
   const currency = proposal.currency?.trim() || "MXN";
-  const isDetailed = proposal.formatValue === "DETAILED";
   const p = proposal.pricing;
   const today = formatTodayEsMx();
   const refCode = proposalRefCode(proposal.id);
 
-  const proposalName =
-    proposal.opportunityTitle !== "—"
-      ? proposal.opportunityTitle
-      : "Propuesta comercial";
-
-  const roleLine =
-    proposal.vacancyTitle !== "—"
-      ? proposal.vacancyTitle
-      : proposal.opportunityTitle;
+  const roleLine = proposalPerfilLabel(proposal);
+  const candidateDisplay = proposalCandidateDisplay(proposal);
+  const companyDisplay = proposalCompanyDisplay(proposal);
 
   const execSummary = proposal.executiveSummary?.trim();
   const profileSummary = proposal.profileSummary?.trim();
@@ -98,10 +105,13 @@ export function ProposalConsultingPdfDocument({
   const { left: termsLeft, right: termsRight } =
     splitTermsForColumns(STANDARD_CONDITIONS_ES);
 
-  const rootClass =
-    variant === "screen"
-      ? "consulting-pdf-root consulting-pdf-root--screen"
-      : "consulting-pdf-root";
+  const rootClass = [
+    "consulting-pdf-root",
+    "consulting-pdf-root--proposal-executive",
+    variant === "screen" ? "consulting-pdf-root--screen" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={rootClass}>
@@ -135,15 +145,15 @@ export function ProposalConsultingPdfDocument({
         <div className="cpdf-party-grid">
           <div className="cpdf-party">
             <p className="cpdf-party-label">Dirigido a</p>
-            <p className="cpdf-party-name">{proposal.companyName}</p>
+            <p className="cpdf-party-name">{companyDisplay}</p>
             <p className="cpdf-party-lines">
-              {proposal.opportunityTitle !== "—"
-                ? `Oportunidad: ${proposal.opportunityTitle}`
-                : "Cliente registrado en Zuperio"}
-              {proposal.vacancyTitle !== "—" ? (
+              {!isPlaceholderDash(proposal.opportunityTitle)
+                ? `Oportunidad: ${proposal.opportunityTitle.trim()}`
+                : "Contacto y detalle de cuenta en Zuperio"}
+              {!isPlaceholderDash(proposal.vacancyTitle) ? (
                 <>
                   <br />
-                  Vacante: {proposal.vacancyTitle}
+                  Vacante: {proposal.vacancyTitle.trim()}
                 </>
               ) : null}
             </p>
@@ -161,54 +171,49 @@ export function ProposalConsultingPdfDocument({
           </div>
         </div>
 
-        <section className="cpdf-section">
-          <p className="cpdf-sec-label">Introducción</p>
-          {execSummary ? (
-            <p className="cpdf-intro">{execSummary}</p>
-          ) : (
-            <p className="cpdf-intro">
-              Con el gusto de saludarle, presentamos esta{" "}
-              <span className="cpdf-em">propuesta comercial</span> para{" "}
-              <span className="cpdf-em">{proposal.candidateName}</span> alineada
-              al perfil{" "}
-              <span className="cpdf-em">{roleLine}</span> para{" "}
-              <span className="cpdf-em">{proposal.companyName}</span>.
-              {comparisonMatrix?.skillMatchActive ? (
-                <>
-                  {" "}
-                  La <span className="cpdf-em">cobertura de skills requeridos</span>{" "}
-                  para este par candidato–vacante es del{" "}
-                  <span className="cpdf-em">
-                    {comparisonMatrix.computedMatch.score}%
-                  </span>
-                  , calculada de forma determinista en Zuperio (sin IA), igual
-                  que en el detalle de matching.
-                </>
-              ) : null}
-            </p>
-          )}
-        </section>
+        {execSummary ? (
+          <p className="cpdf-lead">{execSummary}</p>
+        ) : (
+          <p className="cpdf-lead">
+            Propuesta comercial para{" "}
+            <span className="cpdf-em">{candidateDisplay}</span>
+            {" — "}
+            <span className="cpdf-em">{roleLine}</span>
+            {" — "}
+            <span className="cpdf-em">{companyDisplay}</span>.
+            {comparisonMatrix?.skillMatchActive ? (
+              <>
+                {" "}
+                Cobertura de competencias requeridas:{" "}
+                <span className="cpdf-em">{comparisonMatrix.computedMatch.score}%</span>.
+              </>
+            ) : (
+              " Puede completar el resumen ejecutivo en Zuperio cuando corresponda."
+            )}
+          </p>
+        )}
 
         <section className="cpdf-section">
           <p className="cpdf-sec-label">Recurso propuesto</p>
           <div className="cpdf-resource-card">
             <div className="cpdf-avatar">
-              {initialsFromDisplayName(proposal.candidateName)}
+              {initialsFromDisplayName(candidateDisplay)}
             </div>
             <div className="cpdf-resource-body">
               <div className="cpdf-resource-head">
                 <div>
-                  <p className="cpdf-resource-name">{proposal.candidateName}</p>
+                  <p className="cpdf-resource-name">{candidateDisplay}</p>
                   <p className="cpdf-resource-role">
                     {profileSummary
-                      ? profileSummary.split(/\n/)[0].trim().slice(0, 140)
-                      : proposal.opportunityTitle !== "—"
-                        ? proposal.opportunityTitle
+                      ? profileSummary.split(/\n/)[0].trim().slice(0, 140) ||
+                        "Especialización según perfil vinculado en Zuperio."
+                      : !isPlaceholderDash(proposal.opportunityTitle)
+                        ? proposal.opportunityTitle.trim()
                         : roleLine}
                   </p>
                 </div>
-                {proposal.vacancyTitle !== "—" ? (
-                  <span className="cpdf-pill">{proposal.vacancyTitle}</span>
+                {!isPlaceholderDash(proposal.vacancyTitle) ? (
+                  <span className="cpdf-pill">{proposal.vacancyTitle.trim()}</span>
                 ) : null}
               </div>
               {profileSummary &&
@@ -226,46 +231,12 @@ export function ProposalConsultingPdfDocument({
           </div>
         </section>
 
-        {comparisonMatrix ? (
-          <section className="cpdf-section">
-            <p className="cpdf-sec-label">Alineación requerimiento · candidato</p>
-            <div className="cpdf-match-wrap">
-              <table className="cpdf-match-table">
-                <thead>
-                  <tr>
-                    <th>Requerimiento</th>
-                    <th>Candidato</th>
-                    <th>Match</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparisonMatrix.rows.map((row) => {
-                    const { text, tone } = pdfMatchPercentDisplay(row);
-                    return (
-                      <tr key={row.id}>
-                        <td className="cpdf-match-req">{row.requirement}</td>
-                        <td className="cpdf-match-cand">{row.candidateValue}</td>
-                        <td className={pdfMatchToneClass(tone)}>{text}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <p className="cpdf-match-summary">
-              {comparisonMatrix.skillMatchActive ? (
-                <>
-                  <strong>
-                    Cobertura de skills {comparisonMatrix.computedMatch.score}%
-                  </strong>
-                  {" — "}
-                  {comparisonMatrix.computedMatch.explanation}
-                </>
-              ) : (
-                <>{comparisonMatrix.computedMatch.explanation}</>
-              )}
-            </p>
-          </section>
+        {comparisonMatrix?.skillMatchActive ? (
+          <p className="cpdf-match-inline">
+            <strong>Alineación por competencias:</strong>{" "}
+            {comparisonMatrix.computedMatch.score}% —{" "}
+            {comparisonMatrix.computedMatch.explanation}
+          </p>
         ) : null}
 
         <section className="cpdf-section">
@@ -284,7 +255,7 @@ export function ProposalConsultingPdfDocument({
                   <td className="cpdf-rate-perfil">{roleLine}</td>
                   <td>
                     <span className="cpdf-rate-cand-name">
-                      {proposal.candidateName}
+                      {candidateDisplay}
                     </span>
                     <span className="cpdf-rate-cand-sub">
                       {p
@@ -304,7 +275,7 @@ export function ProposalConsultingPdfDocument({
                       <>
                         <div className="cpdf-rate-big">—</div>
                         <div className="cpdf-rate-sub">
-                          Complete el bloque económico en Zuperio
+                          Complete el bloque económico en Zuperio.
                         </div>
                       </>
                     )}
@@ -358,42 +329,17 @@ export function ProposalConsultingPdfDocument({
             </table>
           ) : (
             <p className="cpdf-body--empty">
-              Sin datos económicos — complete la propuesta en Zuperio.
+              Sin datos económicos. Complete la propuesta en Zuperio.
             </p>
           )}
         </section>
 
-        {p ? (
-          <section className="cpdf-section">
-            <p className="cpdf-sec-label">
-              {isDetailed
-                ? "Desglose económico detallado"
-                : "Resumen de precios (referencia)"}
-            </p>
-            {isDetailed ? (
-              <DetailedPricingTable currency={currency} proposal={proposal} />
-            ) : (
-              <SimplePricingTable
-                currency={currency}
-                proposal={proposal}
-                variant="consulting"
-              />
-            )}
+        {scopeNotes?.trim() ? (
+          <section className="cpdf-section cpdf-section--compact">
+            <p className="cpdf-sec-label">Alcance</p>
+            <p className="cpdf-closing cpdf-closing--tight">{scopeNotes.trim()}</p>
           </section>
         ) : null}
-
-        <section className="cpdf-section">
-          <p className="cpdf-sec-label">Alcance y próximos pasos</p>
-          {scopeNotes ? (
-            <p className="cpdf-closing">{scopeNotes}</p>
-          ) : (
-            <p className="cpdf-closing">
-              Quedamos atentos para coordinar una sesión de revisión, resolver
-              dudas y, de su interés, avanzar hacia el marco contractual y el
-              arranque del recurso.
-            </p>
-          )}
-        </section>
 
         <section className="cpdf-section">
           <p className="cpdf-sec-label">Términos y condiciones</p>
@@ -423,7 +369,7 @@ export function ProposalConsultingPdfDocument({
           </p>
           <div className="cpdf-sign-grid">
             <div className="cpdf-sign-card">
-              <div className="cpdf-sign-bar">{proposal.companyName}</div>
+              <div className="cpdf-sign-bar">{companyDisplay}</div>
               <div className="cpdf-sign-body">
                 <div className="cpdf-sign-inkline" />
                 <p className="cpdf-sign-name-slot">Nombre y firma</p>

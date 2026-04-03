@@ -48,6 +48,12 @@ export type CandidateEditData = {
   currentCompany: string | null;
   notes: string | null;
   structuredSkills: CandidateSkillDraft[];
+  locationCity: string | null;
+  workModality: string | null;
+  cvLanguagesText: string | null;
+  cvCertificationsText: string | null;
+  cvIndustriesText: string | null;
+  cvEducationText: string | null;
 };
 
 export async function getCandidateEditData(
@@ -66,6 +72,12 @@ export async function getCandidateEditData(
       availabilityStatus: true,
       currentCompany: true,
       notes: true,
+      locationCity: true,
+      workModality: true,
+      cvLanguagesText: true,
+      cvCertificationsText: true,
+      cvIndustriesText: true,
+      cvEducationText: true,
       structuredSkills: {
         select: { skillId: true, yearsExperience: true, level: true },
         orderBy: [{ updatedAt: "desc" }],
@@ -91,5 +103,11 @@ export async function getCandidateEditData(
       yearsExperience: s.yearsExperience,
       level: s.level?.trim() || null,
     })),
+    locationCity: row.locationCity,
+    workModality: row.workModality,
+    cvLanguagesText: row.cvLanguagesText,
+    cvCertificationsText: row.cvCertificationsText,
+    cvIndustriesText: row.cvIndustriesText,
+    cvEducationText: row.cvEducationText,
   };
 }

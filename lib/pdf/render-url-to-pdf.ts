@@ -11,6 +11,10 @@ export type RenderUrlToPdfParams = {
 
 const DEFAULT_PRINT_ROOT_SELECTOR = "article[data-pdf-print-root]";
 
+/** Must match `@page` in `lib/proposals/pdf-template/proposal-consulting-pdf.css`. */
+const PDF_PAGE_FORMAT = "A4" as const;
+const PDF_PAGE_MARGIN_MM = "15mm" as const;
+
 /**
  * Renders an authenticated app URL to a PDF buffer (Chromium print).
  * Used for proposal and CV templates that match in-app HTML/CSS.
@@ -100,9 +104,14 @@ export async function renderUrlToPdfBuffer(
     await new Promise((r) => setTimeout(r, 250));
 
     const pdf = await page.pdf({
-      format: "Letter",
+      format: PDF_PAGE_FORMAT,
       printBackground: true,
-      margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
+      margin: {
+        top: PDF_PAGE_MARGIN_MM,
+        right: PDF_PAGE_MARGIN_MM,
+        bottom: PDF_PAGE_MARGIN_MM,
+        left: PDF_PAGE_MARGIN_MM,
+      },
     });
 
     const buf = Buffer.from(pdf);

@@ -13,20 +13,30 @@ async function gate(): Promise<
 > {
   const session = await auth();
   if (!session?.user) {
-    return { ok: false, state: { ok: false, message: "You must be signed in." } };
+    return {
+      ok: false,
+      state: { ok: false, message: "Debe iniciar sesión para continuar." },
+    };
   }
   if (!canManageProposals(session.user.role)) {
     return {
       ok: false,
       state: {
         ok: false,
-        message: "Only Sales and Director can update proposal tracking.",
+        message: "Solo ventas y dirección pueden actualizar el seguimiento.",
       },
     };
   }
   return { ok: true };
 }
 
+/**
+ * Commercial pipeline quick actions (detail page). Persists one of the three
+ * “late funnel” statuses. Verified flow (UI disables redundant clicks):
+ * - IN_NEGOTIATION ↔ WON / LOST (p. ej. Ganada/Pérdida → En negociación).
+ * - SENT / VIEWED / DRAFT can also move into these states via the same buttons
+ * Full status edits (incl. all enums) remain available in the proposal edit form.
+ */
 export async function setProposalPipelineStatus(
   proposalId: string,
   status: "IN_NEGOTIATION" | "WON" | "LOST",
@@ -34,11 +44,15 @@ export async function setProposalPipelineStatus(
   const g = await gate();
   if (!g.ok) return g.state;
 
-  const exists = await prisma.proposal.findUnique({
+  const row = await prisma.proposal.findUnique({
     where: { id: proposalId },
-    select: { id: true },
+    select: { id: true, status: true },
   });
-  if (!exists) return { ok: false, message: "Proposal was not found." };
+  if (!row) return { ok: false, message: "Proposal was not found." };
+
+  if (row.status === status) {
+    return { ok: true, proposalId };
+  }
 
   await prisma.proposal.update({
     where: { id: proposalId },
@@ -60,7 +74,7 @@ export async function markProposalFollowUpSent(
     where: { id: proposalId },
     select: { id: true },
   });
-  if (!exists) return { ok: false, message: "Proposal was not found." };
+  if (!exists) return { ok: false, message: "No se encontró la propuesta." };
 
   await prisma.proposal.update({
     where: { id: proposalId },

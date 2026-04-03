@@ -40,7 +40,7 @@ const STATUS_LABELS: Record<ProposalStatus, string> = {
   VIEWED: "Vista (seguimiento)",
   IN_NEGOTIATION: "En negociación",
   WON: "Ganada",
-  LOST: "Perdida",
+  LOST: "Pérdida",
 };
 
 const STATUS_FIELD_ORDER: ProposalStatus[] = [

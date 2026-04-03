@@ -14,6 +14,8 @@ export type CandidateSkillDraft = {
 const AVAILABILITY_SET = new Set<string>(Object.values(AvailabilityConst));
 const SENIORITY_SET = new Set<string>(Object.values(SeniorityConst));
 
+const CV_TEXT_MAX = 6000;
+
 export type CandidateFormParsed = {
   firstName: string;
   lastName: string;
@@ -25,6 +27,12 @@ export type CandidateFormParsed = {
   currentCompany: string | null;
   notes: string | null;
   structuredSkills: CandidateSkillDraft[];
+  locationCity: string | null;
+  workModality: string | null;
+  cvLanguagesText: string | null;
+  cvCertificationsText: string | null;
+  cvIndustriesText: string | null;
+  cvEducationText: string | null;
 };
 
 export type CandidateFormValidationResult =
@@ -36,6 +44,24 @@ function parseOptionalTrimmed(formData: FormData, key: string): string | null {
   if (typeof raw !== "string") return null;
   const v = raw.trim();
   return v ? v : null;
+}
+
+function parseOptionalLongText(
+  formData: FormData,
+  key: string,
+  fieldLabel: string,
+  max: number,
+  fieldErrors: Record<string, string>,
+): string | null {
+  const raw = formData.get(key);
+  if (typeof raw !== "string") return null;
+  const v = raw.trim();
+  if (!v) return null;
+  if (v.length > max) {
+    fieldErrors[key] = `${fieldLabel} excede ${max} caracteres.`;
+    return null;
+  }
+  return v;
 }
 
 function parseRequiredTrimmed(
@@ -147,6 +173,37 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
   const notesRaw = parseOptionalTrimmed(formData, "notes");
   const notes = notesRaw ? notesRaw : null;
 
+  const locationCity = parseOptionalTrimmed(formData, "locationCity");
+  const workModality = parseOptionalTrimmed(formData, "workModality");
+  const cvLanguagesText = parseOptionalLongText(
+    formData,
+    "cvLanguagesText",
+    "Idiomas (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvCertificationsText = parseOptionalLongText(
+    formData,
+    "cvCertificationsText",
+    "Certificaciones (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvIndustriesText = parseOptionalLongText(
+    formData,
+    "cvIndustriesText",
+    "Industrias (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvEducationText = parseOptionalLongText(
+    formData,
+    "cvEducationText",
+    "Educación (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+
   const skillsJsonRaw = parseOptionalTrimmed(formData, "structuredSkills");
   const skillsParsed = parseSkillsJson(skillsJsonRaw);
   if (!skillsParsed.ok) {
@@ -171,6 +228,12 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
       currentCompany,
       notes,
       structuredSkills,
+      locationCity,
+      workModality,
+      cvLanguagesText,
+      cvCertificationsText,
+      cvIndustriesText,
+      cvEducationText,
     },
   };
 }

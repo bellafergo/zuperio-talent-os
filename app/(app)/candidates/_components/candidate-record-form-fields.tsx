@@ -263,6 +263,78 @@ export function CandidateRecordFormFields({
         />
       </div>
 
+      <div className="space-y-3 rounded-xl border border-border/80 bg-muted/20 p-4">
+        <div>
+          <p className="text-sm font-medium">Perfil para CV PDF (opcional)</p>
+          <p className="text-xs text-muted-foreground">
+            Alimenta la plantilla de CV comercial. Idiomas: una línea por idioma, p. ej.{" "}
+            <span className="font-mono text-[11px]">Español — Nativo</span>. Industrias:
+            separadas por coma.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label
+              htmlFor={candidateId ? `edit-loc-${candidateId}` : "new-loc"}
+              className="text-xs font-medium text-muted-foreground"
+            >
+              Ubicación (ciudad / país)
+            </label>
+            <Input
+              id={candidateId ? `edit-loc-${candidateId}` : "new-loc"}
+              name="locationCity"
+              maxLength={200}
+              defaultValue={defaults?.locationCity ?? ""}
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor={candidateId ? `edit-mod-${candidateId}` : "new-mod"}
+              className="text-xs font-medium text-muted-foreground"
+            >
+              Modalidad (Remoto / Híbrido / Presencial)
+            </label>
+            <Input
+              id={candidateId ? `edit-mod-${candidateId}` : "new-mod"}
+              name="workModality"
+              maxLength={120}
+              defaultValue={defaults?.workModality ?? ""}
+            />
+          </div>
+        </div>
+        {(
+          [
+            ["cvLanguagesText", "Idiomas (líneas)", defaults?.cvLanguagesText],
+            ["cvCertificationsText", "Certificaciones (líneas)", defaults?.cvCertificationsText],
+            ["cvIndustriesText", "Industrias (coma)", defaults?.cvIndustriesText],
+            ["cvEducationText", "Educación (párrafos o líneas)", defaults?.cvEducationText],
+          ] as const
+        ).map(([name, label, val]) => (
+          <div key={name} className="space-y-2">
+            <label htmlFor={`${candidateId ?? "new"}-${name}`} className="text-xs font-medium text-muted-foreground">
+              {label}
+            </label>
+            <textarea
+              id={`${candidateId ?? "new"}-${name}`}
+              name={name}
+              defaultValue={val ?? ""}
+              rows={name === "cvEducationText" ? 4 : 3}
+              className={cn(
+                "w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none",
+                "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                "dark:bg-input/30",
+              )}
+              aria-invalid={Boolean(fieldErrors?.[name])}
+            />
+            {fieldErrors?.[name] ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors[name]}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
       <CandidateSkillsEditor
         skills={skillsCatalog}
         value={structuredSkills}

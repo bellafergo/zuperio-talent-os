@@ -23,7 +23,7 @@ export default async function CandidateCvPrintPage({ params }: PageProps) {
 
   return (
     <div className="bg-white px-6 py-8 print:px-0 print:py-0">
-      <CandidateCvConsultingDocument data={data} />
+      <CandidateCvConsultingDocument data={data} variant="pdf" />
     </div>
   );
 }

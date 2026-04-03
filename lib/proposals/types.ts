@@ -4,7 +4,7 @@ export type ProposalStatusUi =
   | "Vista"
   | "En negociación"
   | "Ganada"
-  | "Perdida";
+  | "Pérdida";
 
 export type ProposalStatusValue =
   | "DRAFT"

@@ -313,6 +313,14 @@ model Candidate {
   cvFileKey    String?   /// Storage key (UUID-based filename on disk).
   cvUploadedAt DateTime? /// When the file was last uploaded.
 
+  /// Optional fields for richer consulting-style CV PDF (multiline / comma where noted).
+  locationCity          String?
+  workModality          String?
+  cvLanguagesText       String? @db.Text
+  cvCertificationsText  String? @db.Text
+  cvIndustriesText      String? @db.Text
+  cvEducationText       String? @db.Text
+
   vacancyMatches  CandidateVacancyMatch[]
   placements        Placement[]
   structuredSkills  CandidateSkill[]
