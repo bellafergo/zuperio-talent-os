@@ -40,55 +40,55 @@ export async function createProposal(
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
   const { data } = parsed;
 
-  const company = await prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } });
-  if (!company) return { ok: false, fieldErrors: { companyId: "Selected company was not found." } };
-
-  if (data.opportunityId) {
-    const opp = await prisma.opportunity.findUnique({
-      where: { id: data.opportunityId },
-      select: { id: true, companyId: true },
-    });
-    if (!opp) return { ok: false, fieldErrors: { opportunityId: "Selected opportunity was not found." } };
-    if (opp.companyId !== data.companyId) {
-      return { ok: false, fieldErrors: { opportunityId: "Opportunity must belong to the selected company." } };
-    }
-  }
-
-  if (data.vacancyId) {
-    const vac = await prisma.vacancy.findUnique({
-      where: { id: data.vacancyId },
-      select: { id: true, opportunity: { select: { companyId: true } }, opportunityId: true },
-    });
-    if (!vac) return { ok: false, fieldErrors: { vacancyId: "Selected vacancy was not found." } };
-    if (vac.opportunity.companyId !== data.companyId) {
-      return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected company." } };
-    }
-    if (data.opportunityId && vac.opportunityId !== data.opportunityId) {
-      return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected opportunity." } };
-    }
-  }
-
-  if (data.candidateId) {
-    const cand = await prisma.candidate.findUnique({ where: { id: data.candidateId }, select: { id: true } });
-    if (!cand) return { ok: false, fieldErrors: { candidateId: "Selected candidate was not found." } };
-  }
-
-  const computed = computeProposalPricing({
-    scheme: data.scheme,
-    monthlyHours: data.monthlyHours,
-    estimatedDurationMonths: data.estimatedDurationMonths,
-    candidateNetSalary: data.candidateNetSalary,
-    marginPercent: data.marginPercent,
-    employerLoadPercent: data.employerLoadPercent,
-    bonuses: data.bonuses,
-    benefits: data.benefits,
-    operatingExpenses: data.operatingExpenses,
-    discountPercent: data.discountPercent,
-    fullImssGrossFactor: data.fullImssGrossFactor,
-    vatPercent: data.vatPercent,
-  });
-
   try {
+    const company = await prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } });
+    if (!company) return { ok: false, fieldErrors: { companyId: "Selected company was not found." } };
+
+    if (data.opportunityId) {
+      const opp = await prisma.opportunity.findUnique({
+        where: { id: data.opportunityId },
+        select: { id: true, companyId: true },
+      });
+      if (!opp) return { ok: false, fieldErrors: { opportunityId: "Selected opportunity was not found." } };
+      if (opp.companyId !== data.companyId) {
+        return { ok: false, fieldErrors: { opportunityId: "Opportunity must belong to the selected company." } };
+      }
+    }
+
+    if (data.vacancyId) {
+      const vac = await prisma.vacancy.findUnique({
+        where: { id: data.vacancyId },
+        select: { id: true, opportunity: { select: { companyId: true } }, opportunityId: true },
+      });
+      if (!vac) return { ok: false, fieldErrors: { vacancyId: "Selected vacancy was not found." } };
+      if (!vac.opportunity || vac.opportunity.companyId !== data.companyId) {
+        return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected company." } };
+      }
+      if (data.opportunityId && vac.opportunityId !== data.opportunityId) {
+        return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected opportunity." } };
+      }
+    }
+
+    if (data.candidateId) {
+      const cand = await prisma.candidate.findUnique({ where: { id: data.candidateId }, select: { id: true } });
+      if (!cand) return { ok: false, fieldErrors: { candidateId: "Selected candidate was not found." } };
+    }
+
+    const computed = computeProposalPricing({
+      scheme: data.scheme,
+      monthlyHours: data.monthlyHours,
+      estimatedDurationMonths: data.estimatedDurationMonths,
+      candidateNetSalary: data.candidateNetSalary,
+      marginPercent: data.marginPercent,
+      employerLoadPercent: data.employerLoadPercent,
+      bonuses: data.bonuses,
+      benefits: data.benefits,
+      operatingExpenses: data.operatingExpenses,
+      discountPercent: data.discountPercent,
+      fullImssGrossFactor: data.fullImssGrossFactor,
+      vatPercent: data.vatPercent,
+    });
+
     const created = await prisma.$transaction(async (tx) => {
       const baseProposal = {
         companyId: data.companyId,
@@ -173,8 +173,9 @@ export async function createProposal(
     revalidatePath(`/proposals/${created.id}`);
     revalidatePath("/dashboard");
     return { ok: true, proposalId: created.id };
-  } catch {
-    return { ok: false, message: "Could not create the proposal. Try again." };
+  } catch (err) {
+    console.error("[createProposal] unexpected error:", err);
+    return { ok: false, message: "No se pudo crear la propuesta. Intenta de nuevo." };
   }
 }
 
@@ -189,86 +190,86 @@ export async function updateProposal(
   const proposalId = typeof idRaw === "string" ? idRaw.trim() : "";
   if (!proposalId) return { ok: false, message: "Missing proposal id." };
 
-  const exists = await prisma.proposal.findUnique({
-    where: { id: proposalId },
-    select: { id: true, status: true },
-  });
-  if (!exists) return { ok: false, message: "Proposal was not found." };
-
-  const parsed = parseProposalForm(formData);
-  if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
-  const { data } = parsed;
-
-  const company = await prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } });
-  if (!company) return { ok: false, fieldErrors: { companyId: "Selected company was not found." } };
-
-  if (data.opportunityId) {
-    const opp = await prisma.opportunity.findUnique({
-      where: { id: data.opportunityId },
-      select: { id: true, companyId: true },
-    });
-    if (!opp) return { ok: false, fieldErrors: { opportunityId: "Selected opportunity was not found." } };
-    if (opp.companyId !== data.companyId) {
-      return { ok: false, fieldErrors: { opportunityId: "Opportunity must belong to the selected company." } };
-    }
-  }
-
-  if (data.vacancyId) {
-    const vac = await prisma.vacancy.findUnique({
-      where: { id: data.vacancyId },
-      select: { id: true, opportunity: { select: { companyId: true } }, opportunityId: true },
-    });
-    if (!vac) return { ok: false, fieldErrors: { vacancyId: "Selected vacancy was not found." } };
-    if (vac.opportunity.companyId !== data.companyId) {
-      return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected company." } };
-    }
-    if (data.opportunityId && vac.opportunityId !== data.opportunityId) {
-      return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected opportunity." } };
-    }
-  }
-
-  if (data.candidateId) {
-    const cand = await prisma.candidate.findUnique({ where: { id: data.candidateId }, select: { id: true } });
-    if (!cand) return { ok: false, fieldErrors: { candidateId: "Selected candidate was not found." } };
-  }
-
-  const computed = computeProposalPricing({
-    scheme: data.scheme,
-    monthlyHours: data.monthlyHours,
-    estimatedDurationMonths: data.estimatedDurationMonths,
-    candidateNetSalary: data.candidateNetSalary,
-    marginPercent: data.marginPercent,
-    employerLoadPercent: data.employerLoadPercent,
-    bonuses: data.bonuses,
-    benefits: data.benefits,
-    operatingExpenses: data.operatingExpenses,
-    discountPercent: data.discountPercent,
-    fullImssGrossFactor: data.fullImssGrossFactor,
-    vatPercent: data.vatPercent,
-  });
-
-  const closurePatch = commercialClosedAtPatchForStatusChange(
-    exists.status,
-    data.status,
-  );
-
-  const proposalUpdateBase = {
-    companyId: data.companyId,
-    opportunityId: data.opportunityId,
-    vacancyId: data.vacancyId,
-    candidateId: data.candidateId,
-    type: data.type,
-    format: data.format,
-    status: data.status,
-    currency: data.currency,
-    validityDays: data.validityDays,
-    executiveSummary: data.executiveSummary,
-    profileSummary: data.profileSummary,
-    scopeNotes: data.scopeNotes,
-    commercialNotes: data.commercialNotes,
-  };
-
   try {
+    const exists = await prisma.proposal.findUnique({
+      where: { id: proposalId },
+      select: { id: true, status: true },
+    });
+    if (!exists) return { ok: false, message: "Proposal was not found." };
+
+    const parsed = parseProposalForm(formData);
+    if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
+    const { data } = parsed;
+
+    const company = await prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } });
+    if (!company) return { ok: false, fieldErrors: { companyId: "Selected company was not found." } };
+
+    if (data.opportunityId) {
+      const opp = await prisma.opportunity.findUnique({
+        where: { id: data.opportunityId },
+        select: { id: true, companyId: true },
+      });
+      if (!opp) return { ok: false, fieldErrors: { opportunityId: "Selected opportunity was not found." } };
+      if (opp.companyId !== data.companyId) {
+        return { ok: false, fieldErrors: { opportunityId: "Opportunity must belong to the selected company." } };
+      }
+    }
+
+    if (data.vacancyId) {
+      const vac = await prisma.vacancy.findUnique({
+        where: { id: data.vacancyId },
+        select: { id: true, opportunity: { select: { companyId: true } }, opportunityId: true },
+      });
+      if (!vac) return { ok: false, fieldErrors: { vacancyId: "Selected vacancy was not found." } };
+      if (!vac.opportunity || vac.opportunity.companyId !== data.companyId) {
+        return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected company." } };
+      }
+      if (data.opportunityId && vac.opportunityId !== data.opportunityId) {
+        return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected opportunity." } };
+      }
+    }
+
+    if (data.candidateId) {
+      const cand = await prisma.candidate.findUnique({ where: { id: data.candidateId }, select: { id: true } });
+      if (!cand) return { ok: false, fieldErrors: { candidateId: "Selected candidate was not found." } };
+    }
+
+    const computed = computeProposalPricing({
+      scheme: data.scheme,
+      monthlyHours: data.monthlyHours,
+      estimatedDurationMonths: data.estimatedDurationMonths,
+      candidateNetSalary: data.candidateNetSalary,
+      marginPercent: data.marginPercent,
+      employerLoadPercent: data.employerLoadPercent,
+      bonuses: data.bonuses,
+      benefits: data.benefits,
+      operatingExpenses: data.operatingExpenses,
+      discountPercent: data.discountPercent,
+      fullImssGrossFactor: data.fullImssGrossFactor,
+      vatPercent: data.vatPercent,
+    });
+
+    const closurePatch = commercialClosedAtPatchForStatusChange(
+      exists.status,
+      data.status,
+    );
+
+    const proposalUpdateBase = {
+      companyId: data.companyId,
+      opportunityId: data.opportunityId,
+      vacancyId: data.vacancyId,
+      candidateId: data.candidateId,
+      type: data.type,
+      format: data.format,
+      status: data.status,
+      currency: data.currency,
+      validityDays: data.validityDays,
+      executiveSummary: data.executiveSummary,
+      profileSummary: data.profileSummary,
+      scopeNotes: data.scopeNotes,
+      commercialNotes: data.commercialNotes,
+    };
+
     await prisma.$transaction(async (tx) => {
       try {
         await tx.proposal.update({
