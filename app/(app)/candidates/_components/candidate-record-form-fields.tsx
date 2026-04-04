@@ -19,7 +19,11 @@ import type {
 import type { OpenVacancyOptionForCandidateForm } from "@/lib/vacancies/queries";
 import { cn } from "@/lib/utils";
 
+import { CandidateFormCvSection } from "./candidate-form-cv-section";
 import { CandidateSkillsEditor } from "./candidate-skills-editor";
+
+const EMPTY_CV_PATCH: Partial<CandidateEditData> = {};
+const EMPTY_CV_SKILLS: CandidateSkillDraft[] = [];
 
 const selectClass = cn(
   "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none",
@@ -70,6 +74,12 @@ export function CandidateRecordFormFields({
   candidateId,
   fieldErrors,
   openVacancies = [],
+  formResetKey = 0,
+  enableCvSection = false,
+  onCvAutofillApplied,
+  cvAutofillApplyId = 0,
+  cvAutofillPatch = EMPTY_CV_PATCH,
+  cvAutofillExtraSkills = EMPTY_CV_SKILLS,
 }: {
   skillsCatalog: SkillOption[];
   defaults?: CandidateEditData;
@@ -77,6 +87,16 @@ export function CandidateRecordFormFields({
   fieldErrors?: Record<string, string>;
   /** Safe optional; form still works when empty after a failed load. */
   openVacancies?: OpenVacancyOptionForCandidateForm[];
+  /** Bumps when the parent dialog remounts the form (clears autofill merge state). */
+  formResetKey?: number;
+  enableCvSection?: boolean;
+  onCvAutofillApplied?: (
+    patch: Partial<CandidateEditData>,
+    extraStructuredSkills: CandidateSkillDraft[],
+  ) => void;
+  cvAutofillApplyId?: number;
+  cvAutofillPatch?: Partial<CandidateEditData>;
+  cvAutofillExtraSkills?: CandidateSkillDraft[];
 }) {
   const initialAvail = deriveInitialAvailability(defaults);
   const [availMode, setAvailMode] = React.useState<CandidateAvailabilityFormMode>(
@@ -100,7 +120,12 @@ export function CandidateRecordFormFields({
 
   const seniorityOrder = Object.values(SeniorityConst) as VacancySeniority[];
 
-  const workModalityCurrent = defaults?.workModality?.trim() ?? "";
+  const m = { ...(defaults ?? {}), ...cvAutofillPatch } as Partial<CandidateEditData>;
+  const fieldKey = `${formResetKey}-${cvAutofillApplyId}`;
+
+  const workModalityCurrent = (m.workModality ?? defaults?.workModality ?? "")
+    .toString()
+    .trim();
   const workModalityLegacy =
     workModalityCurrent &&
     !(CANDIDATE_WORK_MODALITY_OPTIONS as readonly string[]).includes(
@@ -108,6 +133,24 @@ export function CandidateRecordFormFields({
     )
       ? workModalityCurrent
       : null;
+
+  const lastSkillAutofillApply = React.useRef(-1);
+  React.useEffect(() => {
+    lastSkillAutofillApply.current = -1;
+  }, [formResetKey]);
+
+  React.useEffect(() => {
+    if (cvAutofillApplyId === 0) return;
+    if (lastSkillAutofillApply.current === cvAutofillApplyId) return;
+    lastSkillAutofillApply.current = cvAutofillApplyId;
+    const extra = cvAutofillExtraSkills ?? [];
+    if (extra.length === 0) return;
+    setStructuredSkills((prev) => {
+      const ids = new Set(prev.map((s) => s.skillId));
+      const add = extra.filter((s) => !ids.has(s.skillId));
+      return [...prev, ...add];
+    });
+  }, [cvAutofillApplyId, cvAutofillExtraSkills]);
 
   function onPipelineIntentChange(next: CandidatePipelineIntent) {
     setPipelineIntent(next);
@@ -128,7 +171,7 @@ export function CandidateRecordFormFields({
       <input
         type="hidden"
         name="currentCompanyHidden"
-        value={defaults?.currentCompany ?? ""}
+        value={m.currentCompany ?? defaults?.currentCompany ?? ""}
       />
       <input type="hidden" name="availabilityMode" value={availMode} />
       <input
@@ -141,6 +184,14 @@ export function CandidateRecordFormFields({
         <input type="hidden" name="pipelineVacancyId" value="" />
       ) : null}
 
+      {enableCvSection && onCvAutofillApplied ? (
+        <CandidateFormCvSection
+          skillsCatalog={skillsCatalog}
+          existingCvFileName={defaults?.cvFileName ?? null}
+          onAutofillApplied={onCvAutofillApplied}
+        />
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label
@@ -150,11 +201,12 @@ export function CandidateRecordFormFields({
             Nombre <span className="text-destructive">*</span>
           </label>
           <Input
+            key={`firstName-${fieldKey}`}
             id={candidateId ? `edit-first-${candidateId}` : "new-first"}
             name="firstName"
             required
             maxLength={120}
-            defaultValue={defaults?.firstName ?? ""}
+            defaultValue={m.firstName ?? ""}
             aria-invalid={Boolean(fieldErrors?.firstName)}
           />
           {fieldErrors?.firstName ? (
@@ -172,10 +224,11 @@ export function CandidateRecordFormFields({
             Apellido
           </label>
           <Input
+            key={`lastName-${fieldKey}`}
             id={candidateId ? `edit-last-${candidateId}` : "new-last"}
             name="lastName"
             maxLength={120}
-            defaultValue={defaults?.lastName ?? ""}
+            defaultValue={m.lastName ?? ""}
             aria-invalid={Boolean(fieldErrors?.lastName)}
           />
           {fieldErrors?.lastName ? (
@@ -194,11 +247,12 @@ export function CandidateRecordFormFields({
           Rol <span className="text-destructive">*</span>
         </label>
         <Input
+          key={`role-${fieldKey}`}
           id={candidateId ? `edit-role-${candidateId}` : "new-role"}
           name="role"
           required
           maxLength={200}
-          defaultValue={defaults?.role ?? ""}
+          defaultValue={m.role ?? ""}
           aria-invalid={Boolean(fieldErrors?.role)}
         />
         {fieldErrors?.role ? (
@@ -363,11 +417,12 @@ export function CandidateRecordFormFields({
             Correo
           </label>
           <Input
+            key={`email-${fieldKey}`}
             id={candidateId ? `edit-email-${candidateId}` : "new-email"}
             name="email"
             type="email"
             autoComplete="email"
-            defaultValue={defaults?.email ?? ""}
+            defaultValue={m.email ?? ""}
             aria-invalid={Boolean(fieldErrors?.email)}
           />
           {fieldErrors?.email ? (
@@ -385,9 +440,10 @@ export function CandidateRecordFormFields({
             Teléfono
           </label>
           <Input
+            key={`phone-${fieldKey}`}
             id={candidateId ? `edit-phone-${candidateId}` : "new-phone"}
             name="phone"
-            defaultValue={defaults?.phone ?? ""}
+            defaultValue={m.phone ?? ""}
             aria-invalid={Boolean(fieldErrors?.phone)}
           />
           {fieldErrors?.phone ? (
@@ -403,9 +459,10 @@ export function CandidateRecordFormFields({
           Notas
         </label>
         <textarea
+          key={`notes-${fieldKey}`}
           id={candidateId ? `edit-notes-${candidateId}` : "new-notes"}
           name="notes"
-          defaultValue={defaults?.notes ?? ""}
+          defaultValue={m.notes ?? ""}
           rows={4}
           className={cn(
             "w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none",
@@ -434,10 +491,11 @@ export function CandidateRecordFormFields({
               Ubicación (ciudad / país)
             </label>
             <Input
+              key={`locationCity-${fieldKey}`}
               id={candidateId ? `edit-loc-${candidateId}` : "new-loc"}
               name="locationCity"
               maxLength={200}
-              defaultValue={defaults?.locationCity ?? ""}
+              defaultValue={m.locationCity ?? ""}
             />
           </div>
           <div className="space-y-2">
@@ -448,6 +506,7 @@ export function CandidateRecordFormFields({
               Modalidad
             </label>
             <select
+              key={`workModality-${fieldKey}`}
               id={candidateId ? `edit-mod-${candidateId}` : "new-mod"}
               name="workModality"
               className={selectClass}
@@ -479,11 +538,11 @@ export function CandidateRecordFormFields({
         </div>
         {(
           [
-            ["cvLanguagesText", "Idiomas (líneas)", defaults?.cvLanguagesText],
-            ["cvCertificationsText", "Certificaciones (líneas)", defaults?.cvCertificationsText],
-            ["cvIndustriesText", "Industrias (coma)", defaults?.cvIndustriesText],
-            ["cvEducationText", "Educación (párrafos o líneas)", defaults?.cvEducationText],
-            ["cvSoftSkillsText", "Habilidades blandas (CV, una por línea)", defaults?.cvSoftSkillsText],
+            ["cvLanguagesText", "Idiomas (líneas)", m.cvLanguagesText],
+            ["cvCertificationsText", "Certificaciones (líneas)", m.cvCertificationsText],
+            ["cvIndustriesText", "Industrias (coma)", m.cvIndustriesText],
+            ["cvEducationText", "Educación (párrafos o líneas)", m.cvEducationText],
+            ["cvSoftSkillsText", "Habilidades blandas (CV, una por línea)", m.cvSoftSkillsText],
           ] as const
         ).map(([name, label, val]) => (
           <div key={name} className="space-y-2">
@@ -491,6 +550,7 @@ export function CandidateRecordFormFields({
               {label}
             </label>
             <textarea
+              key={`${name}-${fieldKey}`}
               id={`${candidateId ?? "new"}-${name}`}
               name={name}
               defaultValue={val ?? ""}

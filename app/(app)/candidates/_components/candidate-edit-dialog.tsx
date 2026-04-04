@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { updateCandidate, type CandidateActionState } from "@/lib/candidates/actions";
 import type { CandidateEditData } from "@/lib/candidates/queries";
+import type { CandidateSkillDraft } from "@/lib/candidates/validation";
 import type { SkillOption } from "@/lib/skills/queries";
 import type { OpenVacancyOptionForCandidateForm } from "@/lib/vacancies/queries";
 
@@ -35,6 +36,11 @@ export function CandidateEditDialog({
   const [formKey, setFormKey] = useState(0);
   const [state, setState] = useState<CandidateActionState | null>(null);
   const [pending, startTransition] = useTransition();
+  const [cvAutofill, setCvAutofill] = useState<{
+    applyId: number;
+    patch: Partial<CandidateEditData>;
+    extraSkills: CandidateSkillDraft[];
+  }>({ applyId: 0, patch: {}, extraSkills: [] });
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -69,6 +75,7 @@ export function CandidateEditDialog({
           if (next) {
             setFormKey((k) => k + 1);
             setState(null);
+            setCvAutofill({ applyId: 0, patch: {}, extraSkills: [] });
           }
         }}
       >
@@ -94,6 +101,18 @@ export function CandidateEditDialog({
                   defaults={candidate}
                   candidateId={candidate.id}
                   openVacancies={openVacancies}
+                  formResetKey={formKey}
+                  enableCvSection
+                  cvAutofillApplyId={cvAutofill.applyId}
+                  cvAutofillPatch={cvAutofill.patch}
+                  cvAutofillExtraSkills={cvAutofill.extraSkills}
+                  onCvAutofillApplied={(patch, extra) => {
+                    setCvAutofill((prev) => ({
+                      applyId: prev.applyId + 1,
+                      patch: { ...prev.patch, ...patch },
+                      extraSkills: extra,
+                    }));
+                  }}
                   fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
                 />
                 {state?.ok === false && state.message ? (

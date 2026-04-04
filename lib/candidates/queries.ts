@@ -60,6 +60,8 @@ export type CandidateEditData = {
   cvIndustriesText: string | null;
   cvEducationText: string | null;
   cvSoftSkillsText: string | null;
+  cvFileName: string | null;
+  cvUploadedAt: Date | null;
 };
 
 export async function getCandidateEditData(
@@ -88,6 +90,8 @@ export async function getCandidateEditData(
       cvIndustriesText: true,
       cvEducationText: true,
       cvSoftSkillsText: true,
+      cvFileName: true,
+      cvUploadedAt: true,
       structuredSkills: {
         select: { skillId: true, yearsExperience: true, level: true },
         orderBy: [{ updatedAt: "desc" }],
@@ -123,5 +127,7 @@ export async function getCandidateEditData(
     cvIndustriesText: row.cvIndustriesText,
     cvEducationText: row.cvEducationText,
     cvSoftSkillsText: row.cvSoftSkillsText,
+    cvFileName: row.cvFileName,
+    cvUploadedAt: row.cvUploadedAt,
   };
 }

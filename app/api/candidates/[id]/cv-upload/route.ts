@@ -1,22 +1,11 @@
-import { randomUUID } from "crypto";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { prisma } from "@/lib/prisma";
+import { saveCandidateCvFile } from "@/lib/candidates/cv-file-save";
 
 export const dynamic = "force-dynamic";
-
-const UPLOADS_DIR = path.join(process.cwd(), "uploads", "cv");
-const ALLOWED_MIME = new Set([
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(
   request: Request,
@@ -52,33 +41,16 @@ export async function POST(
     return NextResponse.json({ error: "Campo 'file' requerido" }, { status: 400 });
   }
 
-  if (!ALLOWED_MIME.has(file.type)) {
-    return NextResponse.json(
-      { error: "Tipo de archivo no permitido. Solo PDF, DOC o DOCX." },
-      { status: 415 },
-    );
+  const saved = await saveCandidateCvFile(id, file);
+  if (!saved.ok) {
+    const status =
+      saved.message.includes("Tipo") || saved.message.includes("tipo")
+        ? 415
+        : saved.message.includes("grande")
+          ? 413
+          : 400;
+    return NextResponse.json({ error: saved.message }, { status });
   }
-
-  const arrayBuffer = await file.arrayBuffer();
-  if (arrayBuffer.byteLength > MAX_BYTES) {
-    return NextResponse.json({ error: "Archivo demasiado grande (máximo 10 MB)." }, { status: 413 });
-  }
-
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
-  const fileKey = `${id}_${randomUUID()}.${ext}`;
-
-  await mkdir(UPLOADS_DIR, { recursive: true });
-  await writeFile(path.join(UPLOADS_DIR, fileKey), Buffer.from(arrayBuffer));
-
-  // If there was a previous file, we can clean it up later; for now just overwrite the record
-  await prisma.candidate.update({
-    where: { id },
-    data: {
-      cvFileName: file.name,
-      cvFileKey: fileKey,
-      cvUploadedAt: new Date(),
-    },
-  });
 
   return NextResponse.json({ ok: true, cvFileName: file.name });
 }

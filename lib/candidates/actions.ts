@@ -8,11 +8,22 @@ import type { VacancyStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { syncAllCandidateVacancyMatches } from "@/lib/matching/sync";
 
+import { saveCandidateCvFile } from "./cv-file-save";
 import {
   computeAvailabilityForPersistence,
   parseCandidateForm,
   type CandidateFormParsed,
 } from "./validation";
+
+/** Never throws; logs on failure so candidate save still succeeds. */
+async function tryAttachCvFromForm(candidateId: string, formData: FormData): Promise<void> {
+  const raw = formData.get("cvFile");
+  if (!(raw instanceof File) || raw.size === 0) return;
+  const result = await saveCandidateCvFile(candidateId, raw);
+  if (!result.ok) {
+    console.error("[candidate] CV attach after save failed:", result.message);
+  }
+}
 
 const OPEN_PIPELINE_VACANCY_STATUSES: VacancyStatus[] = [
   "OPEN",
@@ -141,6 +152,7 @@ export async function createCandidate(
         });
         return candidate;
       });
+      await tryAttachCvFromForm(created.id, formData);
       revalidatePath("/candidates");
       revalidatePath(`/candidates/${created.id}`);
       revalidatePath("/matching");
@@ -177,6 +189,7 @@ export async function createCandidate(
       },
       select: { id: true },
     });
+    await tryAttachCvFromForm(created.id, formData);
     revalidatePath("/candidates");
     revalidatePath(`/candidates/${created.id}`);
     revalidatePath("/matching");
@@ -272,6 +285,7 @@ export async function updateCandidate(
       }
     });
 
+    await tryAttachCvFromForm(candidateId, formData);
     revalidatePath("/candidates");
     revalidatePath(`/candidates/${candidateId}`);
     revalidatePath("/matching");
