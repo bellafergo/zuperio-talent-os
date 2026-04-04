@@ -62,6 +62,11 @@ export type CvAutofillApplyPayload = {
   skippedFilledFieldCount: number;
   /** When false, parent must not merge patch or bump applyId (nothing to apply). */
   applyValues: boolean;
+  /**
+   * When true, structured skills should become exactly `extraStructuredSkills` (CV line inference),
+   * including clearing to [] when the line matches nothing. Ignored when false (merge-only adds).
+   */
+  replaceStructuredSkills?: boolean;
 };
 
 export type CvExtractPreviewOk = {

@@ -43,12 +43,14 @@ export function CandidatesNewCandidateDialog({
     extraSkills: CandidateSkillDraft[];
     provenanceKeys: CvAutofillProvenanceField[];
     skillsAddedLastApply: number;
+    replaceStructuredSkills: boolean;
   }>({
     applyId: 0,
     patch: {},
     extraSkills: [],
     provenanceKeys: [],
     skillsAddedLastApply: 0,
+    replaceStructuredSkills: false,
   });
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -80,6 +82,7 @@ export function CandidatesNewCandidateDialog({
             extraSkills: [],
             provenanceKeys: [],
             skillsAddedLastApply: 0,
+            replaceStructuredSkills: false,
           });
         }
       }}
@@ -101,6 +104,7 @@ export function CandidatesNewCandidateDialog({
           </DialogDescription>
         </DialogHeader>
         <form
+          ref={autofillFormRef}
           key={formKey}
           onSubmit={onSubmit}
           className="flex min-h-0 flex-1 flex-col"
@@ -118,6 +122,9 @@ export function CandidatesNewCandidateDialog({
                 cvAutofillExtraSkills={cvAutofill.extraSkills}
                 cvAutofillProvenanceKeys={cvAutofill.provenanceKeys}
                 cvAutofillSkillsAddedLastApply={cvAutofill.skillsAddedLastApply}
+                cvAutofillReplaceStructuredSkills={
+                  cvAutofill.replaceStructuredSkills
+                }
                 onCvAutofillApplied={(payload) => {
                   setCvAutofill((prev) => {
                     if (payload.applyValues) {
@@ -132,6 +139,9 @@ export function CandidatesNewCandidateDialog({
                           ]),
                         ],
                         skillsAddedLastApply: payload.structuredSkillsAddedCount,
+                        replaceStructuredSkills: Boolean(
+                          payload.replaceStructuredSkills,
+                        ),
                       };
                     }
                     return {

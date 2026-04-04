@@ -2,9 +2,17 @@
 
 import { FileTextIcon, SparklesIcon } from "lucide-react";
 import type { RefObject } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type {
   CvAutofillApplyPayload,
   CvAutofillProvenanceField,
@@ -17,13 +25,16 @@ import type { SkillOption } from "@/lib/skills/queries";
 import { cn } from "@/lib/utils";
 import { CV_RAW_TEXT_MAX, CV_WORK_EXPERIENCE_FIELD_MAX } from "@/lib/candidates/cv-text-limits";
 
-const MERGE_FIELD_NAMES: CvAutofillProvenanceField[] = [
+/**
+ * Profile fields that may be filled or overwritten from the uploaded CV.
+ * Excludes recruiting/pipeline/availability and internal notes.
+ */
+const CV_DERIVED_AUTOFILL_FIELD_NAMES = [
   "firstName",
   "lastName",
   "email",
   "phone",
   "role",
-  "notes",
   "locationCity",
   "workModality",
   "cvLanguagesText",
@@ -33,11 +44,7 @@ const MERGE_FIELD_NAMES: CvAutofillProvenanceField[] = [
   "cvIndustriesText",
   "cvWorkExperienceText",
   "cvRawText",
-];
-
-function isEmptyFieldValue(v: string): boolean {
-  return v.trim() === "";
-}
+] as const satisfies readonly CvAutofillProvenanceField[];
 
 function readFormControlValue(form: HTMLFormElement, name: string): string {
   const el = form.elements.namedItem(name);
@@ -74,14 +81,14 @@ function parseStructuredSkillsFromForm(form: HTMLFormElement | null): CandidateS
   }
 }
 
-function suggestionsToFullPatch(s: CvAutofillSuggestions): Partial<CandidateEditData> {
+/** Maps extraction to patch keys we are allowed to touch (never notes / recruiting fields). */
+function suggestionsToCvDerivedPatch(s: CvAutofillSuggestions): Partial<CandidateEditData> {
   const patch: Partial<CandidateEditData> = {};
   if (s.firstName?.trim()) patch.firstName = s.firstName.trim().slice(0, 120);
   if (s.lastName?.trim()) patch.lastName = s.lastName.trim().slice(0, 120);
   if (s.email?.trim()) patch.email = s.email.trim().toLowerCase();
   if (s.phone?.trim()) patch.phone = s.phone.trim().slice(0, 80);
   if (s.role?.trim()) patch.role = s.role.trim().slice(0, 200);
-  if (s.notes?.trim()) patch.notes = s.notes.trim();
   if (s.locationCity?.trim()) patch.locationCity = s.locationCity.trim().slice(0, 200);
   if (s.workModality?.trim()) patch.workModality = s.workModality.trim().slice(0, 120);
   if (s.cvLanguagesText?.trim()) patch.cvLanguagesText = s.cvLanguagesText.trim();
@@ -102,6 +109,16 @@ function suggestionsToFullPatch(s: CvAutofillSuggestions): Partial<CandidateEdit
     patch.cvRawText = s.cvRawText.trim().slice(0, CV_RAW_TEXT_MAX);
   }
   return patch;
+}
+
+function patchProvenanceKeys(patch: Partial<CandidateEditData>): CvAutofillProvenanceField[] {
+  const out: CvAutofillProvenanceField[] = [];
+  for (const key of CV_DERIVED_AUTOFILL_FIELD_NAMES) {
+    if (key in patch && patch[key] !== undefined && patch[key] !== null) {
+      out.push(key);
+    }
+  }
+  return out;
 }
 
 function countSkillTokens(line: string | undefined): number {
@@ -161,34 +178,37 @@ function matchSkillsFromLine(
   return out;
 }
 
-function mergePatchOnlyEmptyFields(
-  fullPatch: Partial<CandidateEditData>,
+function hasCvDerivedTextOverwriteConflict(
   form: HTMLFormElement | null,
-): { patch: Partial<CandidateEditData>; provenance: CvAutofillProvenanceField[]; skippedFilled: number } {
-  const patch: Partial<CandidateEditData> = {};
-  const provenance: CvAutofillProvenanceField[] = [];
-  let skippedFilled = 0;
-
-  for (const key of MERGE_FIELD_NAMES) {
-    if (!(key in fullPatch)) continue;
-    const suggested = fullPatch[key];
-    if (suggested === undefined || suggested === null) continue;
-    if (typeof suggested !== "string") continue;
-    if (!suggested.trim()) continue;
-
-    if (form) {
-      const current = readFormControlValue(form, key);
-      if (!isEmptyFieldValue(current)) {
-        skippedFilled += 1;
-        continue;
-      }
-    }
-    // When form is null we cannot read live DOM values, so we apply all non-empty suggestions
-    (patch as Record<string, string>)[key] = suggested;
-    provenance.push(key);
+  patch: Partial<CandidateEditData>,
+): boolean {
+  if (!form) return false;
+  for (const key of CV_DERIVED_AUTOFILL_FIELD_NAMES) {
+    if (!(key in patch)) continue;
+    const next = patch[key];
+    if (typeof next !== "string" || !next.trim()) continue;
+    const current = readFormControlValue(form, key);
+    if (current.trim()) return true;
   }
+  return false;
+}
 
-  return { patch, provenance, skippedFilled };
+function needsReapplyConfirmation(args: {
+  isReapply: boolean;
+  applyValues: boolean;
+  form: HTMLFormElement | null;
+  patch: Partial<CandidateEditData>;
+  replaceStructuredSkills: boolean;
+}): boolean {
+  if (!args.isReapply || !args.applyValues) return false;
+  if (hasCvDerivedTextOverwriteConflict(args.form, args.patch)) return true;
+  if (
+    args.replaceStructuredSkills &&
+    parseStructuredSkillsFromForm(args.form).length > 0
+  ) {
+    return true;
+  }
+  return false;
 }
 
 export function CandidateFormCvSection({
@@ -196,11 +216,14 @@ export function CandidateFormCvSection({
   existingCvFileName,
   autofillFormRef,
   onAutofillApplied,
+  formResetKey = 0,
 }: {
   skillsCatalog: SkillOption[];
   existingCvFileName?: string | null;
   autofillFormRef: RefObject<HTMLFormElement | null>;
   onAutofillApplied: (payload: CvAutofillApplyPayload) => void;
+  /** Bumps when the parent dialog remounts the form — resets first/reapply counters. */
+  formResetKey?: number;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -208,18 +231,51 @@ export function CandidateFormCvSection({
   const [hint, setHint] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<CvExtractionSummary | null>(null);
+  const [successfulSuggestCount, setSuccessfulSuggestCount] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const pendingPayloadRef = useRef<CvAutofillApplyPayload | null>(null);
+
+  useEffect(() => {
+    setSuccessfulSuggestCount(0);
+    setSummary(null);
+    setHint(null);
+    setError(null);
+    pendingPayloadRef.current = null;
+    setConfirmOpen(false);
+  }, [formResetKey]);
+
+  function finishApply(payload: CvAutofillApplyPayload, hintText: string | null) {
+    if (payload.applyValues) {
+      setSuccessfulSuggestCount((c) => c + 1);
+      console.log("[cv-autofill] Applying CV-derived fields", {
+        patchKeys: Object.keys(payload.patch),
+        replaceStructuredSkills: Boolean(payload.replaceStructuredSkills),
+        skillsCount: payload.extraStructuredSkills.length,
+      });
+    }
+    onAutofillApplied(payload);
+    setHint(hintText);
+  }
+
+  function runCommitFromPending() {
+    const payload = pendingPayloadRef.current;
+    pendingPayloadRef.current = null;
+    setConfirmOpen(false);
+    if (!payload) return;
+    const hintText =
+      "Datos del CV reaplicados en los campos tomados del archivo (puedes editar antes de guardar).";
+    finishApply(payload, hintText);
+  }
 
   async function runExtract() {
     setError(null);
     setHint(null);
-    // State-backed file is the source of truth; ref is a secondary fallback
     const file = selectedFile ?? inputRef.current?.files?.[0] ?? null;
     if (!file) {
       setError("Selecciona un archivo CV primero.");
       return;
     }
     const form = autofillFormRef.current;
-    // form may be null in rare timing windows; mergePatchOnlyEmptyFields handles null gracefully
 
     setExtracting(true);
     try {
@@ -243,43 +299,56 @@ export function CandidateFormCvSection({
       const hasStringSuggestion = Object.values(suggestions).some(
         (v) => typeof v === "string" && v.trim() !== "",
       );
-      const fullPatch = suggestionsToFullPatch(suggestions);
-      const { patch, provenance, skippedFilled } = mergePatchOnlyEmptyFields(fullPatch, form);
 
-      const extraFromLine = matchSkillsFromLine(suggestions.skillsLine, skillsCatalog);
-      const existingSkills = parseStructuredSkillsFromForm(form);
-      const existingIds = new Set(existingSkills.map((s) => s.skillId));
-      const extraStructuredSkills = extraFromLine.filter((s) => !existingIds.has(s.skillId));
-      const skippedSkills = extraFromLine.length - extraStructuredSkills.length;
+      const patch = suggestionsToCvDerivedPatch(suggestions);
+      const provenance = patchProvenanceKeys(patch);
+
+      const isReapply = successfulSuggestCount >= 1;
+      const skillsLineTrimmed = suggestions.skillsLine?.trim() ?? "";
+      const replaceStructuredSkills = isReapply && Boolean(skillsLineTrimmed);
+      const newSkillsFromLine = matchSkillsFromLine(suggestions.skillsLine, skillsCatalog);
+
+      let extraStructuredSkills: CandidateSkillDraft[];
+      let skippedSkills = 0;
+      if (replaceStructuredSkills) {
+        extraStructuredSkills = newSkillsFromLine;
+      } else {
+        const existingSkills = parseStructuredSkillsFromForm(form);
+        const existingIds = new Set(existingSkills.map((s) => s.skillId));
+        extraStructuredSkills = newSkillsFromLine.filter((s) => !existingIds.has(s.skillId));
+        skippedSkills = newSkillsFromLine.length - extraStructuredSkills.length;
+      }
 
       const skillTokens = countSkillTokens(suggestions.skillsLine);
       const summaryPayload = buildExtractionSummary(
         suggestions,
         skillTokens,
-        extraStructuredSkills.length,
+        newSkillsFromLine.length,
       );
-      const totallyEmpty = !hasStringSuggestion && extraFromLine.length === 0;
+      const totallyEmpty =
+        !hasStringSuggestion &&
+        !skillsLineTrimmed &&
+        extraStructuredSkills.length === 0 &&
+        Object.keys(patch).length === 0;
+
       setSummary(totallyEmpty ? null : summaryPayload);
 
+      const skillsPartApply =
+        (!isReapply && extraStructuredSkills.length > 0) ||
+        (replaceStructuredSkills && Boolean(skillsLineTrimmed));
       const applyValues =
-        Object.keys(patch).length > 0 || extraStructuredSkills.length > 0;
+        Object.keys(patch).length > 0 || skillsPartApply;
 
-      if (applyValues) {
-        console.log("[cv-autofill] Applying autofill to form fields", {
-          patchKeys: Object.keys(patch),
-          skillsAdded: extraStructuredSkills.length,
-          skippedFilled,
-        });
-      }
-      onAutofillApplied({
+      const payload: CvAutofillApplyPayload = {
         patch,
         extraStructuredSkills,
         provenanceKeys: provenance,
-        summary: summaryPayload,
+        summary: totallyEmpty ? null : summaryPayload,
         structuredSkillsAddedCount: extraStructuredSkills.length,
-        skippedFilledFieldCount: skippedFilled,
+        skippedFilledFieldCount: 0,
         applyValues,
-      });
+        replaceStructuredSkills,
+      };
 
       if (totallyEmpty) {
         setHint(
@@ -287,24 +356,50 @@ export function CandidateFormCvSection({
             ? "La extracción automática solo está disponible para PDF en esta versión. Puedes completar el formulario a mano."
             : "No se detectaron campos en el PDF. Completa el perfil manualmente.",
         );
-      } else if (!applyValues && (skippedFilled > 0 || skippedSkills > 0)) {
-        setHint(
-          "Los campos ya tenían datos: no se sobrescribió nada. Vacía un campo y vuelve a sugerir si quieres rellenarlo desde el CV.",
-        );
-      } else if (!applyValues) {
-        setHint("No hubo valores nuevos que aplicar (revisa el resumen arriba).");
-      } else {
-        const parts: string[] = [
-          "Sugerencias aplicadas solo en campos vacíos (puedes editarlas antes de guardar).",
-        ];
-        if (skippedFilled > 0) {
-          parts.push(`${skippedFilled} campo(s) ya tenían texto y se dejaron igual.`);
-        }
-        if (skippedSkills > 0) {
-          parts.push(`${skippedSkills} competencia(s) del CV ya estaban en la lista.`);
-        }
-        setHint(parts.join(" "));
+        onAutofillApplied({
+          ...payload,
+          applyValues: false,
+        });
+        return;
       }
+
+      if (!applyValues) {
+        setHint("No hubo valores nuevos que aplicar (revisa el resumen arriba).");
+        onAutofillApplied({
+          ...payload,
+          applyValues: false,
+        });
+        return;
+      }
+
+      const mustConfirm = needsReapplyConfirmation({
+        isReapply,
+        applyValues: true,
+        form,
+        patch,
+        replaceStructuredSkills,
+      });
+
+      if (mustConfirm) {
+        pendingPayloadRef.current = payload;
+        setConfirmOpen(true);
+        return;
+      }
+
+      const parts: string[] = [];
+      if (isReapply) {
+        parts.push(
+          "Datos del CV reaplicados en los campos permitidos (puedes editar antes de guardar).",
+        );
+      } else {
+        parts.push(
+          "Sugerencias aplicadas desde el CV (puedes editarlas antes de guardar). Si vuelves a sugerir, esos mismos campos se sustituirán otra vez, con confirmación si ya hay datos escritos.",
+        );
+      }
+      if (!isReapply && skippedSkills > 0) {
+        parts.push(`${skippedSkills} competencia(s) del CV ya estaban en la lista.`);
+      }
+      finishApply(payload, parts.join(" "));
     } catch (e) {
       setSummary(null);
       setError(e instanceof Error ? e.message : "Error al extraer texto del CV");
@@ -315,13 +410,50 @@ export function CandidateFormCvSection({
 
   return (
     <div className="space-y-3 rounded-xl border border-border bg-muted/15 p-4">
+      <Dialog
+        open={confirmOpen}
+        onOpenChange={(next) => {
+          if (!next) pendingPayloadRef.current = null;
+          setConfirmOpen(next);
+        }}
+      >
+        <DialogContent className="sm:max-w-md" showCloseButton>
+          <DialogHeader>
+            <DialogTitle>Volver a aplicar datos del CV</DialogTitle>
+            <DialogDescription className="text-pretty">
+              Los campos tomados del archivo (nombre, contacto, rol, textos de CV e idiomas, y las
+              competencias inferidas de la línea de skills del CV) se sustituirán por la extracción
+              más reciente. No se modifican etapa de reclutamiento, vacante vinculada,
+              disponibilidad ni notas internas.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                pendingPayloadRef.current = null;
+                setConfirmOpen(false);
+                setHint("Reaplicación cancelada; el formulario no se cambió.");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" onClick={() => runCommitFromPending()}>
+              Sustituir con datos del CV
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-start gap-2">
         <FileTextIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
         <div className="min-w-0 space-y-1">
           <p className="text-sm font-medium">CV original (opcional)</p>
           <p className="text-xs text-muted-foreground">
-            Sube el CV con el formulario. PDF, DOC o DOCX (máx. 10 MB). Las sugerencias solo rellenan
-            campos vacíos; si el análisis falla, el formulario sigue funcionando.
+            Sube el CV con el formulario. PDF, DOC o DOCX (máx. 10 MB). La primera sugerencia rellena
+            desde el CV; las siguientes vuelven a importar esos campos (con confirmación si ya hay
+            datos). Si el análisis falla, el formulario sigue funcionando.
           </p>
           {existingCvFileName ? (
             <p className="text-xs text-muted-foreground">

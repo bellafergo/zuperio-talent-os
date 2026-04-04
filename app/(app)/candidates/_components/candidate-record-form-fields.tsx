@@ -97,6 +97,7 @@ export function CandidateRecordFormFields({
   cvAutofillExtraSkills = EMPTY_CV_SKILLS,
   cvAutofillProvenanceKeys = [],
   cvAutofillSkillsAddedLastApply = 0,
+  cvAutofillReplaceStructuredSkills = false,
 }: {
   skillsCatalog: SkillOption[];
   defaults?: CandidateEditData;
@@ -114,6 +115,8 @@ export function CandidateRecordFormFields({
   cvAutofillExtraSkills?: CandidateSkillDraft[];
   cvAutofillProvenanceKeys?: readonly CvAutofillProvenanceField[];
   cvAutofillSkillsAddedLastApply?: number;
+  /** When true, the last apply sets structured skills exactly to `cvAutofillExtraSkills`. */
+  cvAutofillReplaceStructuredSkills?: boolean;
 }) {
   const initialAvail = deriveInitialAvailability(defaults);
   const [availMode, setAvailMode] = React.useState<CandidateAvailabilityFormMode>(
@@ -166,13 +169,21 @@ export function CandidateRecordFormFields({
     if (lastSkillAutofillApply.current === cvAutofillApplyId) return;
     lastSkillAutofillApply.current = cvAutofillApplyId;
     const extra = cvAutofillExtraSkills ?? [];
+    if (cvAutofillReplaceStructuredSkills) {
+      setStructuredSkills([...extra]);
+      return;
+    }
     if (extra.length === 0) return;
     setStructuredSkills((prev) => {
       const ids = new Set(prev.map((s) => s.skillId));
       const add = extra.filter((s) => !ids.has(s.skillId));
       return [...prev, ...add];
     });
-  }, [cvAutofillApplyId, cvAutofillExtraSkills]);
+  }, [
+    cvAutofillApplyId,
+    cvAutofillExtraSkills,
+    cvAutofillReplaceStructuredSkills,
+  ]);
 
   function onPipelineIntentChange(next: CandidatePipelineIntent) {
     setPipelineIntent(next);
@@ -212,6 +223,7 @@ export function CandidateRecordFormFields({
           existingCvFileName={defaults?.cvFileName ?? null}
           autofillFormRef={autofillFormRef}
           onAutofillApplied={onCvAutofillApplied}
+          formResetKey={formResetKey}
         />
       ) : null}
 
