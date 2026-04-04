@@ -8,11 +8,12 @@ function normalizeLines(text: string): string[] {
     .filter(Boolean);
 }
 
-const EMAIL_RE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+// No /g flag — only the first match is used, and .test() with /g corrupts lastIndex across loop calls
+const EMAIL_RE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 
 /** Loose phone: international or MX-style digit groups */
 const PHONE_RE =
-  /(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?)?\d{2,4}[\s.-]?\d{2,4}[\s.-]?\d{2,6}\b/g;
+  /(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?)?\d{2,4}[\s.-]?\d{2,4}[\s.-]?\d{2,6}\b/;
 
 const ROLE_HINT_RE =
   /\b(developer|engineer|ingeniero|consultant|consultor|manager|gerente|analyst|analista|architect|arquitecto|lead|scientist|diseñador|designer|product\s*owner|scrum\s*master|devops|sre|full\s*stack|frontend|backend|data)\b/i;

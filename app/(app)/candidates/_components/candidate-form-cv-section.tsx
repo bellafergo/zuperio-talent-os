@@ -52,7 +52,8 @@ function readFormControlValue(form: HTMLFormElement, name: string): string {
   return "";
 }
 
-function parseStructuredSkillsFromForm(form: HTMLFormElement): CandidateSkillDraft[] {
+function parseStructuredSkillsFromForm(form: HTMLFormElement | null): CandidateSkillDraft[] {
+  if (!form) return [];
   const raw = readFormControlValue(form, "structuredSkills");
   if (!raw.trim()) return [];
   try {
@@ -145,7 +146,7 @@ function matchSkillsFromLine(
 
 function mergePatchOnlyEmptyFields(
   fullPatch: Partial<CandidateEditData>,
-  form: HTMLFormElement,
+  form: HTMLFormElement | null,
 ): { patch: Partial<CandidateEditData>; provenance: CvAutofillProvenanceField[]; skippedFilled: number } {
   const patch: Partial<CandidateEditData> = {};
   const provenance: CvAutofillProvenanceField[] = [];
@@ -158,11 +159,14 @@ function mergePatchOnlyEmptyFields(
     if (typeof suggested !== "string") continue;
     if (!suggested.trim()) continue;
 
-    const current = readFormControlValue(form, key);
-    if (!isEmptyFieldValue(current)) {
-      skippedFilled += 1;
-      continue;
+    if (form) {
+      const current = readFormControlValue(form, key);
+      if (!isEmptyFieldValue(current)) {
+        skippedFilled += 1;
+        continue;
+      }
     }
+    // When form is null we cannot read live DOM values, so we apply all non-empty suggestions
     (patch as Record<string, string>)[key] = suggested;
     provenance.push(key);
   }
@@ -182,6 +186,7 @@ export function CandidateFormCvSection({
   onAutofillApplied: (payload: CvAutofillApplyPayload) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -190,16 +195,14 @@ export function CandidateFormCvSection({
   async function runExtract() {
     setError(null);
     setHint(null);
-    const file = inputRef.current?.files?.[0];
+    // State-backed file is the source of truth; ref is a secondary fallback
+    const file = selectedFile ?? inputRef.current?.files?.[0] ?? null;
     if (!file) {
       setError("Selecciona un archivo CV primero.");
       return;
     }
     const form = autofillFormRef.current;
-    if (!form) {
-      setError("No se pudo leer el formulario. Cierra y vuelve a abrir el diálogo.");
-      return;
-    }
+    // form may be null in rare timing windows; mergePatchOnlyEmptyFields handles null gracefully
 
     setExtracting(true);
     try {
@@ -312,6 +315,9 @@ export function CandidateFormCvSection({
         name="cvFile"
         accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         className="block w-full max-w-md text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium"
+        onChange={(e) => {
+          setSelectedFile(e.target.files?.[0] ?? null);
+        }}
       />
 
       <div className="flex flex-wrap items-center gap-2">
