@@ -430,6 +430,7 @@ export type SeedVacancy = {
   status: SeedVacancyStatus;
   targetRate: number;
   currency?: string;
+  companyId: string;
   opportunityId: string;
   /** Comma-separated; used by matching v1. */
   skills: string;
@@ -444,6 +445,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "SENIOR",
     status: "INTERVIEWING",
     targetRate: 95,
+    companyId: "1",
     opportunityId: "opp_1",
     skills: "Java, Spring Boot, PostgreSQL, REST APIs, Docker, Kafka",
     roleSummary:
@@ -455,6 +457,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "JUNIOR",
     status: "OPEN",
     targetRate: 52,
+    companyId: "1",
     opportunityId: "opp_1",
     skills: "SQL, Excel, Python, Power BI, Process mapping",
     roleSummary:
@@ -466,6 +469,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "LEAD",
     status: "SOURCING",
     targetRate: 110,
+    companyId: "2",
     opportunityId: "opp_2",
     skills: "Agile, Jira, Stakeholder management, Risk, Retail operations",
     roleSummary:
@@ -477,6 +481,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "MID",
     status: "OPEN",
     targetRate: 88,
+    companyId: "3",
     opportunityId: "opp_3",
     skills: "SQL, Python, dbt, Snowflake, Airflow, HL7, FHIR",
     roleSummary:
@@ -488,6 +493,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "PRINCIPAL",
     status: "ON_HOLD",
     targetRate: 140,
+    companyId: "3",
     opportunityId: "opp_3",
     skills:
       "Clinical workflows, Healthcare interoperability, HL7, FHIR, Regulatory",
@@ -500,6 +506,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "SENIOR",
     status: "OPEN",
     targetRate: 102,
+    companyId: "4",
     opportunityId: "opp_4",
     skills: "Kubernetes, Terraform, AWS, Docker, CI/CD, Prometheus",
     roleSummary:
@@ -511,6 +518,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "MID",
     status: "FILLED",
     targetRate: 79,
+    companyId: "5",
     opportunityId: "opp_5",
     skills: "Java, Selenium, REST APIs, CI/CD, Test automation",
     roleSummary:
@@ -522,6 +530,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "MID",
     status: "INTERVIEWING",
     targetRate: 68,
+    companyId: "6",
     opportunityId: "opp_6",
     skills: "HRIS, Payroll, Excel, SQL, Stakeholder management",
     roleSummary:
@@ -533,6 +542,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "JUNIOR",
     status: "CANCELLED",
     targetRate: 45,
+    companyId: "7",
     opportunityId: "opp_7",
     skills: "Excel, Retail analytics, SQL basics, Communication",
     roleSummary:
@@ -544,6 +554,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "SENIOR",
     status: "OPEN",
     targetRate: 98,
+    companyId: "8",
     opportunityId: "opp_8",
     skills: "React, Node.js, TypeScript, PostgreSQL, GraphQL, AWS",
     roleSummary:
@@ -555,6 +566,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "MID",
     status: "SOURCING",
     targetRate: 72,
+    companyId: "9",
     opportunityId: "opp_9",
     skills: "SQL, Python, Excel, Forecasting, Logistics",
     roleSummary:
@@ -567,6 +579,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     status: "OPEN",
     targetRate: 65,
     currency: "USD",
+    companyId: "10",
     opportunityId: "opp_10",
     skills: "Payroll, HRIS, Excel, SQL, Compliance",
     roleSummary:
@@ -578,6 +591,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "SENIOR",
     status: "DRAFT",
     targetRate: 91,
+    companyId: "1",
     opportunityId: "opp_11",
     skills: "Java, Spring Boot, REST APIs, PostgreSQL, Docker, XML",
     roleSummary:
@@ -589,6 +603,7 @@ export const SEED_VACANCIES: SeedVacancy[] = [
     seniority: "LEAD",
     status: "OPEN",
     targetRate: 125,
+    companyId: "3",
     opportunityId: "opp_12",
     skills: "Cloud security, Kubernetes, Java, Compliance, Risk, AWS",
     roleSummary:

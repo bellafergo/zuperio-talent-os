@@ -44,7 +44,7 @@ export async function createPlacement(
     prisma.candidate.findUnique({ where: { id: data.candidateId }, select: { id: true } }),
     prisma.vacancy.findUnique({
       where: { id: data.vacancyId },
-      select: { id: true, opportunity: { select: { companyId: true } } },
+      select: { id: true, companyId: true },
     }),
     prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } }),
   ]);
@@ -52,7 +52,7 @@ export async function createPlacement(
   if (!candidate) return { ok: false, fieldErrors: { candidateId: "Candidate not found." } };
   if (!vacancy) return { ok: false, fieldErrors: { vacancyId: "Vacancy not found." } };
   if (!company) return { ok: false, fieldErrors: { companyId: "Company not found." } };
-  if (vacancy.opportunity.companyId !== data.companyId) {
+  if (vacancy.companyId !== data.companyId) {
     return {
       ok: false,
       fieldErrors: { companyId: "Company must match the vacancy’s company." },
@@ -109,7 +109,7 @@ export async function updatePlacement(
     prisma.candidate.findUnique({ where: { id: data.candidateId }, select: { id: true } }),
     prisma.vacancy.findUnique({
       where: { id: data.vacancyId },
-      select: { id: true, opportunity: { select: { companyId: true } } },
+      select: { id: true, companyId: true },
     }),
     prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } }),
   ]);
@@ -117,7 +117,7 @@ export async function updatePlacement(
   if (!candidate) return { ok: false, fieldErrors: { candidateId: "Candidate not found." } };
   if (!vacancy) return { ok: false, fieldErrors: { vacancyId: "Vacancy not found." } };
   if (!company) return { ok: false, fieldErrors: { companyId: "Company not found." } };
-  if (vacancy.opportunity.companyId !== data.companyId) {
+  if (vacancy.companyId !== data.companyId) {
     return {
       ok: false,
       fieldErrors: { companyId: "Company must match the vacancy’s company." },

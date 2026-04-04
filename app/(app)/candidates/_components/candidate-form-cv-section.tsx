@@ -247,6 +247,13 @@ export function CandidateFormCvSection({
       const applyValues =
         Object.keys(patch).length > 0 || extraStructuredSkills.length > 0;
 
+      if (applyValues) {
+        console.log("[cv-autofill] Applying autofill to form fields", {
+          patchKeys: Object.keys(patch),
+          skillsAdded: extraStructuredSkills.length,
+          skippedFilled,
+        });
+      }
       onAutofillApplied({
         patch,
         extraStructuredSkills,

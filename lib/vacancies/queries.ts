@@ -2,16 +2,11 @@ import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { prisma } from "@/lib/prisma";
 
 import { mapVacancyToListRow, type VacancyWithRelations } from "./mappers";
-import type { VacancyListRow, VacancyRequirementDraft } from "./types";
+import type { CompanyOption, VacancyListRow, VacancyRequirementDraft } from "./types";
 
 const vacancyInclude = {
-  opportunity: {
-    select: {
-      id: true,
-      title: true,
-      company: { select: { id: true, name: true } },
-    },
-  },
+  company: { select: { id: true, name: true } },
+  opportunity: { select: { id: true, title: true } },
 } as const;
 
 export async function listVacanciesForUi(): Promise<VacancyListRow[]> {
@@ -41,6 +36,22 @@ export type OpportunityOptionForVacancyForm = {
   companyName: string;
 };
 
+export async function listVacanciesForCompanyUi(companyId: string): Promise<VacancyListRow[]> {
+  try {
+    const rows = await prisma.vacancy.findMany({
+      where: { companyId },
+      include: vacancyInclude,
+      orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
+    });
+    return rows.map((row) =>
+      mapVacancyToListRow(row as unknown as VacancyWithRelations),
+    );
+  } catch (err) {
+    console.error("[listVacanciesForCompanyUi] failed:", err);
+    return [];
+  }
+}
+
 export async function listOpportunitiesForVacancyForm(): Promise<
   OpportunityOptionForVacancyForm[]
 > {
@@ -64,12 +75,14 @@ export async function listOpportunitiesForVacancyForm(): Promise<
 export type VacancyEditData = {
   id: string;
   title: string;
-  opportunityId: string;
+  companyId: string;
+  opportunityId: string | null;
   seniorityValue: VacancyListRow["seniorityValue"];
   statusValue: VacancyListRow["statusValue"];
   targetRateAmount: number | null;
   currency: string;
   roleSummaryLine: string | null;
+  workModality: string | null;
   requirements: VacancyRequirementDraft[];
 };
 
@@ -81,12 +94,14 @@ export async function getVacancyEditData(
     select: {
       id: true,
       title: true,
+      companyId: true,
       opportunityId: true,
       seniority: true,
       status: true,
       targetRate: true,
       currency: true,
       roleSummary: true,
+      workModality: true,
       skillRequirements: {
         select: { skillId: true, required: true, minimumYears: true },
         orderBy: [{ required: "desc" }, { updatedAt: "desc" }],
@@ -110,18 +125,27 @@ export async function getVacancyEditData(
   return {
     id: row.id,
     title: row.title,
+    companyId: row.companyId,
     opportunityId: row.opportunityId,
     seniorityValue: row.seniority as VacancyEditData["seniorityValue"],
     statusValue: row.status as VacancyEditData["statusValue"],
     targetRateAmount: normalizedAmount,
     currency: row.currency?.trim() || DEFAULT_CURRENCY,
     roleSummaryLine: row.roleSummary?.trim() || null,
+    workModality: row.workModality?.trim() || null,
     requirements: row.skillRequirements.map((r) => ({
       skillId: r.skillId,
       required: r.required,
       minimumYears: r.minimumYears,
     })),
   };
+}
+
+export async function listCompaniesForVacancyForm(): Promise<CompanyOption[]> {
+  return prisma.company.findMany({
+    select: { id: true, name: true },
+    orderBy: [{ name: "asc" }],
+  });
 }
 
 /** Vacancies that can still receive candidates (intake / pipeline). */

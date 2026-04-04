@@ -13,15 +13,19 @@ import { listMatchesForVacancyUi } from "@/lib/matching/queries";
 import { listSkillsForVacancyForm, listVacancyRequirementsForUi } from "@/lib/skills/queries";
 import { listApplicationsForVacancyUi } from "@/lib/vacancy-applications/queries";
 import { formatTargetRate } from "@/lib/vacancies/mappers";
+import { listCandidatesForVacancy } from "@/lib/vacancies/candidates-in-process-queries";
 import {
   getVacancyByIdForUi,
   getVacancyEditData,
+  listCompaniesForVacancyForm,
   listOpportunitiesForVacancyForm,
 } from "@/lib/vacancies/queries";
 
 import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
+import { VacancyCandidatesInProcessSection } from "./_components/vacancy-candidates-in-process-section";
 import { VacancyRecruitmentPipelineSection } from "./_components/vacancy-recruitment-pipeline-section";
 import { VacancyRequirementsSection } from "./_components/vacancy-requirements-section";
+import { VacancyWorkModalitySection } from "./_components/vacancy-work-modality-section";
 import { VacancyEditDialog } from "../_components/vacancy-edit-dialog";
 import { VacancyStatusBadge } from "../_components/vacancy-status-badge";
 
@@ -37,16 +41,27 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   const canManage = canManageVacancies(session?.user?.role);
   const canManageApps = canManageApplications(session?.user?.role);
 
-  const [vacancy, candidateMatches, requirements, applications, editData, opportunities, skills] =
-    await Promise.all([
-      getVacancyByIdForUi(id),
-      listMatchesForVacancyUi(id),
-      listVacancyRequirementsForUi(id),
-      listApplicationsForVacancyUi(id),
-      canManage ? getVacancyEditData(id) : Promise.resolve(null),
-      canManage ? listOpportunitiesForVacancyForm() : Promise.resolve([]),
-      canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
-    ]);
+  const [
+    vacancy,
+    candidateMatches,
+    requirements,
+    applications,
+    candidatesInProcess,
+    editData,
+    companies,
+    opportunities,
+    skills,
+  ] = await Promise.all([
+    getVacancyByIdForUi(id),
+    listMatchesForVacancyUi(id),
+    listVacancyRequirementsForUi(id),
+    listApplicationsForVacancyUi(id),
+    listCandidatesForVacancy(id),
+    canManage ? getVacancyEditData(id) : Promise.resolve(null),
+    canManage ? listCompaniesForVacancyForm() : Promise.resolve([]),
+    canManage ? listOpportunitiesForVacancyForm() : Promise.resolve([]),
+    canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
+  ]);
 
   if (!vacancy) {
     notFound();
@@ -74,6 +89,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
           canManage && editData ? (
             <VacancyEditDialog
               vacancy={editData}
+              companies={companies}
               opportunities={opportunities}
               skills={skills}
             />
@@ -90,8 +106,8 @@ export default async function VacancyDetailPage({ params }: PageProps) {
           },
           {
             label: "Oportunidad",
-            value: vacancy.opportunityTitle,
-            href: `/opportunities/${vacancy.opportunityId}`,
+            value: vacancy.opportunityTitle ?? "—",
+            href: vacancy.opportunityId ? `/opportunities/${vacancy.opportunityId}` : undefined,
           },
           { label: "Senioridad", value: vacancy.seniority },
           { label: "Tarifa objetivo", value: rateDisplay },
@@ -106,18 +122,14 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         ]}
       />
 
-      <SectionCard
-        title="Modalidad de trabajo"
-        description="Expectativas de presencial, híbrido o remoto para el rol."
-      >
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Ubicación y políticas de horario se guardarán aquí cuando se extienda
-          el flujo de contratación. La tarifa objetivo arriba está en{" "}
-          {vacancy.currency} por hora (facturación al cliente).
-        </p>
-      </SectionCard>
+      <VacancyWorkModalitySection workModality={vacancy.workModality} />
 
       <VacancyRequirementsSection requirements={requirements} />
+
+      <VacancyCandidatesInProcessSection
+        vacancyId={vacancy.id}
+        rows={candidatesInProcess}
+      />
 
       <VacancyRecruitmentPipelineSection
         applications={applications}

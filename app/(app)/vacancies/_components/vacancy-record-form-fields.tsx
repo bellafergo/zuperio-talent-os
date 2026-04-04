@@ -8,8 +8,10 @@ import {
   type VacancySeniority,
   type VacancyStatus,
 } from "@/generated/prisma/enums";
+import { CANDIDATE_WORK_MODALITY_OPTIONS } from "@/lib/candidates/constants";
 import type { SkillOption } from "@/lib/skills/queries";
 import type {
+  CompanyOption,
   VacancyListRow,
   VacancyRequirementDraft,
 } from "@/lib/vacancies/types";
@@ -54,22 +56,26 @@ export type OpportunityOptionForForm = {
 
 type Defaults = {
   title: string;
-  opportunityId: string;
+  companyId: string;
+  opportunityId: string | null;
   seniorityValue: VacancyListRow["seniorityValue"];
   statusValue: VacancyListRow["statusValue"];
   targetRateAmount: number | null;
   currency: string;
   roleSummaryLine: string | null;
+  workModality: string | null;
   requirements: VacancyRequirementDraft[];
 };
 
 export function VacancyRecordFormFields({
+  companies,
   opportunities,
   skills,
   defaults,
   vacancyId,
   fieldErrors,
 }: {
+  companies: CompanyOption[];
   opportunities: OpportunityOptionForForm[];
   skills: SkillOption[];
   defaults?: Defaults;
@@ -82,6 +88,15 @@ export function VacancyRecordFormFields({
 
   const statusOrder = Object.values(VacancyStatusConst) as VacancyStatus[];
   const seniorityOrder = Object.values(VacancySeniorityConst) as VacancySeniority[];
+
+  const workModalityCurrent = (defaults?.workModality ?? "").trim();
+  const workModalityLegacy =
+    workModalityCurrent &&
+    !(CANDIDATE_WORK_MODALITY_OPTIONS as readonly string[]).includes(
+      workModalityCurrent,
+    )
+      ? workModalityCurrent
+      : null;
 
   return (
     <div className="grid gap-4">
@@ -119,22 +134,50 @@ export function VacancyRecordFormFields({
 
       <div className="space-y-2">
         <label
+          htmlFor={vacancyId ? `edit-company-${vacancyId}` : "new-company"}
+          className="text-sm font-medium"
+        >
+          Empresa <span className="text-destructive">*</span>
+        </label>
+        <select
+          id={vacancyId ? `edit-company-${vacancyId}` : "new-company"}
+          name="companyId"
+          required
+          className={selectClass}
+          defaultValue={defaults?.companyId ?? ""}
+          aria-invalid={Boolean(fieldErrors?.companyId)}
+        >
+          <option value="" disabled>
+            Selecciona una empresa…
+          </option>
+          {companies.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        {fieldErrors?.companyId ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.companyId}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <label
           htmlFor={vacancyId ? `edit-opportunity-${vacancyId}` : "new-opportunity"}
           className="text-sm font-medium"
         >
-          Oportunidad <span className="text-destructive">*</span>
+          Oportunidad <span className="text-muted-foreground font-normal">(opcional)</span>
         </label>
         <select
           id={vacancyId ? `edit-opportunity-${vacancyId}` : "new-opportunity"}
           name="opportunityId"
-          required
           className={selectClass}
           defaultValue={defaults?.opportunityId ?? ""}
           aria-invalid={Boolean(fieldErrors?.opportunityId)}
         >
-          <option value="" disabled>
-            Selecciona una oportunidad…
-          </option>
+          <option value="">Ninguna</option>
           {opportunities.map((o) => (
             <option key={o.id} value={o.id}>
               {o.companyName} — {o.title}
@@ -274,6 +317,41 @@ export function VacancyRecordFormFields({
         ) : null}
       </div>
 
+      <div className="space-y-2">
+        <label
+          htmlFor={vacancyId ? `edit-modality-${vacancyId}` : "new-modality"}
+          className="text-sm font-medium"
+        >
+          Modalidad de trabajo
+        </label>
+        <select
+          id={vacancyId ? `edit-modality-${vacancyId}` : "new-modality"}
+          name="workModality"
+          className={selectClass}
+          defaultValue={
+            workModalityLegacy ? workModalityLegacy : workModalityCurrent || ""
+          }
+          aria-invalid={Boolean(fieldErrors?.workModality)}
+        >
+          <option value="">Sin especificar</option>
+          {CANDIDATE_WORK_MODALITY_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+          {workModalityLegacy ? (
+            <option value={workModalityLegacy}>
+              {workModalityLegacy} (valor actual)
+            </option>
+          ) : null}
+        </select>
+        {fieldErrors?.workModality ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.workModality}
+          </p>
+        ) : null}
+      </div>
+
       <VacancyRequirementsEditor
         skills={skills}
         value={requirements}
@@ -288,4 +366,3 @@ function useStateWithDefault<T>(defaultValue: T): [T, (v: T) => void] {
   const [state, setState] = React.useState<T>(defaultValue);
   return [state, setState];
 }
-

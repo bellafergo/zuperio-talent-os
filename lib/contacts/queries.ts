@@ -13,6 +13,22 @@ export async function listContactsForUi(): Promise<ContactListRow[]> {
   return rows.map((row) => mapContactToListRow(row as ContactWithCompany));
 }
 
+export async function listContactsForCompanyUi(companyId: string): Promise<ContactListRow[]> {
+  try {
+    const rows = await prisma.contact.findMany({
+      where: { companyId },
+      include: {
+        company: { select: { id: true, name: true } },
+      },
+      orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+    });
+    return rows.map((row) => mapContactToListRow(row as ContactWithCompany));
+  } catch (err) {
+    console.error("[listContactsForCompanyUi] failed:", err);
+    return [];
+  }
+}
+
 export async function getContactByIdForUi(
   id: string,
 ): Promise<ContactListRow | null> {

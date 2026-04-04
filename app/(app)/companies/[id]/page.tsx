@@ -12,9 +12,15 @@ import {
   getCompanyByIdForUi,
   listUsersForCompanyForm,
 } from "@/lib/companies/queries";
+import { listContactsForCompanyUi } from "@/lib/contacts/queries";
+import { listOpportunitiesForCompanyUi } from "@/lib/opportunities/queries";
 import { listPlacementsForCompanyUi } from "@/lib/placements/queries";
+import { listVacanciesForCompanyUi } from "@/lib/vacancies/queries";
 
+import { CompanyContactsSection } from "./_components/company-contacts-section";
+import { CompanyOpportunitiesSection } from "./_components/company-opportunities-section";
 import { CompanyPlacementsSection } from "./_components/company-placements-section";
+import { CompanyVacanciesSection } from "./_components/company-vacancies-section";
 import { CompanyEditDialog } from "../_components/company-edit-dialog";
 import { CompanyStatusBadge } from "../_components/company-status-badge";
 
@@ -29,11 +35,15 @@ export default async function CompanyDetailPage({ params }: PageProps) {
   const session = await auth();
   const canManage = canManageCompanies(session?.user?.role);
 
-  const [company, placements, users] = await Promise.all([
-    getCompanyByIdForUi(id),
-    listPlacementsForCompanyUi(id),
-    canManage ? listUsersForCompanyForm() : Promise.resolve([]),
-  ]);
+  const [company, placements, opportunities, vacancies, contacts, users] =
+    await Promise.all([
+      getCompanyByIdForUi(id),
+      listPlacementsForCompanyUi(id),
+      listOpportunitiesForCompanyUi(id),
+      listVacanciesForCompanyUi(id),
+      listContactsForCompanyUi(id),
+      canManage ? listUsersForCompanyForm() : Promise.resolve([]),
+    ]);
 
   if (!company) {
     notFound();
@@ -74,14 +84,12 @@ export default async function CompanyDetailPage({ params }: PageProps) {
 
       <CompanyPlacementsSection placements={placements} />
 
-      <PlaceholderSection
-        title="Contactos"
-        description="Personas asociadas a esta empresa."
-      />
-      <PlaceholderSection
-        title="Oportunidades"
-        description="Negocios y seguimientos ligados a esta cuenta."
-      />
+      <CompanyContactsSection contacts={contacts} />
+
+      <CompanyOpportunitiesSection opportunities={opportunities} />
+
+      <CompanyVacanciesSection vacancies={vacancies} />
+
       <PlaceholderSection
         title="Actividad"
         description="Llamadas, reuniones y eventos de línea de tiempo."

@@ -91,7 +91,7 @@ export async function listVacanciesForPlacementForm(): Promise<
     select: {
       id: true,
       title: true,
-      opportunity: { select: { company: { select: { id: true, name: true } } } },
+      company: { select: { id: true, name: true } },
     },
     orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
   });
@@ -99,8 +99,8 @@ export async function listVacanciesForPlacementForm(): Promise<
   return rows.map((v) => ({
     id: v.id,
     title: v.title,
-    companyId: v.opportunity.company.id,
-    companyName: v.opportunity.company.name,
+    companyId: v.company.id,
+    companyName: v.company.name,
   }));
 }
 

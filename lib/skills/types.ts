@@ -18,7 +18,15 @@ export type VacancyRequirementUi = {
   minimumYearsLabel: string;
 };
 
+export type SkillCatalogRowUi = {
+  id: string;
+  name: string;
+  category: string;
+  candidateCount: number;
+  vacancyCount: number;
+};
+
 export type SkillCatalogGroupUi = {
   categoryLabel: string;
-  skills: { id: string; name: string }[];
+  skills: SkillCatalogRowUi[];
 };

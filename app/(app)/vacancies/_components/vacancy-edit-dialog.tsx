@@ -20,15 +20,18 @@ import type {
   OpportunityOptionForVacancyForm,
   VacancyEditData,
 } from "@/lib/vacancies/queries";
+import type { CompanyOption } from "@/lib/vacancies/types";
 
 import { VacancyRecordFormFields } from "./vacancy-record-form-fields";
 
 export function VacancyEditDialog({
   vacancy,
+  companies,
   opportunities,
   skills,
 }: {
   vacancy: VacancyEditData;
+  companies: CompanyOption[];
   opportunities: OpportunityOptionForVacancyForm[];
   skills: SkillOption[];
 }) {
@@ -83,17 +86,20 @@ export function VacancyEditDialog({
           </DialogHeader>
           <form key={formKey} onSubmit={onSubmit} className="space-y-4">
             <VacancyRecordFormFields
+              companies={companies}
               opportunities={opportunities}
               skills={skills}
               vacancyId={vacancy.id}
               defaults={{
                 title: vacancy.title,
+                companyId: vacancy.companyId,
                 opportunityId: vacancy.opportunityId,
                 seniorityValue: vacancy.seniorityValue,
                 statusValue: vacancy.statusValue,
                 targetRateAmount: vacancy.targetRateAmount,
                 currency: vacancy.currency,
                 roleSummaryLine: vacancy.roleSummaryLine,
+                workModality: vacancy.workModality,
                 requirements: vacancy.requirements,
               }}
               fieldErrors={state?.ok === false ? state.fieldErrors : undefined}

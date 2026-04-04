@@ -41,12 +41,15 @@ const candidateSelect = {
   id: true,
   firstName: true,
   lastName: true,
+  role: true,
+  seniority: true,
+  availabilityStatus: true,
 } as const;
 
 const vacancyInclude = {
   id: true,
   title: true,
-  opportunity: { select: { company: { select: { id: true, name: true } } } },
+  company: { select: { id: true, name: true } },
 } as const;
 
 export async function listApplicationsForVacancyUi(

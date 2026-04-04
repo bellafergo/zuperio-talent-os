@@ -157,8 +157,8 @@ export async function listVacanciesForProposalForm(): Promise<ProposalVacancyOpt
     select: {
       id: true,
       title: true,
+      companyId: true,
       opportunityId: true,
-      opportunity: { select: { companyId: true } },
     },
     orderBy: [{ updatedAt: "desc" }],
   });
@@ -166,7 +166,7 @@ export async function listVacanciesForProposalForm(): Promise<ProposalVacancyOpt
     id: v.id,
     title: v.title,
     opportunityId: v.opportunityId,
-    companyId: v.opportunity.companyId,
+    companyId: v.companyId,
   }));
 }
 
@@ -209,8 +209,8 @@ export async function getProposalQuickCreatePrefillForCandidate(
     const vacancySelect = {
       id: true,
       title: true,
+      companyId: true,
       opportunityId: true,
-      opportunity: { select: { companyId: true } },
     } as const;
 
     const activePlacement = await prisma.placement.findFirst({
@@ -240,7 +240,7 @@ export async function getProposalQuickCreatePrefillForCandidate(
     if (activeApplication?.vacancy) {
       const v = activeApplication.vacancy;
       return {
-        companyId: v.opportunity.companyId,
+        companyId: v.companyId,
         opportunityId: v.opportunityId,
         vacancyId: v.id,
         vacancyTitle: v.title,
@@ -255,7 +255,7 @@ export async function getProposalQuickCreatePrefillForCandidate(
     if (topMatch?.vacancy) {
       const v = topMatch.vacancy;
       return {
-        companyId: v.opportunity.companyId,
+        companyId: v.companyId,
         opportunityId: v.opportunityId,
         vacancyId: v.id,
         vacancyTitle: v.title,

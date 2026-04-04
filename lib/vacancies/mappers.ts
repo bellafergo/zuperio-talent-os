@@ -72,12 +72,14 @@ export type VacancyWithRelations = {
   currency: string | null;
   skills: string | null;
   roleSummary: string | null;
+  workModality: string | null;
   updatedAt: Date;
+  companyId: string;
+  company: { id: string; name: string };
   opportunity: {
     id: string;
     title: string;
-    company: { id: string; name: string };
-  };
+  } | null;
 };
 
 export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
@@ -88,10 +90,10 @@ export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
   return {
     id: row.id,
     title: row.title,
-    companyId: row.opportunity.company.id,
-    companyName: row.opportunity.company.name,
-    opportunityId: row.opportunity.id,
-    opportunityTitle: row.opportunity.title,
+    companyId: row.company.id,
+    companyName: row.company.name,
+    opportunityId: row.opportunity?.id ?? null,
+    opportunityTitle: row.opportunity?.title ?? null,
     seniority: prismaSeniorityToUi[row.seniority],
     status: prismaStatusToUi[row.status],
     seniorityValue: row.seniority,
@@ -101,6 +103,7 @@ export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
     currency,
     skillsLine,
     roleSummaryLine,
+    workModality: row.workModality?.trim() || null,
     updatedAtLabel: formatUpdatedAt(row.updatedAt),
   };
 }

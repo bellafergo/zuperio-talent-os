@@ -25,8 +25,8 @@ export type VacancyListRow = {
   title: string;
   companyId: string;
   companyName: string;
-  opportunityId: string;
-  opportunityTitle: string;
+  opportunityId: string | null;
+  opportunityTitle: string | null;
   seniority: VacancySeniorityUi;
   status: VacancyStatusUi;
   /** Prisma enum values for form defaults. */
@@ -38,6 +38,7 @@ export type VacancyListRow = {
   /** Comma-separated skills from DB; null when unset. */
   skillsLine: string | null;
   roleSummaryLine: string | null;
+  workModality: string | null;
   updatedAtLabel: string;
 };
 

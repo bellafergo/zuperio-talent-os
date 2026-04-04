@@ -93,6 +93,6 @@ export type ProposalDetailUi = ProposalListRowUi & {
 
 export type ProposalCompanyOption = { id: string; name: string };
 export type ProposalOpportunityOption = { id: string; title: string; companyId: string };
-export type ProposalVacancyOption = { id: string; title: string; companyId: string; opportunityId: string };
+export type ProposalVacancyOption = { id: string; title: string; companyId: string; opportunityId: string | null };
 export type ProposalCandidateOption = { id: string; name: string };
 

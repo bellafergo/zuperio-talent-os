@@ -66,7 +66,7 @@ export function VacanciesDataTable({ vacancies }: { vacancies: VacancyListRow[] 
               {row.companyName}
             </TableCell>
             <TableCell className="max-w-[220px] text-muted-foreground">
-              <span className="line-clamp-2">{row.opportunityTitle}</span>
+              <span className="line-clamp-2">{row.opportunityTitle ?? "—"}</span>
             </TableCell>
             <TableCell className="text-muted-foreground">{row.seniority}</TableCell>
             <TableCell>

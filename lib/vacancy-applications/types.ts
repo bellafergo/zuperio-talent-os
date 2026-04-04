@@ -14,6 +14,9 @@ export type VacancyPipelineRowUi = {
   applicationId: string;
   candidateId: string;
   candidateName: string;
+  candidateRole: string | null;
+  candidateSeniority: string | null;
+  availabilityLabel: string;
   stage: VacancyApplicationStageUi;
   status: VacancyApplicationStatusUi;
   sourceLabel: string;

@@ -58,10 +58,10 @@ export async function createProposal(
     if (data.vacancyId) {
       const vac = await prisma.vacancy.findUnique({
         where: { id: data.vacancyId },
-        select: { id: true, opportunity: { select: { companyId: true } }, opportunityId: true },
+        select: { id: true, companyId: true, opportunityId: true },
       });
       if (!vac) return { ok: false, fieldErrors: { vacancyId: "Selected vacancy was not found." } };
-      if (!vac.opportunity || vac.opportunity.companyId !== data.companyId) {
+      if (vac.companyId !== data.companyId) {
         return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected company." } };
       }
       if (data.opportunityId && vac.opportunityId !== data.opportunityId) {
@@ -218,10 +218,10 @@ export async function updateProposal(
     if (data.vacancyId) {
       const vac = await prisma.vacancy.findUnique({
         where: { id: data.vacancyId },
-        select: { id: true, opportunity: { select: { companyId: true } }, opportunityId: true },
+        select: { id: true, companyId: true, opportunityId: true },
       });
       if (!vac) return { ok: false, fieldErrors: { vacancyId: "Selected vacancy was not found." } };
-      if (!vac.opportunity || vac.opportunity.companyId !== data.companyId) {
+      if (vac.companyId !== data.companyId) {
         return { ok: false, fieldErrors: { vacancyId: "Vacancy must belong to the selected company." } };
       }
       if (data.opportunityId && vac.opportunityId !== data.opportunityId) {

@@ -28,7 +28,7 @@ const candidateSelect = {
 const vacancyForMatchSelect = {
   id: true,
   title: true,
-  opportunity: { select: { company: { select: { name: true } } } },
+  company: { select: { name: true } },
 } as const;
 
 export async function listMatchesForVacancyUi(
@@ -132,7 +132,7 @@ export async function getComparisonMatrixForPair(
             skill: { select: { name: true } },
           },
         },
-        opportunity: { select: { company: { select: { name: true } } } },
+        company: { select: { name: true } },
       },
     }),
     prisma.placement.findMany({
@@ -206,7 +206,7 @@ export async function getComparisonMatrixForPair(
     ...matrix,
     candidateName,
     vacancyTitle: vacancy.title,
-    companyName: vacancy.opportunity.company.name,
+    companyName: vacancy.company.name,
     skillBreakdown,
   };
 }

@@ -42,6 +42,37 @@ async function ensureCanManage(): Promise<
   return { ok: true };
 }
 
+async function validateCompanyAndOpportunity(
+  companyId: string,
+  opportunityId: string | null,
+): Promise<VacancyActionState | null> {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { id: true },
+  });
+  if (!company) {
+    return {
+      ok: false,
+      fieldErrors: { companyId: "La empresa seleccionada no existe." },
+    };
+  }
+
+  if (opportunityId) {
+    const opportunity = await prisma.opportunity.findUnique({
+      where: { id: opportunityId },
+      select: { id: true },
+    });
+    if (!opportunity) {
+      return {
+        ok: false,
+        fieldErrors: { opportunityId: "La oportunidad seleccionada no existe." },
+      };
+    }
+  }
+
+  return null;
+}
+
 export async function createVacancy(
   _prev: VacancyActionState | null,
   formData: FormData,
@@ -54,16 +85,8 @@ export async function createVacancy(
 
   const { data } = parsed;
 
-  const opportunity = await prisma.opportunity.findUnique({
-    where: { id: data.opportunityId },
-    select: { id: true },
-  });
-  if (!opportunity) {
-    return {
-      ok: false,
-      fieldErrors: { opportunityId: "Selected opportunity was not found." },
-    };
-  }
+  const validationError = await validateCompanyAndOpportunity(data.companyId, data.opportunityId);
+  if (validationError) return validationError;
 
   if (data.requirements.length > 0) {
     const skillIds = data.requirements.map((r) => r.skillId);
@@ -84,12 +107,14 @@ export async function createVacancy(
       const vacancy = await tx.vacancy.create({
         data: {
           title: data.title,
+          companyId: data.companyId,
           opportunityId: data.opportunityId,
           seniority: data.seniority,
           status: data.status,
           targetRate: data.targetRate,
           currency: data.currency ?? undefined,
           roleSummary: data.roleSummary,
+          workModality: data.workModality,
         },
         select: { id: true },
       });
@@ -140,16 +165,8 @@ export async function updateVacancy(
 
   const { data } = parsed;
 
-  const opportunity = await prisma.opportunity.findUnique({
-    where: { id: data.opportunityId },
-    select: { id: true },
-  });
-  if (!opportunity) {
-    return {
-      ok: false,
-      fieldErrors: { opportunityId: "Selected opportunity was not found." },
-    };
-  }
+  const validationError = await validateCompanyAndOpportunity(data.companyId, data.opportunityId);
+  if (validationError) return validationError;
 
   if (data.requirements.length > 0) {
     const skillIds = data.requirements.map((r) => r.skillId);
@@ -171,12 +188,14 @@ export async function updateVacancy(
         where: { id: vacancyId },
         data: {
           title: data.title,
+          companyId: data.companyId,
           opportunityId: data.opportunityId,
           seniority: data.seniority,
           status: data.status,
           targetRate: data.targetRate,
           currency: data.currency ?? undefined,
           roleSummary: data.roleSummary,
+          workModality: data.workModality,
         },
       });
 
@@ -202,4 +221,3 @@ export async function updateVacancy(
     return { ok: false, message: "Could not update the vacancy. Try again." };
   }
 }
-

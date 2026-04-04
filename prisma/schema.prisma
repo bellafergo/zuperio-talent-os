@@ -200,6 +200,7 @@ model Company {
 
   contacts      Contact[]
   opportunities Opportunity[]
+  vacancies     Vacancy[]
   placements    Placement[]
   proposals     Proposal[]
 
@@ -290,9 +291,14 @@ model Vacancy {
   skills       String?
   /// Short role scope for matching and future JD text.
   roleSummary  String?
+  /// Work modality (e.g. "Híbrido", "Home office", "Presencial"). Free text, same pattern as Candidate.workModality.
+  workModality String?
 
-  opportunityId String
-  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
 
   candidateMatches   CandidateVacancyMatch[]
   placements         Placement[]
@@ -304,6 +310,7 @@ model Vacancy {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([companyId])
   @@index([opportunityId])
   @@index([status])
   @@index([seniority])

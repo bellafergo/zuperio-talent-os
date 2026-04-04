@@ -87,6 +87,13 @@ export async function POST(request: Request) {
     }
 
     const suggestions = parseCvPlainTextForAutofill(plain);
+    console.log("[cv-extract-preview] CV autofill result:", {
+      email: suggestions.email ?? null,
+      phone: suggestions.phone ?? null,
+      skillsLine: suggestions.skillsLine ?? null,
+      firstName: suggestions.firstName ?? null,
+      lastName: suggestions.lastName ?? null,
+    });
     const body: CvExtractPreviewResponse = {
       ok: true,
       source: ext === "pdf" ? "pdf" : "unsupported",

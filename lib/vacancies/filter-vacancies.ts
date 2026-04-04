@@ -48,7 +48,9 @@ export function opportunityOptionsFromVacancies(
 ): OpportunityOption[] {
   const byId = new Map<string, string>();
   for (const r of rows) {
-    byId.set(r.opportunityId, r.opportunityTitle);
+    if (r.opportunityId && r.opportunityTitle) {
+      byId.set(r.opportunityId, r.opportunityTitle);
+    }
   }
   return [...byId.entries()]
     .map(([id, title]) => ({ id, title }))

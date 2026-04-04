@@ -21,13 +21,16 @@ import {
   type VacancyActionState,
 } from "@/lib/vacancies/actions";
 import type { OpportunityOptionForVacancyForm } from "@/lib/vacancies/queries";
+import type { CompanyOption } from "@/lib/vacancies/types";
 
 import { VacancyRecordFormFields } from "./vacancy-record-form-fields";
 
 export function VacanciesNewVacancyDialog({
+  companies,
   opportunities,
   skills,
 }: {
+  companies: CompanyOption[];
   opportunities: OpportunityOptionForVacancyForm[];
   skills: SkillOption[];
 }) {
@@ -79,6 +82,7 @@ export function VacanciesNewVacancyDialog({
         </DialogHeader>
         <form key={formKey} onSubmit={onSubmit} className="space-y-4">
           <VacancyRecordFormFields
+            companies={companies}
             opportunities={opportunities}
             skills={skills}
             fieldErrors={state?.ok === false ? state.fieldErrors : undefined}

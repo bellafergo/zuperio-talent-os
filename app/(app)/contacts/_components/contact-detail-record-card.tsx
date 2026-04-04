@@ -10,6 +10,8 @@ import {
 
 import { cn } from "@/lib/utils";
 
+import { ContactWhatsAppButton } from "./contact-whatsapp-button";
+
 function PrimaryChannel({
   icon: Icon,
   label,
@@ -120,12 +122,15 @@ export function ContactDetailRecordCard({
             value={email}
             href={emailRaw ? `mailto:${emailRaw}` : undefined}
           />
-          <PrimaryChannel
-            icon={PhoneIcon}
-            label="Teléfono principal"
-            value={phone}
-            href={phoneRaw ? `tel:${phoneRaw.replace(/\s/g, "")}` : undefined}
-          />
+          <div className="flex flex-col gap-2">
+            <PrimaryChannel
+              icon={PhoneIcon}
+              label="Teléfono principal"
+              value={phone}
+              href={phoneRaw ? `tel:${phoneRaw.replace(/\s/g, "")}` : undefined}
+            />
+            {phoneRaw ? <ContactWhatsAppButton phone={phoneRaw} /> : null}
+          </div>
         </div>
       </div>
     </section>

@@ -40,12 +40,31 @@ function sourceLabel(s: string | null | undefined): string {
   return t ? t : "—";
 }
 
-type CandidateMini = { id: string; firstName: string; lastName: string };
+const availabilityLabels: Record<string, string> = {
+  AVAILABLE: "Disponible",
+  IN_PROCESS: "En proceso",
+  ASSIGNED: "Asignado",
+  NOT_AVAILABLE: "No disponible",
+};
+
+function availabilityLabel(s: string | null | undefined): string {
+  if (!s) return "—";
+  return availabilityLabels[s] ?? s;
+}
+
+type CandidateMini = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string | null;
+  seniority: string | null;
+  availabilityStatus: string | null;
+};
 
 type VacancyMini = {
   id: string;
   title: string;
-  opportunity: { company: { id: string; name: string } };
+  company: { id: string; name: string };
 };
 
 export type ApplicationWithCandidate = {
@@ -82,6 +101,9 @@ export function mapToVacancyPipelineRowUi(row: ApplicationWithCandidate): Vacanc
     applicationId: row.id,
     candidateId: row.candidate.id,
     candidateName: candidateName(row.candidate),
+    candidateRole: row.candidate.role?.trim() || null,
+    candidateSeniority: row.candidate.seniority?.trim() || null,
+    availabilityLabel: availabilityLabel(row.candidate.availabilityStatus),
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
     sourceLabel: sourceLabel(row.source),
@@ -97,8 +119,8 @@ export function mapToCandidateApplicationRowUi(
     applicationId: row.id,
     vacancyId: row.vacancy.id,
     vacancyTitle: row.vacancy.title,
-    companyId: row.vacancy.opportunity.company.id,
-    companyName: row.vacancy.opportunity.company.name,
+    companyId: row.vacancy.company.id,
+    companyName: row.vacancy.company.name,
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
   };
@@ -111,7 +133,7 @@ export function mapToApplicationMatrixRowUi(row: ApplicationMatrixPrismaRow): Ap
     candidateName: candidateName(row.candidate),
     vacancyId: row.vacancy.id,
     vacancyTitle: row.vacancy.title,
-    companyName: row.vacancy.opportunity.company.name,
+    companyName: row.vacancy.company.name,
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
     sourceLabel: sourceLabel(row.source),

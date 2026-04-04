@@ -12,12 +12,14 @@ const SENIORITY_SET = new Set<string>(Object.values(VacancySeniorityConst));
 
 export type VacancyFormParsed = {
   title: string;
-  opportunityId: string;
+  companyId: string;
+  opportunityId: string | null;
   seniority: VacancySeniority;
   status: VacancyStatus;
   targetRate: number | null;
   currency: string | null;
   roleSummary: string | null;
+  workModality: string | null;
   requirements: VacancyRequirementDraft[];
 };
 
@@ -93,9 +95,11 @@ export function parseVacancyForm(formData: FormData): VacancyFormValidationResul
   if (!titleRes.ok) fieldErrors.title = "Title is required.";
   const title = titleRes.ok ? titleRes.value : "";
 
-  const oppRes = parseRequiredTrimmed(formData, "opportunityId");
-  if (!oppRes.ok) fieldErrors.opportunityId = "Opportunity is required.";
-  const opportunityId = oppRes.ok ? oppRes.value : "";
+  const companyRes = parseRequiredTrimmed(formData, "companyId");
+  if (!companyRes.ok) fieldErrors.companyId = "La empresa es obligatoria.";
+  const companyId = companyRes.ok ? companyRes.value : "";
+
+  const opportunityId = parseOptionalTrimmed(formData, "opportunityId");
 
   const seniorityRaw = parseOptionalTrimmed(formData, "seniority") ?? "";
   if (!seniorityRaw || !SENIORITY_SET.has(seniorityRaw)) {
@@ -132,6 +136,13 @@ export function parseVacancyForm(formData: FormData): VacancyFormValidationResul
   const roleSummaryRaw = parseOptionalTrimmed(formData, "roleSummary");
   const roleSummary = roleSummaryRaw ? roleSummaryRaw : null;
 
+  const workModalityRaw = parseOptionalTrimmed(formData, "workModality");
+  let workModality = workModalityRaw;
+  if (workModality && workModality.length > 120) {
+    fieldErrors.workModality = "Modalidad: máximo 120 caracteres.";
+    workModality = null;
+  }
+
   const reqJsonRaw = parseOptionalTrimmed(formData, "requirements");
   const reqParsed = parseRequirementsJson(reqJsonRaw);
   if (!reqParsed.ok) {
@@ -147,12 +158,14 @@ export function parseVacancyForm(formData: FormData): VacancyFormValidationResul
     ok: true,
     data: {
       title,
+      companyId,
       opportunityId,
       seniority: seniorityRaw as VacancySeniority,
       status: statusRaw as VacancyStatus,
       targetRate,
       currency,
       roleSummary,
+      workModality,
       requirements,
     },
   };

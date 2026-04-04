@@ -31,7 +31,7 @@ type CandidateMini = {
 type VacancyMini = {
   id: string;
   title: string;
-  opportunity: { company: { name: string } };
+  company: { name: string };
 };
 
 export type MatchWithCandidate = {
@@ -79,7 +79,7 @@ export function mapMatchToCandidateRowUi(row: MatchWithVacancy): CandidateMatchR
     matchId: row.id,
     vacancyId: row.vacancy.id,
     vacancyTitle: row.vacancy.title,
-    companyName: row.vacancy.opportunity.company.name,
+    companyName: row.vacancy.company.name,
     score: row.score,
     recommendation: mapMatchRecommendationToUi(row.recommendation),
     explanation: row.explanation,
@@ -93,7 +93,7 @@ export function mapMatchToMatrixRowUi(row: MatchMatrixPrismaRow): MatchMatrixRow
     candidateName: candidateName(row.candidate),
     vacancyId: row.vacancy.id,
     vacancyTitle: row.vacancy.title,
-    companyName: row.vacancy.opportunity.company.name,
+    companyName: row.vacancy.company.name,
     score: row.score,
     recommendation: mapMatchRecommendationToUi(row.recommendation),
     explanation: row.explanation,
