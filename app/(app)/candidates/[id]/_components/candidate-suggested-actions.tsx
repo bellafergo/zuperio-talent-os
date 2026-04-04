@@ -7,6 +7,8 @@ import { SectionCard } from "@/components/layout";
 import type { CandidateAvailabilityUi } from "@/lib/candidates/types";
 import { cn } from "@/lib/utils";
 
+import { useCandidateOpenProposalDialog } from "./candidate-detail-proposal-context";
+
 function clickElementById(id: string) {
   if (typeof document === "undefined") return;
   document.getElementById(id)?.click();
@@ -20,8 +22,6 @@ function scrollToSection(id: string) {
 const SECTION_RECLUTAMIENTO = "candidate-section-reclutamiento";
 const SECTION_CV = "candidate-section-cv";
 const TRIGGER_EDIT = "candidate-detail-edit-trigger";
-const TRIGGER_PROPOSAL = "candidate-detail-proposal-trigger";
-
 export function CandidateSuggestedActions({
   canManage,
   canProposals,
@@ -37,6 +37,7 @@ export function CandidateSuggestedActions({
   pipelineVacancyId: string | null;
   availabilityStatus: CandidateAvailabilityUi;
 }) {
+  const openProposalDialog = useCandidateOpenProposalDialog();
   const hasLinkedVacancy = Boolean(pipelineVacancyId?.trim());
   const showEdit = canManage && hasEditData;
   const showProposal = canProposals;
@@ -54,7 +55,7 @@ export function CandidateSuggestedActions({
       variant={showEdit || showCvNav ? "outline" : "default"}
       size="sm"
       className="justify-start gap-2 sm:min-w-0"
-      onClick={() => clickElementById(TRIGGER_PROPOSAL)}
+      onClick={() => openProposalDialog()}
     >
       <SparklesIcon className="size-4 shrink-0 opacity-80" aria-hidden />
       Crear propuesta
@@ -126,7 +127,7 @@ export function CandidateSuggestedActions({
   return (
     <SectionCard
       title="Acciones sugeridas"
-      description="Atajos a las mismas acciones del encabezado y secciones de la ficha. Si un botón no responde, usa los controles superiores."
+      description="Atajos a las mismas acciones del encabezado y secciones de la ficha."
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">{orderedActions}</div>
 

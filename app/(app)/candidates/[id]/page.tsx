@@ -7,9 +7,7 @@ import {
   PlaceholderSection,
   SectionCard,
 } from "@/components/layout";
-import { ProposalsNewProposalDialog } from "@/app/(app)/proposals/_components/proposals-new-proposal-dialog";
 import type { ProposalFormDefaults } from "@/app/(app)/proposals/_components/proposal-record-form-fields";
-import { Button } from "@/components/ui/button";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { canManageProposals } from "@/lib/auth/proposal-access";
 import type { CandidateUi } from "@/lib/candidates/types";
@@ -23,6 +21,7 @@ import { listCandidateStructuredSkillsForUi, listSkillsForVacancyForm } from "@/
 import type { CandidateStructuredSkillUi } from "@/lib/skills/types";
 import { listApplicationsForCandidateUi } from "@/lib/vacancy-applications/queries";
 import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types";
+import { listCandidateParticipatingVacanciesUi } from "@/lib/candidates/participating-vacancies-queries";
 
 import { OptionalClientSectionBoundary } from "@/components/optional-client-section-boundary";
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
@@ -34,6 +33,9 @@ import { CandidateCvFileSection } from "./_components/candidate-cv-file-section"
 import { CandidateWhatsAppButton } from "./_components/candidate-whatsapp-button";
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
+import { CandidateDetailProposalProvider } from "./_components/candidate-detail-proposal-context";
+import { CandidateDetailNewProposalButton } from "./_components/candidate-detail-new-proposal-button";
+import { CandidateParticipatingVacanciesSection } from "./_components/candidate-participating-vacancies-section";
 import { CandidateSuggestedActions } from "./_components/candidate-suggested-actions";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
 import { CandidateZuperioCvPreviewSection } from "./_components/candidate-zuperio-cv-preview-section";
@@ -144,6 +146,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     currentAssignment,
     structuredSkills,
     applications,
+    participatingVacancies,
     editData,
     skillsCatalog,
     cvFileInfo,
@@ -174,6 +177,11 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       "listApplicationsForCandidateUi",
       listApplicationsForCandidateUi(id),
       [] as CandidateApplicationRowUi[],
+    ),
+    safeCandidateSecondaryFetch(
+      "listCandidateParticipatingVacanciesUi",
+      listCandidateParticipatingVacanciesUi(id, candidate.pipelineVacancyId),
+      [],
     ),
     canManage
       ? safeCandidateSecondaryFetch(
@@ -263,54 +271,44 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       : undefined;
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        variant="detail"
-        backHref="/candidates"
-        backLabel="Volver a candidatos"
-        title={title}
-        description="Perfil de talento, skills estructurados, postulaciones y matches deterministas con vacantes."
-        meta={
-          <CandidateAvailabilityBadge
-            status={candidate.availabilityStatus}
-            label={candidate.availabilityBadgeLabel}
-          />
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            {candidate.phone && safeDetailLine(candidate.phone) !== "—" ? (
-              <CandidateWhatsAppButton phone={candidate.phone} />
-            ) : null}
-            <CandidateCvDownloadButton candidateId={id} />
-            {canProposals ? (
-              <ProposalsNewProposalDialog
-                companies={proposalCompanies}
-                opportunities={proposalOpportunities}
-                vacancies={proposalVacancies}
-                candidates={proposalCandidates}
-                formDefaultsPartial={proposalQuickCreatePartial}
-                trigger={
-                  <Button
-                    id="candidate-detail-proposal-trigger"
-                    type="button"
-                    variant="outline"
-                    className="shrink-0"
-                  >
-                    Crear propuesta
-                  </Button>
-                }
-              />
-            ) : null}
-            {canManage && editData ? (
-              <CandidateEditDialog
-                candidate={editData}
-                skillsCatalog={skillsCatalog}
-                openVacancies={openVacanciesForm}
-              />
-            ) : null}
-          </div>
-        }
-      />
+    <CandidateDetailProposalProvider
+      canProposals={canProposals}
+      companies={proposalCompanies}
+      opportunities={proposalOpportunities}
+      vacancies={proposalVacancies}
+      candidates={proposalCandidates}
+      formDefaultsPartial={proposalQuickCreatePartial}
+    >
+      <div className="space-y-8">
+        <PageHeader
+          variant="detail"
+          backHref="/candidates"
+          backLabel="Volver a candidatos"
+          title={title}
+          description="Perfil de talento, skills estructurados, postulaciones y matches deterministas con vacantes."
+          meta={
+            <CandidateAvailabilityBadge
+              status={candidate.availabilityStatus}
+              label={candidate.availabilityBadgeLabel}
+            />
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              {candidate.phone && safeDetailLine(candidate.phone) !== "—" ? (
+                <CandidateWhatsAppButton phone={candidate.phone} />
+              ) : null}
+              <CandidateCvDownloadButton candidateId={id} />
+              {canProposals ? <CandidateDetailNewProposalButton /> : null}
+              {canManage && editData ? (
+                <CandidateEditDialog
+                  candidate={editData}
+                  skillsCatalog={skillsCatalog}
+                  openVacancies={openVacanciesForm}
+                />
+              ) : null}
+            </div>
+          }
+        />
 
       <OptionalClientSectionBoundary
         fallback={
@@ -433,12 +431,15 @@ export default async function CandidateDetailPage({ params }: PageProps) {
 
       <CandidateApplicationsSection applications={applications} />
 
+      <CandidateParticipatingVacanciesSection rows={participatingVacancies} />
+
       <CandidateVacancyMatchesSection matches={vacancyMatches} />
 
       <PlaceholderSection
         title="Actividad"
         description="Postulaciones, entrevistas e historial de colocación."
       />
-    </div>
+      </div>
+    </CandidateDetailProposalProvider>
   );
 }

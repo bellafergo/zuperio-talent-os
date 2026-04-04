@@ -215,33 +215,42 @@ export async function getCandidateCvPrintData(
             level: true,
             skill: { select: { name: true, category: true } },
           },
-          orderBy: { skill: { name: "asc" } },
+          /** Scalar order only — relation sort can make Prisma omit joins and return empty skills. */
+          orderBy: { id: "asc" },
         },
       },
     });
 
     if (!row) return null;
 
-    let structuredSkills: CandidateCvSkillRow[];
-    try {
-      structuredSkills = row.structuredSkills
+    const structuredSkills: CandidateCvSkillRow[] = row.structuredSkills
       .map((cs) => {
         let years: number | null = cs.yearsExperience ?? null;
         if (years != null && typeof years !== "number") {
           const n = Number(years);
           years = Number.isFinite(n) ? Math.floor(n) : null;
         }
+        const catRaw = cs.skill?.category;
+        const category =
+          typeof catRaw === "string" && catRaw.trim()
+            ? catRaw.trim()
+            : "Skills";
+        const lv = cs.level;
+        const level =
+          lv == null
+            ? null
+            : (() => {
+                const t = String(lv).trim();
+                return t || null;
+              })();
         return {
           name: cs.skill?.name?.trim() || "",
-          category: cs.skill?.category?.trim() || "Skills",
+          category,
           yearsExperience: years,
-          level: cs.level?.trim() || null,
+          level,
         };
       })
       .filter((s) => s.name.length > 0);
-    } catch {
-      structuredSkills = [];
-    }
 
     let workExperienceParagraphs: string[];
     try {

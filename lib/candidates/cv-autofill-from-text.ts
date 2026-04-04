@@ -82,17 +82,56 @@ function parseSections(lines: string[]): SectionAcc {
   return acc;
 }
 
+/** Lone token after a comma that is a generational suffix, not a given name. */
+const NAME_SUFFIX_RE = /^(jr\.?|sr\.?|iii|iv|ii|ph\.?d\.?|msc|mba|cpa)$/i;
+
 function splitName(full: string): { firstName: string; lastName: string } {
-  const parts = full.split(/\s+/).filter(Boolean);
+  const t = full.replace(/\s+/g, " ").trim();
+  if (!t) return { firstName: "", lastName: "" };
+
+  if (t.includes(",")) {
+    const rawParts = t.split(",").map((s) => s.trim()).filter(Boolean);
+    if (rawParts.length === 2) {
+      const [a, b] = rawParts;
+      const leftTokens = a.split(/\s+/).filter(Boolean);
+      const rightTokens = b.split(/\s+/).filter(Boolean);
+      const loneSuffix =
+        rightTokens.length === 1 && NAME_SUFFIX_RE.test(rightTokens[0] ?? "");
+      if (!loneSuffix && leftTokens.length >= 1 && rightTokens.length >= 1) {
+        if (leftTokens.length >= 2 && rightTokens.length >= 1) {
+          return {
+            firstName: rightTokens.join(" ").slice(0, 120),
+            lastName: leftTokens.join(" ").slice(0, 120),
+          };
+        }
+        if (leftTokens.length === 1 && rightTokens.length >= 1) {
+          return {
+            firstName: rightTokens.join(" ").slice(0, 120),
+            lastName: leftTokens[0]!.slice(0, 120),
+          };
+        }
+      }
+    }
+  }
+
+  const parts = t.replace(/,/g, " ").split(/\s+/).filter(Boolean);
   if (parts.length === 0) return { firstName: "", lastName: "" };
   if (parts.length === 1) return { firstName: parts[0], lastName: "" };
   return {
-    firstName: parts.slice(0, -1).join(" "),
-    lastName: parts[parts.length - 1] ?? "",
+    firstName: parts.slice(0, -1).join(" ").slice(0, 120),
+    lastName: (parts[parts.length - 1] ?? "").slice(0, 120),
   };
 }
 
 function guessNameFromLines(lines: string[]): string | null {
+  const labeled = extractLabelValue(
+    lines,
+    /^(name|nombre|full\s*name|nombre\s*completo)\s*:\s*(.+)$/i,
+  );
+  if (labeled && labeled.length >= 3 && labeled.length <= 120) {
+    return labeled;
+  }
+
   for (const line of lines.slice(0, 12)) {
     if (line.includes("@")) continue;
     if (PHONE_RE.test(line) && line.length < 36) continue;
@@ -100,7 +139,7 @@ function guessNameFromLines(lines: string[]): string | null {
     if (/^https?:\/\//i.test(line)) continue;
     if (/linkedin\.com/i.test(line)) continue;
     const wordCount = line.split(/\s+/).length;
-    if (wordCount >= 2 && wordCount <= 5 && !/^\d+$/.test(line)) {
+    if (wordCount >= 2 && wordCount <= 6 && !/^\d+$/.test(line)) {
       return line;
     }
   }
