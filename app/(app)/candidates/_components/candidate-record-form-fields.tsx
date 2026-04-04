@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import type { RefObject } from "react";
 
 import {
   CandidatePipelineIntent as PipelineIntentConst,
@@ -9,6 +10,7 @@ import {
   type VacancySeniority,
 } from "@/generated/prisma/enums";
 import { Input } from "@/components/ui/input";
+import type { CvAutofillApplyPayload, CvAutofillProvenanceField } from "@/lib/candidates/cv-autofill-types";
 import type { SkillOption } from "@/lib/skills/queries";
 import { CANDIDATE_WORK_MODALITY_OPTIONS } from "@/lib/candidates/constants";
 import type { CandidateEditData } from "@/lib/candidates/queries";
@@ -40,6 +42,13 @@ const SENIORITY_LABELS: Record<VacancySeniority, string> = {
   LEAD: "Lead",
   PRINCIPAL: "Principal",
 };
+
+function CvProvenanceHint({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <p className="text-[11px] leading-snug text-muted-foreground">Sugerido desde CV</p>
+  );
+}
 
 function deriveInitialAvailability(defaults?: CandidateEditData): {
   mode: CandidateAvailabilityFormMode;
@@ -76,10 +85,13 @@ export function CandidateRecordFormFields({
   openVacancies = [],
   formResetKey = 0,
   enableCvSection = false,
+  autofillFormRef,
   onCvAutofillApplied,
   cvAutofillApplyId = 0,
   cvAutofillPatch = EMPTY_CV_PATCH,
   cvAutofillExtraSkills = EMPTY_CV_SKILLS,
+  cvAutofillProvenanceKeys = [],
+  cvAutofillSkillsAddedLastApply = 0,
 }: {
   skillsCatalog: SkillOption[];
   defaults?: CandidateEditData;
@@ -90,13 +102,13 @@ export function CandidateRecordFormFields({
   /** Bumps when the parent dialog remounts the form (clears autofill merge state). */
   formResetKey?: number;
   enableCvSection?: boolean;
-  onCvAutofillApplied?: (
-    patch: Partial<CandidateEditData>,
-    extraStructuredSkills: CandidateSkillDraft[],
-  ) => void;
+  autofillFormRef?: RefObject<HTMLFormElement | null>;
+  onCvAutofillApplied?: (payload: CvAutofillApplyPayload) => void;
   cvAutofillApplyId?: number;
   cvAutofillPatch?: Partial<CandidateEditData>;
   cvAutofillExtraSkills?: CandidateSkillDraft[];
+  cvAutofillProvenanceKeys?: readonly CvAutofillProvenanceField[];
+  cvAutofillSkillsAddedLastApply?: number;
 }) {
   const initialAvail = deriveInitialAvailability(defaults);
   const [availMode, setAvailMode] = React.useState<CandidateAvailabilityFormMode>(
@@ -133,6 +145,11 @@ export function CandidateRecordFormFields({
     )
       ? workModalityCurrent
       : null;
+
+  const provenanceSet = React.useMemo(
+    () => new Set(cvAutofillProvenanceKeys),
+    [cvAutofillProvenanceKeys],
+  );
 
   const lastSkillAutofillApply = React.useRef(-1);
   React.useEffect(() => {
@@ -184,10 +201,11 @@ export function CandidateRecordFormFields({
         <input type="hidden" name="pipelineVacancyId" value="" />
       ) : null}
 
-      {enableCvSection && onCvAutofillApplied ? (
+      {enableCvSection && onCvAutofillApplied && autofillFormRef ? (
         <CandidateFormCvSection
           skillsCatalog={skillsCatalog}
           existingCvFileName={defaults?.cvFileName ?? null}
+          autofillFormRef={autofillFormRef}
           onAutofillApplied={onCvAutofillApplied}
         />
       ) : null}
@@ -200,6 +218,7 @@ export function CandidateRecordFormFields({
           >
             Nombre <span className="text-destructive">*</span>
           </label>
+          <CvProvenanceHint show={provenanceSet.has("firstName")} />
           <Input
             key={`firstName-${fieldKey}`}
             id={candidateId ? `edit-first-${candidateId}` : "new-first"}
@@ -223,6 +242,7 @@ export function CandidateRecordFormFields({
           >
             Apellido
           </label>
+          <CvProvenanceHint show={provenanceSet.has("lastName")} />
           <Input
             key={`lastName-${fieldKey}`}
             id={candidateId ? `edit-last-${candidateId}` : "new-last"}
@@ -240,14 +260,15 @@ export function CandidateRecordFormFields({
       </div>
 
       <div className="space-y-2">
-        <label
-          htmlFor={candidateId ? `edit-role-${candidateId}` : "new-role"}
-          className="text-sm font-medium"
-        >
-          Rol <span className="text-destructive">*</span>
-        </label>
-        <Input
-          key={`role-${fieldKey}`}
+          <label
+            htmlFor={candidateId ? `edit-role-${candidateId}` : "new-role"}
+            className="text-sm font-medium"
+          >
+            Rol <span className="text-destructive">*</span>
+          </label>
+          <CvProvenanceHint show={provenanceSet.has("role")} />
+          <Input
+            key={`role-${fieldKey}`}
           id={candidateId ? `edit-role-${candidateId}` : "new-role"}
           name="role"
           required
@@ -416,6 +437,7 @@ export function CandidateRecordFormFields({
           >
             Correo
           </label>
+          <CvProvenanceHint show={provenanceSet.has("email")} />
           <Input
             key={`email-${fieldKey}`}
             id={candidateId ? `edit-email-${candidateId}` : "new-email"}
@@ -439,6 +461,7 @@ export function CandidateRecordFormFields({
           >
             Teléfono
           </label>
+          <CvProvenanceHint show={provenanceSet.has("phone")} />
           <Input
             key={`phone-${fieldKey}`}
             id={candidateId ? `edit-phone-${candidateId}` : "new-phone"}
@@ -458,6 +481,7 @@ export function CandidateRecordFormFields({
         <label htmlFor={candidateId ? `edit-notes-${candidateId}` : "new-notes"} className="text-sm font-medium">
           Notas
         </label>
+        <CvProvenanceHint show={provenanceSet.has("notes")} />
         <textarea
           key={`notes-${fieldKey}`}
           id={candidateId ? `edit-notes-${candidateId}` : "new-notes"}
@@ -490,6 +514,7 @@ export function CandidateRecordFormFields({
             >
               Ubicación (ciudad / país)
             </label>
+            <CvProvenanceHint show={provenanceSet.has("locationCity")} />
             <Input
               key={`locationCity-${fieldKey}`}
               id={candidateId ? `edit-loc-${candidateId}` : "new-loc"}
@@ -505,6 +530,7 @@ export function CandidateRecordFormFields({
             >
               Modalidad
             </label>
+            <CvProvenanceHint show={provenanceSet.has("workModality")} />
             <select
               key={`workModality-${fieldKey}`}
               id={candidateId ? `edit-mod-${candidateId}` : "new-mod"}
@@ -549,6 +575,7 @@ export function CandidateRecordFormFields({
             <label htmlFor={`${candidateId ?? "new"}-${name}`} className="text-xs font-medium text-muted-foreground">
               {label}
             </label>
+            <CvProvenanceHint show={provenanceSet.has(name as CvAutofillProvenanceField)} />
             <textarea
               key={`${name}-${fieldKey}`}
               id={`${candidateId ?? "new"}-${name}`}
@@ -575,6 +602,12 @@ export function CandidateRecordFormFields({
         ))}
       </div>
 
+      {cvAutofillSkillsAddedLastApply > 0 ? (
+        <p className="text-xs text-muted-foreground">
+          En la última sugerencia se añadieron {cvAutofillSkillsAddedLastApply} competencia(s) desde
+          el CV; revisa la lista antes de guardar.
+        </p>
+      ) : null}
       <CandidateSkillsEditor
         skills={skillsCatalog}
         value={structuredSkills}

@@ -2,7 +2,7 @@
 
 import { PencilIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useRef, useState, useTransition, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { updateCandidate, type CandidateActionState } from "@/lib/candidates/actions";
+import type { CvAutofillProvenanceField } from "@/lib/candidates/cv-autofill-types";
 import type { CandidateEditData } from "@/lib/candidates/queries";
 import type { CandidateSkillDraft } from "@/lib/candidates/validation";
 import type { SkillOption } from "@/lib/skills/queries";
@@ -32,6 +33,7 @@ export function CandidateEditDialog({
   openVacancies?: OpenVacancyOptionForCandidateForm[];
 }) {
   const router = useRouter();
+  const autofillFormRef = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [state, setState] = useState<CandidateActionState | null>(null);
@@ -40,7 +42,15 @@ export function CandidateEditDialog({
     applyId: number;
     patch: Partial<CandidateEditData>;
     extraSkills: CandidateSkillDraft[];
-  }>({ applyId: 0, patch: {}, extraSkills: [] });
+    provenanceKeys: CvAutofillProvenanceField[];
+    skillsAddedLastApply: number;
+  }>({
+    applyId: 0,
+    patch: {},
+    extraSkills: [],
+    provenanceKeys: [],
+    skillsAddedLastApply: 0,
+  });
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -75,7 +85,13 @@ export function CandidateEditDialog({
           if (next) {
             setFormKey((k) => k + 1);
             setState(null);
-            setCvAutofill({ applyId: 0, patch: {}, extraSkills: [] });
+            setCvAutofill({
+              applyId: 0,
+              patch: {},
+              extraSkills: [],
+              provenanceKeys: [],
+              skillsAddedLastApply: 0,
+            });
           }
         }}
       >
@@ -90,6 +106,7 @@ export function CandidateEditDialog({
             </DialogDescription>
           </DialogHeader>
           <form
+            ref={autofillFormRef}
             key={formKey}
             onSubmit={onSubmit}
             className="flex min-h-0 flex-1 flex-col"
@@ -103,15 +120,33 @@ export function CandidateEditDialog({
                   openVacancies={openVacancies}
                   formResetKey={formKey}
                   enableCvSection
+                  autofillFormRef={autofillFormRef}
                   cvAutofillApplyId={cvAutofill.applyId}
                   cvAutofillPatch={cvAutofill.patch}
                   cvAutofillExtraSkills={cvAutofill.extraSkills}
-                  onCvAutofillApplied={(patch, extra) => {
-                    setCvAutofill((prev) => ({
-                      applyId: prev.applyId + 1,
-                      patch: { ...prev.patch, ...patch },
-                      extraSkills: extra,
-                    }));
+                  cvAutofillProvenanceKeys={cvAutofill.provenanceKeys}
+                  cvAutofillSkillsAddedLastApply={cvAutofill.skillsAddedLastApply}
+                  onCvAutofillApplied={(payload) => {
+                    setCvAutofill((prev) => {
+                      if (payload.applyValues) {
+                        return {
+                          applyId: prev.applyId + 1,
+                          patch: { ...prev.patch, ...payload.patch },
+                          extraSkills: payload.extraStructuredSkills,
+                          provenanceKeys: [
+                            ...new Set([
+                              ...prev.provenanceKeys,
+                              ...payload.provenanceKeys,
+                            ]),
+                          ],
+                          skillsAddedLastApply: payload.structuredSkillsAddedCount,
+                        };
+                      }
+                      return {
+                        ...prev,
+                        skillsAddedLastApply: payload.structuredSkillsAddedCount,
+                      };
+                    });
                   }}
                   fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
                 />
