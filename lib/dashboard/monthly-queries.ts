@@ -1,5 +1,6 @@
 import type { VacancyStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
+import { isMissingProposalCommercialClosedAtError } from "@/lib/prisma/proposal-commercial-closed-drift";
 
 import type { DashboardMonthPeriod } from "@/lib/datetime/dashboard-month";
 
@@ -37,50 +38,18 @@ export type ActiveVacancyByCompanyRow = {
   titles: string[];
 };
 
-/**
- * WON proposals closed in the UTC month: `commercialClosedAt` in range, or legacy rows
- * (null closure) with `updatedAt` in range.
- */
-export async function listMonthlyCommercialClosures(
-  period: DashboardMonthPeriod,
-): Promise<MonthlyCommercialClosureRow[]> {
-  const { startUtc, endUtcExclusive } = period;
-
-  const rows = await prisma.proposal.findMany({
-    where: {
-      status: "WON",
-      OR: [
-        {
-          commercialClosedAt: {
-            gte: startUtc,
-            lt: endUtcExclusive,
-          },
-        },
-        {
-          AND: [
-            { commercialClosedAt: null },
-            {
-              updatedAt: {
-                gte: startUtc,
-                lt: endUtcExclusive,
-              },
-            },
-          ],
-        },
-      ],
-    },
-    select: {
-      id: true,
-      currency: true,
-      commercialClosedAt: true,
-      updatedAt: true,
-      company: { select: { name: true } },
-      candidate: { select: { firstName: true, lastName: true } },
-      pricing: { select: { finalMonthlyRate: true } },
-    },
-    orderBy: [{ commercialClosedAt: "asc" }, { updatedAt: "asc" }],
-  });
-
+function mapClosureRows(
+  rows: {
+    id: string;
+    currency: string;
+    commercialClosedAt: Date | null;
+    updatedAt: Date;
+    company: { name: string };
+    candidate: { firstName: string; lastName: string } | null;
+    pricing: { finalMonthlyRate: { toNumber: () => number } | null } | null;
+  }[],
+  hasPreciseField: boolean,
+): MonthlyCommercialClosureRow[] {
   return rows.map((r) => {
     const rate = r.pricing?.finalMonthlyRate;
     const n = rate?.toNumber();
@@ -90,7 +59,7 @@ export async function listMonthlyCommercialClosures(
     const candidateLabel = c
       ? `${c.firstName} ${c.lastName}`.trim() || "—"
       : "—";
-    const precise = r.commercialClosedAt != null;
+    const precise = hasPreciseField && r.commercialClosedAt != null;
     const closureReferenceAt = precise ? r.commercialClosedAt! : r.updatedAt;
     return {
       id: r.id,
@@ -102,6 +71,104 @@ export async function listMonthlyCommercialClosures(
       hasPreciseClosureAt: precise,
     };
   });
+}
+
+/**
+ * WON proposals closed in the UTC month: `commercialClosedAt` in range, or legacy rows
+ * (null closure) with `updatedAt` in range.
+ * If the database has not been migrated (`commercialClosedAt` missing), falls back to
+ * WON rows whose `updatedAt` falls in the month (approximate).
+ */
+export async function listMonthlyCommercialClosures(
+  period: DashboardMonthPeriod,
+): Promise<MonthlyCommercialClosureRow[]> {
+  const { startUtc, endUtcExclusive } = period;
+
+  try {
+    const rows = await prisma.proposal.findMany({
+      where: {
+        status: "WON",
+        OR: [
+          {
+            commercialClosedAt: {
+              gte: startUtc,
+              lt: endUtcExclusive,
+            },
+          },
+          {
+            AND: [
+              { commercialClosedAt: null },
+              {
+                updatedAt: {
+                  gte: startUtc,
+                  lt: endUtcExclusive,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      select: {
+        id: true,
+        currency: true,
+        commercialClosedAt: true,
+        updatedAt: true,
+        company: { select: { name: true } },
+        candidate: { select: { firstName: true, lastName: true } },
+        pricing: { select: { finalMonthlyRate: true } },
+      },
+      orderBy: [
+        { commercialClosedAt: { sort: "asc", nulls: "last" } },
+        { updatedAt: "asc" },
+        { id: "asc" },
+      ],
+    });
+    return mapClosureRows(rows, true);
+  } catch (err) {
+    if (!isMissingProposalCommercialClosedAtError(err)) {
+      throw err;
+    }
+    console.warn(
+      "[listMonthlyCommercialClosures] Proposal.commercialClosedAt missing in DB; using WON + updatedAt fallback. Run `prisma migrate deploy`.",
+    );
+    const rows = await prisma.proposal.findMany({
+      where: {
+        status: "WON",
+        updatedAt: {
+          gte: startUtc,
+          lt: endUtcExclusive,
+        },
+      },
+      select: {
+        id: true,
+        currency: true,
+        updatedAt: true,
+        company: { select: { name: true } },
+        candidate: { select: { firstName: true, lastName: true } },
+        pricing: { select: { finalMonthlyRate: true } },
+      },
+      orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
+    });
+    return rows.map((r) => {
+      const rate = r.pricing?.finalMonthlyRate;
+      const n = rate?.toNumber();
+      const finalMonthlyRate =
+        n != null && Number.isFinite(n) ? n : null;
+      const c = r.candidate;
+      const candidateLabel = c
+        ? `${c.firstName} ${c.lastName}`.trim() || "—"
+        : "—";
+      return {
+        id: r.id,
+        companyName: r.company.name?.trim() || "—",
+        currency: r.currency?.trim() || "MXN",
+        finalMonthlyRate,
+        candidateLabel,
+        closureReferenceAt: r.updatedAt,
+        hasPreciseClosureAt: false,
+      };
+    });
+  }
 }
 
 /** Placements whose assignment starts in the UTC month. */

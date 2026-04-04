@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { canManageProposals } from "@/lib/auth/proposal-access";
 import { prisma } from "@/lib/prisma";
+import { isMissingProposalCommercialClosedAtError } from "@/lib/prisma/proposal-commercial-closed-drift";
 
 import type { ProposalActionState } from "./actions";
 import { commercialClosedAtPatchForStatusChange } from "./commercial-closed-at";
@@ -60,10 +61,27 @@ export async function setProposalPipelineStatus(
     status,
   );
 
-  await prisma.proposal.update({
-    where: { id: proposalId },
-    data: { status, ...closurePatch },
-  });
+  try {
+    await prisma.proposal.update({
+      where: { id: proposalId },
+      data: { status, ...closurePatch },
+    });
+  } catch (err) {
+    if (
+      Object.keys(closurePatch).length > 0 &&
+      isMissingProposalCommercialClosedAtError(err)
+    ) {
+      console.warn(
+        "[setProposalPipelineStatus] commercialClosedAt column missing; saving status only. Run `prisma migrate deploy`.",
+      );
+      await prisma.proposal.update({
+        where: { id: proposalId },
+        data: { status },
+      });
+    } else {
+      throw err;
+    }
+  }
 
   revalidatePath("/proposals");
   revalidatePath(`/proposals/${proposalId}`);

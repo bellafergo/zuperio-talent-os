@@ -6,6 +6,8 @@ import { auth } from "@/auth";
 import { canManageProposals } from "@/lib/auth/proposal-access";
 import { prisma } from "@/lib/prisma";
 
+import { isMissingProposalCommercialClosedAtError } from "@/lib/prisma/proposal-commercial-closed-drift";
+
 import { commercialClosedAtPatchForStatusChange } from "./commercial-closed-at";
 import { computeProposalPricing } from "./pricing";
 import { parseProposalForm } from "./validation";
@@ -88,28 +90,50 @@ export async function createProposal(
 
   try {
     const created = await prisma.$transaction(async (tx) => {
-      const proposal = await tx.proposal.create({
-        data: {
-          companyId: data.companyId,
-          opportunityId: data.opportunityId,
-          vacancyId: data.vacancyId,
-          candidateId: data.candidateId,
-          type: data.type,
-          format: data.format,
-          status: data.status,
-          currency: data.currency,
-          validityDays: data.validityDays,
-          executiveSummary: data.executiveSummary,
-          profileSummary: data.profileSummary,
-          scopeNotes: data.scopeNotes,
-          commercialNotes: data.commercialNotes,
-          createdById: gate.userId,
-          ...(data.status === "WON" || data.status === "LOST"
-            ? { commercialClosedAt: new Date() }
-            : {}),
-        },
-        select: { id: true },
-      });
+      const baseProposal = {
+        companyId: data.companyId,
+        opportunityId: data.opportunityId,
+        vacancyId: data.vacancyId,
+        candidateId: data.candidateId,
+        type: data.type,
+        format: data.format,
+        status: data.status,
+        currency: data.currency,
+        validityDays: data.validityDays,
+        executiveSummary: data.executiveSummary,
+        profileSummary: data.profileSummary,
+        scopeNotes: data.scopeNotes,
+        commercialNotes: data.commercialNotes,
+        createdById: gate.userId,
+      };
+
+      let proposal;
+      try {
+        proposal = await tx.proposal.create({
+          data: {
+            ...baseProposal,
+            ...(data.status === "WON" || data.status === "LOST"
+              ? { commercialClosedAt: new Date() }
+              : {}),
+          },
+          select: { id: true },
+        });
+      } catch (err) {
+        if (
+          (data.status === "WON" || data.status === "LOST") &&
+          isMissingProposalCommercialClosedAtError(err)
+        ) {
+          console.warn(
+            "[createProposal] commercialClosedAt missing; creating without closure timestamp. Run `prisma migrate deploy`.",
+          );
+          proposal = await tx.proposal.create({
+            data: baseProposal,
+            select: { id: true },
+          });
+        } else {
+          throw err;
+        }
+      }
 
       await tx.proposalPricing.create({
         data: {
@@ -228,27 +252,48 @@ export async function updateProposal(
     data.status,
   );
 
+  const proposalUpdateBase = {
+    companyId: data.companyId,
+    opportunityId: data.opportunityId,
+    vacancyId: data.vacancyId,
+    candidateId: data.candidateId,
+    type: data.type,
+    format: data.format,
+    status: data.status,
+    currency: data.currency,
+    validityDays: data.validityDays,
+    executiveSummary: data.executiveSummary,
+    profileSummary: data.profileSummary,
+    scopeNotes: data.scopeNotes,
+    commercialNotes: data.commercialNotes,
+  };
+
   try {
     await prisma.$transaction(async (tx) => {
-      await tx.proposal.update({
-        where: { id: proposalId },
-        data: {
-          companyId: data.companyId,
-          opportunityId: data.opportunityId,
-          vacancyId: data.vacancyId,
-          candidateId: data.candidateId,
-          type: data.type,
-          format: data.format,
-          status: data.status,
-          currency: data.currency,
-          validityDays: data.validityDays,
-          executiveSummary: data.executiveSummary,
-          profileSummary: data.profileSummary,
-          scopeNotes: data.scopeNotes,
-          commercialNotes: data.commercialNotes,
-          ...closurePatch,
-        },
-      });
+      try {
+        await tx.proposal.update({
+          where: { id: proposalId },
+          data: {
+            ...proposalUpdateBase,
+            ...closurePatch,
+          },
+        });
+      } catch (err) {
+        if (
+          Object.keys(closurePatch).length > 0 &&
+          isMissingProposalCommercialClosedAtError(err)
+        ) {
+          console.warn(
+            "[updateProposal] commercialClosedAt missing; updating without closure fields. Run `prisma migrate deploy`.",
+          );
+          await tx.proposal.update({
+            where: { id: proposalId },
+            data: proposalUpdateBase,
+          });
+        } else {
+          throw err;
+        }
+      }
 
       await tx.proposalPricing.upsert({
         where: { proposalId },
