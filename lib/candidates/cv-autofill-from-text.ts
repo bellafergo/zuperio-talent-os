@@ -19,6 +19,17 @@ const PHONE_RE =
 const ROLE_HINT_RE =
   /\b(developer|engineer|ingeniero|consultant|consultor|manager|gerente|analyst|analista|architect|arquitecto|lead|scientist|diseñador|designer|product\s*owner|scrum\s*master|devops|sre|full\s*stack|frontend|backend|data)\b/i;
 
+/** Stronger signals for job titles mined from work-history blocks (PDFs often lack a top “Cargo”). */
+const WORK_TITLE_KEYWORD_RE =
+  /\b(architect|arquitecto|engineer|ingeniero|developer|consultant|consultor|manager|gerente|director|lead|head|cto|vp|vice|principal|specialist|especialista|analyst|analista|scientist|designer|diseñador|blockchain|transformation|officer|ejecutivo)\b/i;
+
+/** Section header: start of employment / work history (Spanish PDF layouts). */
+const WORK_HISTORY_HEADER_RE =
+  /^(historia\s+laboral|historial\s*laboral|historialaboral|experiencia\s+laboral|experiencia\s+profesional|work\s+experience|employment\s+history|professional\s+experience|employment)\s*:?\s*$/i;
+
+const EDUCATION_SECTION_HEADER_RE =
+  /^(educación|education|formación|formacion|academic\s*background|estudios|academic)\s*:?\s*$/i;
+
 /** Text that indicates the line is not a person’s legal/full name. */
 const NON_NAME_CONTEXT_RE =
   /universidad|university|instituto|institute|tec\.?\s+de|tecnol[oó]g|monterrey|guadalajara|ciudad\s+de|licenciatura|bachillerato|maestr[ií]a|doctorado|\bmba\b|gpa|promedio|egresad|graduated|email|e-?mail|tel[eé]fono|phone|mobil|celular|linkedin|github|\.com\b|\.mx\b|http|www\.|^\s*cargo\s*:|^\s*puesto\s*:|^\s*fecha\s*:|^\s*título\s*:|periodo|desde\s+\d|hasta\s+\d|^\s*experien|^\s*education|^\s*educaci[oó]n|^\s*certific|^\s*skills\b|competencias\s*técn|ubicaci[oó]n|direcci[oó]n|r[ée]sum[ée]|curriculum|\bcv\b|años\s+de\s+exper|years\s+of\s+experience|logros\s+en|responsible\s+for|where\s+i\s|leading\s+a\s+team|desarroll[ée]\s+(un|el|la)\s|implementaci[oó]n\s+de/iu;
@@ -50,7 +61,11 @@ const SECTION_HEADERS: { key: keyof SectionAcc; pattern: RegExp }[] = [
   { key: "languages", pattern: /^(languages|idiomas|language\s*skills)\s*:?\s*$/i },
   { key: "certs", pattern: /^(certifications|certificaciones|certificates|licenses)\s*:?\s*$/i },
   { key: "education", pattern: /^(education|educación|formación|academic\s*background)\s*:?\s*$/i },
-  { key: "experience", pattern: /^(experience|experiencia|work\s*history|employment)\s*:?\s*$/i },
+  {
+    key: "experience",
+    pattern:
+      /^(experience|experiencia|work\s*history|employment|historia\s+laboral|historial\s*laboral|historialaboral|experiencia\s+laboral|experiencia\s+profesional|professional\s+experience)\s*:?\s*$/i,
+  },
   {
     key: "softSkills",
     pattern:
@@ -162,9 +177,55 @@ function extractLabeledPersonName(lines: string[]): string | null {
   return v;
 }
 
+/**
+ * PDFs often place identity after summary/skills as "Nombre Apellido / …" (even if the rest is truncated).
+ * Uses only the first slash segment; skips lines while inside an education block.
+ */
+function extractNameFromSlashIdentityLines(lines: string[]): string | null {
+  let inEducation = false;
+
+  for (const line of lines) {
+    if (EDUCATION_SECTION_HEADER_RE.test(line)) {
+      inEducation = true;
+      continue;
+    }
+    if (WORK_HISTORY_HEADER_RE.test(line)) {
+      inEducation = false;
+      continue;
+    }
+    if (
+      /^(resumen|summary|tecnolog|technologies|skills|habilidades\s+blandas|idiomas|certific|competencias)\s*:?\s*$/i.test(
+        line,
+      )
+    ) {
+      inEducation = false;
+    }
+
+    if (inEducation) continue;
+
+    if (!line.includes("/")) continue;
+    if (line.length > 78) continue;
+
+    const segments = line
+      .split("/")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const first = segments[0];
+    if (!first || first.length < 4 || first.length > 52) continue;
+    if (/\d/.test(first)) continue;
+    if (lineLooksNonNameContext(first)) continue;
+    if (!isPlausiblePersonNameTokens(first)) continue;
+    return first;
+  }
+  return null;
+}
+
 function guessNameFromLines(lines: string[]): string | null {
   const labeled = extractLabeledPersonName(lines);
   if (labeled) return labeled;
+
+  const slashName = extractNameFromSlashIdentityLines(lines);
+  if (slashName) return slashName;
 
   for (const line of lines.slice(0, 10)) {
     if (line.includes("@")) continue;
@@ -227,6 +288,71 @@ function isPlausibleRoleTitleValue(raw: string): boolean {
   return true;
 }
 
+function shortenJobTitleFromHistory(line: string): string {
+  let t = line.trim();
+  const forIdx = t.search(/\s+for\s+(?=[A-ZÁÉÍÓÚÑ])/i);
+  if (forIdx > 6) t = t.slice(0, forIdx).trim();
+  const atIdx = t.search(/\s+at\s+/i);
+  if (atIdx > 6) t = t.slice(0, atIdx).trim();
+  const pipeIdx = t.indexOf("|");
+  if (pipeIdx > 4) t = t.slice(0, pipeIdx).trim();
+  return t.slice(0, 120);
+}
+
+function isLikelyFirstJobTitleLine(line: string): boolean {
+  const t = line.trim();
+  if (t.length < 6 || t.length > 100) return false;
+  if (/^\d{4}\s*[-–]/.test(t)) return false;
+  const wc = t.split(/\s+/).length;
+  if (wc < 2 || wc > 14) return false;
+  if (NARRATIVE_ROLE_RE.test(t)) return false;
+  if (/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|ene|abr|ago|dic)\b/i.test(t)) {
+    return false;
+  }
+  if (/^\d{4}\s*[-–]\s*(\d{4}|present|actual|act\.?)\s*$/i.test(t)) return false;
+  if (/^\d{1,2}\/\d{4}/.test(t)) return false;
+  if (/universidad|licenciatura|educaci[oó]n|bachillerato|maestr[ií]a/i.test(t)) {
+    return false;
+  }
+  if (!WORK_TITLE_KEYWORD_RE.test(t) && !ROLE_HINT_RE.test(t)) return false;
+  const lowerish = (t.match(/\b[a-záéíóúñ]{4,}\b/g) ?? []).length;
+  if (lowerish > 8) return false;
+  return true;
+}
+
+/**
+ * First concise title-like line after a work-history header (PDFs with summary-first layout).
+ */
+function inferRoleFromWorkHistory(lines: string[]): string | undefined {
+  let inWork = false;
+
+  for (const line of lines) {
+    if (WORK_HISTORY_HEADER_RE.test(line)) {
+      inWork = true;
+      continue;
+    }
+
+    if (inWork) {
+      if (
+        /^(education|educación|formación|skills|tecnolog|certific|idiomas|referencias|proyectos|publications)\s*:?\s*$/i.test(
+          line,
+        )
+      ) {
+        break;
+      }
+      if (EDUCATION_SECTION_HEADER_RE.test(line)) break;
+
+      if (!line.trim()) continue;
+
+      if (isLikelyFirstJobTitleLine(line)) {
+        const shortened = shortenJobTitleFromHistory(line);
+        if (isPlausibleRoleTitleValue(shortened)) return shortened;
+      }
+    }
+  }
+  return undefined;
+}
+
 function guessRole(lines: string[]): string | undefined {
   const labeled = extractLabelValue(
     lines,
@@ -237,6 +363,9 @@ function guessRole(lines: string[]): string | undefined {
     if (!isPlausibleRoleTitleValue(t)) return undefined;
     return t.slice(0, 120);
   }
+
+  const fromWork = inferRoleFromWorkHistory(lines);
+  if (fromWork) return fromWork;
 
   for (const line of lines.slice(0, 18)) {
     if (line.length < 4 || line.length > 78) continue;
