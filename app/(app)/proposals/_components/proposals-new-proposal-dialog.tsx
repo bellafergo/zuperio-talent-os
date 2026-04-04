@@ -2,7 +2,12 @@
 
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import {
+  useState,
+  useTransition,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,18 +28,63 @@ import type {
   ProposalVacancyOption,
 } from "@/lib/proposals/types";
 
-import { ProposalRecordFormFields } from "./proposal-record-form-fields";
+import {
+  ProposalRecordFormFields,
+  type ProposalFormDefaults,
+} from "./proposal-record-form-fields";
+
+function mergeNewProposalFormDefaults(
+  partial?: Partial<ProposalFormDefaults>,
+): ProposalFormDefaults | undefined {
+  if (!partial || Object.keys(partial).length === 0) return undefined;
+  return {
+    companyId: "",
+    opportunityId: null,
+    vacancyId: null,
+    candidateId: null,
+    typeValue: "STAFF_AUG",
+    formatValue: "SIMPLE",
+    statusValue: "DRAFT",
+    currency: "MXN",
+    validityDays: 14,
+    executiveSummary: "",
+    profileSummary: "",
+    scopeNotes: "",
+    commercialNotes: "",
+    monthlyHours: 160,
+    candidateNetSalary: null,
+    schemeValue: "MIXED",
+    marginPercent: null,
+    employerLoadPercent: null,
+    bonuses: null,
+    benefits: null,
+    operatingExpenses: null,
+    discountPercent: null,
+    estimatedDurationMonths: 6,
+    vatPercent: undefined,
+    fullImssGrossFactor: undefined,
+    ...partial,
+  };
+}
 
 export function ProposalsNewProposalDialog({
   companies,
   opportunities,
   vacancies,
   candidates,
+  formDefaultsPartial,
+  trigger,
+  dialogTitle = "Nueva propuesta",
+  dialogDescription = "Constructor manual. Precios deterministas; textos editables sin IA.",
 }: {
   companies: ProposalCompanyOption[];
   opportunities: ProposalOpportunityOption[];
   vacancies: ProposalVacancyOption[];
   candidates: ProposalCandidateOption[];
+  formDefaultsPartial?: Partial<ProposalFormDefaults>;
+  trigger?: ReactNode;
+  dialogTitle?: string;
+  dialogDescription?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -61,6 +111,8 @@ export function ProposalsNewProposalDialog({
     });
   }
 
+  const mergedDefaults = mergeNewProposalFormDefaults(formDefaultsPartial);
+
   return (
     <Dialog
       open={open}
@@ -73,20 +125,20 @@ export function ProposalsNewProposalDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button type="button" className="shrink-0 gap-1.5">
-          <PlusIcon className="size-4" aria-hidden />
-          Nueva propuesta
-        </Button>
+        {trigger ?? (
+          <Button type="button" className="shrink-0 gap-1.5">
+            <PlusIcon className="size-4" aria-hidden />
+            Nueva propuesta
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent
         className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
         showCloseButton
       >
         <DialogHeader className="shrink-0 space-y-2 px-4 pt-4 pb-2 pr-14">
-          <DialogTitle>Nueva propuesta</DialogTitle>
-          <DialogDescription>
-            Constructor manual. Precios deterministas; textos editables sin IA.
-          </DialogDescription>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         <form
           key={formKey}
@@ -100,6 +152,7 @@ export function ProposalsNewProposalDialog({
                 opportunities={opportunities}
                 vacancies={vacancies}
                 candidates={candidates}
+                defaults={mergedDefaults}
                 fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
               />
 

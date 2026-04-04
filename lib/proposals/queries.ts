@@ -182,6 +182,93 @@ export async function listCandidatesForProposalForm(): Promise<ProposalCandidate
 }
 
 /** First active company contact with an email, else first active contact (name only). */
+/**
+ * Resolves company / opportunity / vacancy for quick-create from a candidate.
+ * Best-effort only: failures return nulls; callers must not depend on this for core navigation.
+ */
+export type ProposalQuickCreatePrefill = {
+  companyId: string | null;
+  opportunityId: string | null;
+  vacancyId: string | null;
+  vacancyTitle: string | null;
+};
+
+export async function getProposalQuickCreatePrefillForCandidate(
+  candidateId: string,
+): Promise<ProposalQuickCreatePrefill> {
+  const empty: ProposalQuickCreatePrefill = {
+    companyId: null,
+    opportunityId: null,
+    vacancyId: null,
+    vacancyTitle: null,
+  };
+  const cid = typeof candidateId === "string" ? candidateId.trim() : "";
+  if (!cid) return empty;
+
+  try {
+    const vacancySelect = {
+      id: true,
+      title: true,
+      opportunityId: true,
+      opportunity: { select: { companyId: true } },
+    } as const;
+
+    const activePlacement = await prisma.placement.findFirst({
+      where: { candidateId: cid, status: "ACTIVE" },
+      orderBy: { startDate: "desc" },
+      select: {
+        companyId: true,
+        vacancyId: true,
+        vacancy: { select: vacancySelect },
+      },
+    });
+    if (activePlacement?.vacancy) {
+      const v = activePlacement.vacancy;
+      return {
+        companyId: activePlacement.companyId,
+        opportunityId: v.opportunityId,
+        vacancyId: v.id,
+        vacancyTitle: v.title,
+      };
+    }
+
+    const activeApplication = await prisma.vacancyApplication.findFirst({
+      where: { candidateId: cid, status: "ACTIVE" },
+      orderBy: { updatedAt: "desc" },
+      select: { vacancy: { select: vacancySelect } },
+    });
+    if (activeApplication?.vacancy) {
+      const v = activeApplication.vacancy;
+      return {
+        companyId: v.opportunity.companyId,
+        opportunityId: v.opportunityId,
+        vacancyId: v.id,
+        vacancyTitle: v.title,
+      };
+    }
+
+    const topMatch = await prisma.candidateVacancyMatch.findFirst({
+      where: { candidateId: cid },
+      orderBy: [{ score: "desc" }, { updatedAt: "desc" }],
+      select: { vacancy: { select: vacancySelect } },
+    });
+    if (topMatch?.vacancy) {
+      const v = topMatch.vacancy;
+      return {
+        companyId: v.opportunity.companyId,
+        opportunityId: v.opportunityId,
+        vacancyId: v.id,
+        vacancyTitle: v.title,
+      };
+    }
+
+    return empty;
+  } catch (err) {
+    console.error("[getProposalQuickCreatePrefillForCandidate] failed", err);
+    return empty;
+  }
+}
+
 export async function getCompanyPreferredContactForProposalEmail(
   companyId: string,
 ): Promise<{ displayName: string; email: string | null } | null> {

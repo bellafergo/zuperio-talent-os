@@ -7,7 +7,12 @@ import {
   PlaceholderSection,
   SectionCard,
 } from "@/components/layout";
+import { ProposalsNewProposalDialog } from "@/app/(app)/proposals/_components/proposals-new-proposal-dialog";
+import type { ProposalFormDefaults } from "@/app/(app)/proposals/_components/proposal-record-form-fields";
+import { Button } from "@/components/ui/button";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
+import { canManageProposals } from "@/lib/auth/proposal-access";
+import type { CandidateUi } from "@/lib/candidates/types";
 import { getCandidateByIdForUi, getCandidateEditData, getCandidateCvFileInfo } from "@/lib/candidates/queries";
 import type { CandidateMatchRowUi } from "@/lib/matching/types";
 import { listMatchesForCandidateUi } from "@/lib/matching/queries";
@@ -28,6 +33,20 @@ import { CandidateWhatsAppButton } from "./_components/candidate-whatsapp-button
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
+import {
+  getProposalQuickCreatePrefillForCandidate,
+  listCandidatesForProposalForm,
+  listCompaniesForProposalForm,
+  listOpportunitiesForProposalForm,
+  listVacanciesForProposalForm,
+  type ProposalQuickCreatePrefill,
+} from "@/lib/proposals/queries";
+import type {
+  ProposalCandidateOption,
+  ProposalCompanyOption,
+  ProposalOpportunityOption,
+  ProposalVacancyOption,
+} from "@/lib/proposals/types";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +72,29 @@ function safeDetailLine(value: unknown): string {
   return typeof value === "string" && value.trim() ? value.trim() : "—";
 }
 
+const emptyProposalQuickCreatePrefill: ProposalQuickCreatePrefill = {
+  companyId: null,
+  opportunityId: null,
+  vacancyId: null,
+  vacancyTitle: null,
+};
+
+function buildCandidateProposalProfileSummary(
+  candidate: CandidateUi,
+  vacancyTitle: string | null,
+): string {
+  const name = candidate.displayName?.trim();
+  const role = candidate.role?.trim();
+  const seniority = `${candidate.seniority}`.trim();
+  const roleLine = [role, seniority].filter(Boolean).join(" · ");
+  const head = [name, roleLine].filter(Boolean).join(" — ");
+  const lines: string[] = [];
+  if (head) lines.push(head);
+  const vt = vacancyTitle?.trim();
+  if (vt) lines.push(`Vacante: ${vt}`);
+  return lines.join("\n");
+}
+
 export default async function CandidateDetailPage({ params }: PageProps) {
   const { id: rawId } = await params;
   const id = typeof rawId === "string" ? rawId.trim() : "";
@@ -62,6 +104,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
 
   const session = await auth();
   const canManage = canManageCandidates(session?.user?.role);
+  const canProposals = canManageProposals(session?.user?.role);
   const isDirector = session?.user?.role === "DIRECTOR";
 
   const candidate = await getCandidateByIdForUi(id);
@@ -77,6 +120,11 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     editData,
     skillsCatalog,
     cvFileInfo,
+    proposalCompanies,
+    proposalOpportunities,
+    proposalVacancies,
+    proposalCandidates,
+    proposalPrefill,
   ] = await Promise.all([
     safeCandidateSecondaryFetch(
       "listMatchesForCandidateUi",
@@ -119,10 +167,59 @@ export default async function CandidateDetailPage({ params }: PageProps) {
           null,
         )
       : Promise.resolve(null),
+    canProposals
+      ? safeCandidateSecondaryFetch(
+          "listCompaniesForProposalForm",
+          listCompaniesForProposalForm(),
+          [] as ProposalCompanyOption[],
+        )
+      : Promise.resolve([] as ProposalCompanyOption[]),
+    canProposals
+      ? safeCandidateSecondaryFetch(
+          "listOpportunitiesForProposalForm",
+          listOpportunitiesForProposalForm(),
+          [] as ProposalOpportunityOption[],
+        )
+      : Promise.resolve([] as ProposalOpportunityOption[]),
+    canProposals
+      ? safeCandidateSecondaryFetch(
+          "listVacanciesForProposalForm",
+          listVacanciesForProposalForm(),
+          [] as ProposalVacancyOption[],
+        )
+      : Promise.resolve([] as ProposalVacancyOption[]),
+    canProposals
+      ? safeCandidateSecondaryFetch(
+          "listCandidatesForProposalForm",
+          listCandidatesForProposalForm(),
+          [] as ProposalCandidateOption[],
+        )
+      : Promise.resolve([] as ProposalCandidateOption[]),
+    canProposals
+      ? safeCandidateSecondaryFetch(
+          "getProposalQuickCreatePrefillForCandidate",
+          getProposalQuickCreatePrefillForCandidate(id),
+          emptyProposalQuickCreatePrefill,
+        )
+      : Promise.resolve(emptyProposalQuickCreatePrefill),
   ]);
 
   const headerTitle = safeDetailLine(candidate.displayName);
   const title = headerTitle !== "—" ? headerTitle : "Candidato";
+
+  const proposalQuickCreatePartial: Partial<ProposalFormDefaults> | undefined =
+    canProposals
+      ? {
+          candidateId: id,
+          companyId: proposalPrefill.companyId ?? "",
+          opportunityId: proposalPrefill.opportunityId,
+          vacancyId: proposalPrefill.vacancyId,
+          profileSummary: buildCandidateProposalProfileSummary(
+            candidate,
+            proposalPrefill.vacancyTitle,
+          ),
+        }
+      : undefined;
 
   return (
     <div className="space-y-8">
@@ -139,6 +236,20 @@ export default async function CandidateDetailPage({ params }: PageProps) {
               <CandidateWhatsAppButton phone={candidate.phone} />
             ) : null}
             <CandidateCvDownloadButton candidateId={id} />
+            {canProposals ? (
+              <ProposalsNewProposalDialog
+                companies={proposalCompanies}
+                opportunities={proposalOpportunities}
+                vacancies={proposalVacancies}
+                candidates={proposalCandidates}
+                formDefaultsPartial={proposalQuickCreatePartial}
+                trigger={
+                  <Button type="button" variant="outline" className="shrink-0">
+                    Crear propuesta
+                  </Button>
+                }
+              />
+            ) : null}
             {canManage && editData ? (
               <CandidateEditDialog candidate={editData} skillsCatalog={skillsCatalog} />
             ) : null}
