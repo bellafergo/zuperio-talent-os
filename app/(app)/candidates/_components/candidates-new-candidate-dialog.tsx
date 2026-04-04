@@ -63,26 +63,37 @@ export function CandidatesNewCandidateDialog({
           New Candidate
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl" showCloseButton>
-        <DialogHeader>
+      <DialogContent
+        className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
+        showCloseButton
+      >
+        <DialogHeader className="shrink-0 space-y-2 px-4 pt-4 pb-2 pr-14">
           <DialogTitle>New candidate</DialogTitle>
           <DialogDescription>
             Add a candidate profile. Structured skills are stored as catalog links.
           </DialogDescription>
         </DialogHeader>
-        <form key={formKey} onSubmit={onSubmit} className="space-y-4">
-          <CandidateRecordFormFields
-            skillsCatalog={skillsCatalog}
-            fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
-          />
-          {state?.ok === false && state.message ? (
-            <p className="text-sm text-destructive" role="alert">
-              {state.message}
-            </p>
-          ) : null}
-          <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
+        <form
+          key={formKey}
+          onSubmit={onSubmit}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 pr-3">
+            <div className="space-y-4">
+              <CandidateRecordFormFields
+                skillsCatalog={skillsCatalog}
+                fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
+              />
+              {state?.ok === false && state.message ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {state.message}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <DialogFooter className="mx-0 mb-0 mt-0 shrink-0 gap-2 border-t bg-background px-4 pt-3 pb-4 sm:flex-row sm:justify-end sm:gap-2">
             <DialogClose asChild>
-              <Button type="button" variant="secondary" disabled={pending}>
+              <Button type="button" variant="ghost" disabled={pending}>
                 Cancel
               </Button>
             </DialogClose>

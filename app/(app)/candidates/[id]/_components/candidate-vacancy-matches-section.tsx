@@ -18,11 +18,33 @@ import {
 } from "@/components/ui/table";
 import type { CandidateMatchRowUi } from "@/lib/matching/types";
 
+const MATCH_REC_UI = new Set<string>(["Match alto", "Match medio", "Match bajo"]);
+
+function isRenderableMatchRow(m: unknown): m is CandidateMatchRowUi {
+  if (!m || typeof m !== "object") return false;
+  const o = m as Record<string, unknown>;
+  return (
+    typeof o.matchId === "string" &&
+    o.matchId.length > 0 &&
+    typeof o.vacancyId === "string" &&
+    o.vacancyId.length > 0 &&
+    typeof o.vacancyTitle === "string" &&
+    typeof o.companyName === "string" &&
+    typeof o.score === "number" &&
+    Number.isFinite(o.score) &&
+    MATCH_REC_UI.has(String(o.recommendation))
+  );
+}
+
 export function CandidateVacancyMatchesSection({
   matches,
 }: {
   matches: CandidateMatchRowUi[];
 }) {
+  const rows = Array.isArray(matches)
+    ? matches.filter(isRenderableMatchRow)
+    : [];
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
@@ -52,7 +74,7 @@ export function CandidateVacancyMatchesSection({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {matches.map((m) => (
+              {rows.map((m) => (
                 <TableRow key={m.matchId}>
                   <TableCell className="font-medium">
                     <Link

@@ -19,11 +19,30 @@ import {
 } from "@/components/ui/table";
 import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types";
 
+function isRenderableApplication(a: unknown): a is CandidateApplicationRowUi {
+  if (!a || typeof a !== "object") return false;
+  const o = a as Record<string, unknown>;
+  return (
+    typeof o.applicationId === "string" &&
+    o.applicationId.length > 0 &&
+    typeof o.vacancyId === "string" &&
+    typeof o.vacancyTitle === "string" &&
+    typeof o.companyId === "string" &&
+    typeof o.companyName === "string" &&
+    typeof o.stage === "string" &&
+    typeof o.status === "string"
+  );
+}
+
 export function CandidateApplicationsSection({
   applications,
 }: {
   applications: CandidateApplicationRowUi[];
 }) {
+  const rows = Array.isArray(applications)
+    ? applications.filter(isRenderableApplication)
+    : [];
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
@@ -34,7 +53,7 @@ export function CandidateApplicationsSection({
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
-        {applications.length === 0 ? (
+        {rows.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
             Sin postulaciones registradas.
           </p>
@@ -49,7 +68,7 @@ export function CandidateApplicationsSection({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {applications.map((a) => (
+              {rows.map((a) => (
                 <TableRow key={a.applicationId}>
                   <TableCell className="font-medium">
                     <Link

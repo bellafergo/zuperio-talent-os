@@ -5,6 +5,14 @@ import type { CandidateStructuredSkillUi } from "@/lib/skills/types";
 function groupByCategory(items: CandidateStructuredSkillUi[]) {
   const map = new Map<string, CandidateStructuredSkillUi[]>();
   for (const s of items) {
+    if (
+      !s ||
+      typeof s !== "object" ||
+      typeof s.id !== "string" ||
+      typeof s.name !== "string"
+    ) {
+      continue;
+    }
     const label = s.category?.trim() || "General";
     const list = map.get(label) ?? [];
     list.push(s);
@@ -20,9 +28,11 @@ export function CandidateStructuredSkillsSection({
   skills: CandidateStructuredSkillUi[];
   legacySkillsLine: string;
 }) {
-  const groups = groupByCategory(skills);
-  const hasLegacy =
-    legacySkillsLine.trim() !== "" && legacySkillsLine.trim() !== "—";
+  const list = Array.isArray(skills) ? skills : [];
+  const legacy =
+    typeof legacySkillsLine === "string" ? legacySkillsLine : "";
+  const groups = groupByCategory(list);
+  const hasLegacy = legacy.trim() !== "" && legacy.trim() !== "—";
 
   return (
     <SectionCard

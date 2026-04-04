@@ -14,20 +14,54 @@ function formatExportTimestamp(iso: string | null): { label: string; detail: str
         "Aún no se ha generado correctamente un PDF desde la app (o es un registro antiguo). Usa «Descargar PDF» para crear el archivo; al terminar, aquí verás la fecha.",
     };
   }
-  const formatted = new Intl.DateTimeFormat("es-MX", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC",
-  }).format(new Date(iso));
-  return {
-    label: "Listo",
-    detail: `Última generación exitosa: ${formatted} UTC`,
-  };
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) {
+      return {
+        label: "Listo",
+        detail: "Última generación registrada (fecha no legible).",
+      };
+    }
+    const formatted = new Intl.DateTimeFormat("es-MX", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "UTC",
+    }).format(d);
+    return {
+      label: "Listo",
+      detail: `Última generación exitosa: ${formatted} UTC`,
+    };
+  } catch {
+    return {
+      label: "Listo",
+      detail: "Última generación registrada (error al formatear fecha).",
+    };
+  }
 }
 
 export function ProposalExportsSection({ proposal }: { proposal: ProposalDetailUi }) {
-  const pdfStatus = formatExportTimestamp(proposal.proposalPdfExportedAt);
-  const cvStatus = formatExportTimestamp(proposal.candidateCvExportedAt);
+  const proposalId =
+    typeof proposal?.id === "string" && proposal.id.trim() ? proposal.id.trim() : "";
+  const pdfIso =
+    proposal?.proposalPdfExportedAt === null ||
+    typeof proposal?.proposalPdfExportedAt === "string"
+      ? proposal.proposalPdfExportedAt
+      : null;
+  const cvIso =
+    proposal?.candidateCvExportedAt === null ||
+    typeof proposal?.candidateCvExportedAt === "string"
+      ? proposal.candidateCvExportedAt
+      : null;
+  const pdfStatus = formatExportTimestamp(pdfIso);
+  const cvStatus = formatExportTimestamp(cvIso);
+
+  if (!proposalId) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No se pudo mostrar exportaciones: identificador de propuesta no válido.
+      </p>
+    );
+  }
 
   return (
     <SectionCard
@@ -60,9 +94,9 @@ export function ProposalExportsSection({ proposal }: { proposal: ProposalDetailU
       </div>
 
       <div className="space-y-6">
-        <ProposalPdfDownloadButton proposalId={proposal.id} />
-        {proposal.candidateId ? (
-          <ProposalCvDownloadButton candidateId={proposal.candidateId} />
+        <ProposalPdfDownloadButton proposalId={proposalId} />
+        {typeof proposal.candidateId === "string" && proposal.candidateId.trim() ? (
+          <ProposalCvDownloadButton candidateId={proposal.candidateId.trim()} />
         ) : null}
       </div>
     </SectionCard>

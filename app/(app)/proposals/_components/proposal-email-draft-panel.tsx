@@ -1,6 +1,9 @@
 import { FileTextIcon } from "lucide-react";
 
-import type { ProposalEmailDraft } from "@/lib/proposals/email-draft";
+import type {
+  ProposalEmailAttachmentPlaceholder,
+  ProposalEmailDraft,
+} from "@/lib/proposals/email-draft";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,15 +19,96 @@ import { ProposalEmailSendForm } from "./proposal-email-send-form";
 
 function formatExportedAt(iso: string | null): string {
   if (!iso) return "Sin exportar aún";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return (
-    new Intl.DateTimeFormat("es-MX", {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "UTC",
-    }).format(d) + " UTC"
-  );
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return (
+      new Intl.DateTimeFormat("es-MX", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "UTC",
+      }).format(d) + " UTC"
+    );
+  } catch {
+    return "Sin exportar aún";
+  }
+}
+
+function normalizeEmailDraftForPanel(
+  draft: ProposalEmailDraft,
+  proposalId: string,
+): ProposalEmailDraft {
+  const pid = typeof proposalId === "string" && proposalId.trim() ? proposalId.trim() : "";
+  const proposalPdfHref = pid ? `/api/proposals/${pid}/pdf` : null;
+
+  const attachmentsIn = Array.isArray(draft.attachments) ? draft.attachments : [];
+  const normalized: ProposalEmailAttachmentPlaceholder[] = [];
+  for (const raw of attachmentsIn) {
+    if (!raw || typeof raw !== "object") continue;
+    const a = raw as ProposalEmailAttachmentPlaceholder;
+    if (a.kind !== "ECONOMIC_PROPOSAL_PDF" && a.kind !== "CANDIDATE_CV_PDF") continue;
+    normalized.push({
+      kind: a.kind,
+      label: typeof a.label === "string" ? a.label : "Adjunto",
+      subtitle: typeof a.subtitle === "string" ? a.subtitle : "",
+      filenameSuggestion:
+        typeof a.filenameSuggestion === "string" ? a.filenameSuggestion : "documento.pdf",
+      mimeType: "application/pdf",
+      ready: Boolean(a.ready),
+      lastExportedAt:
+        a.lastExportedAt === null || typeof a.lastExportedAt === "string"
+          ? a.lastExportedAt
+          : null,
+      downloadHref:
+        a.downloadHref === null || typeof a.downloadHref === "string"
+          ? a.downloadHref
+          : null,
+    });
+  }
+
+  const attachments =
+    normalized.length > 0
+      ? normalized
+      : [
+          {
+            kind: "ECONOMIC_PROPOSAL_PDF" as const,
+            label: "Propuesta económica",
+            subtitle: "Documento PDF",
+            filenameSuggestion: "propuesta.pdf",
+            mimeType: "application/pdf" as const,
+            ready: false,
+            lastExportedAt: null,
+            downloadHref: proposalPdfHref,
+          },
+          {
+            kind: "CANDIDATE_CV_PDF" as const,
+            label: "CV del candidato",
+            subtitle: "Documento PDF",
+            filenameSuggestion: "cv.pdf",
+            mimeType: "application/pdf" as const,
+            ready: false,
+            lastExportedAt: null,
+            downloadHref: null,
+          },
+        ];
+
+  return {
+    recipientName:
+      typeof draft.recipientName === "string"
+        ? draft.recipientName
+        : "[Nombre del contacto]",
+    recipientEmail:
+      typeof draft.recipientEmail === "string"
+        ? draft.recipientEmail
+        : "[contacto@empresa.com]",
+    subject:
+      typeof draft.subject === "string" && draft.subject.trim()
+        ? draft.subject
+        : "Propuesta comercial · Zuperio",
+    bodyPlainText:
+      typeof draft.bodyPlainText === "string" ? draft.bodyPlainText : "",
+    attachments,
+  };
 }
 
 export function ProposalEmailDraftPanel({
@@ -38,6 +122,10 @@ export function ProposalEmailDraftPanel({
   canSendEmail: boolean;
   hasCandidate: boolean;
 }) {
+  const safeProposalId =
+    typeof proposalId === "string" && proposalId.trim() ? proposalId.trim() : "";
+  const d = normalizeEmailDraftForPanel(draft, safeProposalId);
+
   return (
     <div className="space-y-5">
       <div className="flex items-start gap-3 rounded-xl border border-blue-200/80 bg-gradient-to-br from-blue-50/90 via-white to-white px-4 py-3.5 shadow-sm dark:border-blue-900/40 dark:from-blue-950/30 dark:via-background dark:to-background">
@@ -67,12 +155,12 @@ export function ProposalEmailDraftPanel({
         </CardHeader>
         <CardContent className="pt-4">
           <ProposalEmailSendForm
-            proposalId={proposalId}
+            proposalId={safeProposalId || proposalId}
             canSend={canSendEmail}
             hasCandidate={hasCandidate}
-            defaultTo={draft.recipientEmail}
-            defaultSubject={draft.subject}
-            defaultBody={draft.bodyPlainText}
+            defaultTo={d.recipientEmail}
+            defaultSubject={d.subject}
+            defaultBody={d.bodyPlainText}
           />
         </CardContent>
       </Card>
@@ -85,10 +173,10 @@ export function ProposalEmailDraftPanel({
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 pt-4 sm:grid-cols-2">
-          <Field label="Para" value={draft.recipientName} />
-          <Field label="Correo" value={draft.recipientEmail} />
+          <Field label="Para" value={d.recipientName} />
+          <Field label="Correo" value={d.recipientEmail} />
           <div className="sm:col-span-2">
-            <Field label="Asunto" value={draft.subject} />
+            <Field label="Asunto" value={d.subject} />
           </div>
         </CardContent>
       </Card>
@@ -103,7 +191,7 @@ export function ProposalEmailDraftPanel({
         </CardHeader>
         <CardContent className="pt-4">
           <pre className="max-h-[min(420px,55vh)] overflow-auto rounded-lg border border-border/80 bg-muted/25 p-4 text-xs leading-relaxed whitespace-pre-wrap text-foreground">
-            {draft.bodyPlainText}
+            {d.bodyPlainText}
           </pre>
         </CardContent>
       </Card>
@@ -116,7 +204,7 @@ export function ProposalEmailDraftPanel({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-4">
-          {draft.attachments.map((a) => (
+          {d.attachments.map((a) => (
             <div
               key={a.kind}
               className="flex flex-col gap-3 rounded-xl border border-border/80 bg-card px-4 py-3.5 shadow-sm sm:flex-row sm:items-center sm:justify-between"

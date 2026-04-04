@@ -1,4 +1,7 @@
-import type { CandidateAvailabilityStatus } from "@/generated/prisma/enums";
+import {
+  CandidateAvailabilityStatus as AvailabilityEnum,
+  type CandidateAvailabilityStatus,
+} from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 
 import {
@@ -55,6 +58,87 @@ export type CandidateCvPrintData = {
   /** Parsed from `cvSoftSkillsText` when present; CV PDF uses this before skill-category heuristics. */
   softSkillsFromCvText: string[];
 };
+
+const AVAILABILITY_VALUES = new Set<string>(
+  Object.values(AvailabilityEnum),
+);
+
+function isCvSkillRow(x: unknown): x is CandidateCvSkillRow {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return (
+    typeof o.name === "string" &&
+    typeof o.category === "string" &&
+    (o.yearsExperience === null || typeof o.yearsExperience === "number") &&
+    (o.level === null || typeof o.level === "string")
+  );
+}
+
+function isCvPlacementRow(x: unknown): x is CandidateCvPlacementRow {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return (
+    typeof o.companyName === "string" &&
+    typeof o.roleTitle === "string" &&
+    typeof o.startLabel === "string" &&
+    typeof o.endLabel === "string" &&
+    typeof o.statusLabel === "string" &&
+    Array.isArray(o.highlights) &&
+    (o.highlights as unknown[]).every((h) => typeof h === "string")
+  );
+}
+
+function isCvLanguageEntry(x: unknown): boolean {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return typeof o.name === "string" && typeof o.level === "string";
+}
+
+/**
+ * True only if `data` has the shape expected by `CandidateCvConsultingDocument` (runtime guard).
+ */
+export function isSafeCandidateCvPrintData(
+  data: CandidateCvPrintData | null | undefined,
+): data is CandidateCvPrintData {
+  if (!data || typeof data !== "object") return false;
+  if (typeof data.id !== "string" || !data.id.trim()) return false;
+  if (typeof data.fullName !== "string") return false;
+  if (typeof data.role !== "string") return false;
+  if (typeof data.seniorityLabel !== "string") return false;
+  if (
+    !data.availabilityStatus ||
+    !AVAILABILITY_VALUES.has(String(data.availabilityStatus))
+  ) {
+    return false;
+  }
+  if (typeof data.availabilityLabel !== "string") return false;
+  if (typeof data.legacySkillsText !== "string") return false;
+  if (data.email !== null && typeof data.email !== "string") return false;
+  if (data.phone !== null && typeof data.phone !== "string") return false;
+  if (data.currentCompany !== null && typeof data.currentCompany !== "string")
+    return false;
+  if (data.notes !== null && typeof data.notes !== "string") return false;
+  if (data.locationCity !== null && typeof data.locationCity !== "string")
+    return false;
+  if (data.workModality !== null && typeof data.workModality !== "string")
+    return false;
+  if (!Array.isArray(data.structuredSkills)) return false;
+  if (!data.structuredSkills.every(isCvSkillRow)) return false;
+  if (!Array.isArray(data.placements)) return false;
+  if (!data.placements.every(isCvPlacementRow)) return false;
+  if (!Array.isArray(data.languages)) return false;
+  if (!data.languages.every(isCvLanguageEntry)) return false;
+  if (!Array.isArray(data.certifications)) return false;
+  if (!data.certifications.every((c) => typeof c === "string")) return false;
+  if (!Array.isArray(data.industries)) return false;
+  if (!data.industries.every((c) => typeof c === "string")) return false;
+  if (!Array.isArray(data.educationBlocks)) return false;
+  if (!data.educationBlocks.every((c) => typeof c === "string")) return false;
+  if (!Array.isArray(data.softSkillsFromCvText)) return false;
+  if (!data.softSkillsFromCvText.every((c) => typeof c === "string"))
+    return false;
+  return true;
+}
 
 function formatPlacementDate(d: Date): string {
   return new Intl.DateTimeFormat("es-MX", {

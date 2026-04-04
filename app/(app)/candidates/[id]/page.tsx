@@ -9,11 +9,16 @@ import {
 } from "@/components/layout";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { getCandidateByIdForUi, getCandidateEditData, getCandidateCvFileInfo } from "@/lib/candidates/queries";
+import type { CandidateMatchRowUi } from "@/lib/matching/types";
 import { listMatchesForCandidateUi } from "@/lib/matching/queries";
 import { getCurrentAssignmentForCandidateUi } from "@/lib/placements/queries";
+import type { CandidateCurrentAssignmentUi } from "@/lib/placements/types";
 import { listCandidateStructuredSkillsForUi, listSkillsForVacancyForm } from "@/lib/skills/queries";
+import type { CandidateStructuredSkillUi } from "@/lib/skills/types";
 import { listApplicationsForCandidateUi } from "@/lib/vacancy-applications/queries";
+import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types";
 
+import { OptionalClientSectionBoundary } from "@/components/optional-client-section-boundary";
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
 import { CandidateEditDialog } from "../_components/candidate-edit-dialog";
 import { CandidateApplicationsSection } from "./_components/candidate-applications-section";
@@ -109,13 +114,21 @@ export default async function CandidateDetailPage({ params }: PageProps) {
           title="CV original"
           description="Archivo CV subido por el equipo de reclutamiento."
         >
-          <CandidateCvFileSection
-            candidateId={id}
-            cvFileName={cvFileInfo?.cvFileName ?? null}
-            cvUploadedAt={cvFileInfo?.cvUploadedAt ?? null}
-            canUpload={canManage}
-            canDelete={isDirector}
-          />
+          <OptionalClientSectionBoundary
+            fallback={
+              <p className="text-sm text-muted-foreground">
+                No se pudo cargar el bloque de CV original.
+              </p>
+            }
+          >
+            <CandidateCvFileSection
+              candidateId={id}
+              cvFileName={cvFileInfo?.cvFileName ?? null}
+              cvUploadedAt={cvFileInfo?.cvUploadedAt ?? null}
+              canUpload={canManage}
+              canDelete={isDirector}
+            />
+          </OptionalClientSectionBoundary>
         </SectionCard>
       ) : null}
 

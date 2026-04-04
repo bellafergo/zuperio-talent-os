@@ -21,6 +21,15 @@ export function CandidateCvFileSection({
   canUpload,
   canDelete,
 }: Props) {
+  const safeId = typeof candidateId === "string" ? candidateId.trim() : "";
+  if (!safeId) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No se puede gestionar el CV: identificador de candidato no válido.
+      </p>
+    );
+  }
+
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -55,7 +64,7 @@ export function CandidateCvFileSection({
     setError(null);
     setDeleting(true);
     try {
-      const res = await fetch(`/api/candidates/${candidateId}/cv-file`, {
+      const res = await fetch(`/api/candidates/${safeId}/cv-file`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -71,17 +80,25 @@ export function CandidateCvFileSection({
     }
   }
 
-  const uploadedAtLabel = cvUploadedAt
-    ? new Intl.DateTimeFormat("es-MX", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(new Date(cvUploadedAt))
-    : null;
+  let uploadedAtLabel: string | null = null;
+  if (cvUploadedAt) {
+    try {
+      const d = new Date(cvUploadedAt);
+      if (!Number.isNaN(d.getTime())) {
+        uploadedAtLabel = new Intl.DateTimeFormat("es-MX", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(d);
+      }
+    } catch {
+      uploadedAtLabel = null;
+    }
+  }
 
   return (
     <div className="space-y-3">
-      {cvFileName ? (
+      {cvFileName && typeof cvFileName === "string" ? (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{cvFileName}</p>
@@ -91,7 +108,7 @@ export function CandidateCvFileSection({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <a
-              href={`/api/candidates/${candidateId}/cv-file`}
+              href={`/api/candidates/${safeId}/cv-file`}
               download
               className="inline-flex items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
             >

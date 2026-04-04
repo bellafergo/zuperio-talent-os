@@ -69,16 +69,23 @@ export function CandidateEditDialog({
           }
         }}
       >
-        <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90dvh] overflow-hidden" showCloseButton>
-          <DialogHeader className="shrink-0">
+        <DialogContent
+          className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
+          showCloseButton
+        >
+          <DialogHeader className="shrink-0 space-y-2 px-4 pt-4 pb-2 pr-14">
             <DialogTitle>Editar candidato</DialogTitle>
             <DialogDescription>
               Actualiza el perfil, datos de contacto y competencias estructuradas.
             </DialogDescription>
           </DialogHeader>
-          <form key={formKey} onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="flex-1 overflow-y-auto -mx-4 px-4 py-1">
-              <div className="space-y-4 pb-2">
+          <form
+            key={formKey}
+            onSubmit={onSubmit}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 pr-3">
+              <div className="space-y-4">
                 <CandidateRecordFormFields
                   skillsCatalog={skillsCatalog}
                   defaults={candidate}
@@ -92,9 +99,9 @@ export function CandidateEditDialog({
                 ) : null}
               </div>
             </div>
-            <DialogFooter className="shrink-0 sm:justify-end gap-2 sm:gap-2">
+            <DialogFooter className="mx-0 mb-0 mt-0 shrink-0 gap-2 border-t bg-background px-4 pt-3 pb-4 sm:flex-row sm:justify-end sm:gap-2">
               <DialogClose asChild>
-                <Button type="button" variant="secondary" disabled={pending}>
+                <Button type="button" variant="ghost" disabled={pending}>
                   Cancelar
                 </Button>
               </DialogClose>

@@ -7,7 +7,7 @@ import {
   canSendProposalClientEmail,
 } from "@/lib/auth/proposal-access";
 import { getComparisonMatrixForPair } from "@/lib/matching/queries";
-import { buildProposalEmailDraft } from "@/lib/proposals/email-draft";
+import { safeBuildProposalEmailDraft } from "@/lib/proposals/email-draft";
 import {
   listCandidatesForProposalForm,
   listCompaniesForProposalForm,
@@ -23,13 +23,17 @@ import type {
   ProposalVacancyOption,
 } from "@/lib/proposals/types";
 
-import { getCandidateCvPrintData } from "@/lib/candidates/get-candidate-cv-print-data";
+import {
+  getCandidateCvPrintData,
+  isSafeCandidateCvPrintData,
+} from "@/lib/candidates/get-candidate-cv-print-data";
 import { CandidateCvConsultingDocument } from "@/lib/candidates/pdf-template/candidate-cv-consulting";
 import { ProposalCommercialTracking } from "../_components/proposal-commercial-tracking";
 import { ProposalDetailTabs } from "../_components/proposal-detail-tabs";
 import { ProposalConsultingPdfDocument } from "@/lib/proposals/pdf-template/proposal-consulting-pdf-document";
 import { ProposalEditDialog } from "../_components/proposal-edit-dialog";
 import { ProposalStatusBadge } from "../_components/proposal-status-badge";
+import { OptionalClientSectionBoundary } from "@/components/optional-client-section-boundary";
 import { ProposalEmailDraftPanel } from "../_components/proposal-email-draft-panel";
 import { ProposalExportsSection } from "../_components/proposal-exports-section";
 import {
@@ -57,7 +61,11 @@ async function safeProposalSecondaryFetch<T>(
 }
 
 export default async function ProposalDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = typeof rawId === "string" ? rawId.trim() : "";
+  if (!id) {
+    notFound();
+  }
   const session = await auth();
   const canManage = canManageProposals(session?.user?.role);
   const canSendEmail = canSendProposalClientEmail(session?.user?.role);
@@ -133,7 +141,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
     session?.user?.email ||
     "Zuperio";
 
-  const emailDraft = buildProposalEmailDraft(proposal, {
+  const emailDraft = safeBuildProposalEmailDraft(proposal, {
     preparedByDisplay,
     recipientDisplayName: contact?.displayName ?? null,
     recipientEmail: contact?.email ?? null,
@@ -216,20 +224,36 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         pricing={<ProposalPricingPanel proposal={proposal} />}
         preview={
           <div className="space-y-6">
-            <ProposalExportsSection proposal={proposal} />
+            <OptionalClientSectionBoundary
+              fallback={
+                <p className="text-sm text-muted-foreground">
+                  No se pudo cargar el bloque de exportaciones de documentos.
+                </p>
+              }
+            >
+              <ProposalExportsSection proposal={proposal} />
+            </OptionalClientSectionBoundary>
 
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Propuesta Económica
               </p>
-              <div className="mx-auto w-full max-w-[210mm] rounded-xl border border-border/80 bg-white p-4 shadow-sm ring-1 ring-foreground/[0.04] sm:p-6">
-                <ProposalConsultingPdfDocument
-                  proposal={proposal}
-                  preparedByDisplay={preparedByDisplay}
-                  comparisonMatrix={comparisonMatrix}
-                  variant="screen"
-                />
-              </div>
+              <OptionalClientSectionBoundary
+                fallback={
+                  <p className="text-sm text-muted-foreground">
+                    No se pudo cargar la vista previa del PDF de la propuesta.
+                  </p>
+                }
+              >
+                <div className="mx-auto w-full max-w-[210mm] rounded-xl border border-border/80 bg-white p-4 shadow-sm ring-1 ring-foreground/[0.04] sm:p-6">
+                  <ProposalConsultingPdfDocument
+                    proposal={proposal}
+                    preparedByDisplay={preparedByDisplay}
+                    comparisonMatrix={comparisonMatrix}
+                    variant="screen"
+                  />
+                </div>
+              </OptionalClientSectionBoundary>
             </div>
 
             {proposal.candidateId ? (
@@ -237,7 +261,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   CV del Candidato (PDF)
                 </p>
-                {cvPrintData ? (
+                {isSafeCandidateCvPrintData(cvPrintData) ? (
                   <>
                     <p className="text-xs text-muted-foreground">
                       Misma plantilla que la vista de impresión del candidato — skills
@@ -261,12 +285,21 @@ export default async function ProposalDetailPage({ params }: PageProps) {
           </div>
         }
         emailDraft={
-          <ProposalEmailDraftPanel
-            draft={emailDraft}
-            proposalId={proposal.id}
-            canSendEmail={canSendEmail}
-            hasCandidate={hasCandidate}
-          />
+          <OptionalClientSectionBoundary
+            fallback={
+              <p className="text-sm text-muted-foreground">
+                No se pudo cargar el borrador de correo. Puede recargar la página o
+                continuar con el resto de la propuesta.
+              </p>
+            }
+          >
+            <ProposalEmailDraftPanel
+              draft={emailDraft}
+              proposalId={proposal.id}
+              canSendEmail={canSendEmail}
+              hasCandidate={hasCandidate}
+            />
+          </OptionalClientSectionBoundary>
         }
       />
     </div>

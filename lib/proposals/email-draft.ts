@@ -38,6 +38,94 @@ export type ProposalEmailDraftContext = {
 };
 
 /**
+ * Minimal draft when `buildProposalEmailDraft` throws (corrupt proposal row, filename helpers, etc.).
+ */
+function minimalProposalEmailDraftFallback(
+  proposal: ProposalDetailUi,
+  ctx: ProposalEmailDraftContext,
+): ProposalEmailDraft {
+  const recipientName =
+    ctx.recipientDisplayName?.trim() || "[Nombre del contacto]";
+  const recipientEmail =
+    ctx.recipientEmail?.trim() || "[contacto@empresa.com]";
+  const preparedBy = ctx.preparedByDisplay?.trim() || "Zuperio";
+  const id =
+    typeof proposal.id === "string" && proposal.id.trim()
+      ? proposal.id.trim()
+      : "unknown";
+  const proposalPdfPath = `/api/proposals/${id}/pdf`;
+  const cvPdfPath = proposal.candidateId
+    ? `/api/candidates/${proposal.candidateId}/cv-pdf`
+    : null;
+
+  let economicName = "Zuperio-Economic-Proposal.pdf";
+  let cvName = "Zuperio-Candidate-CV.pdf";
+  try {
+    economicName = proposalEconomicPdfFilename(proposal);
+  } catch {
+    /* keep default */
+  }
+  try {
+    cvName = proposalCandidateCvPdfFilename(proposal);
+  } catch {
+    /* keep default */
+  }
+
+  return {
+    recipientName,
+    recipientEmail,
+    subject: "Propuesta comercial · Zuperio",
+    bodyPlainText: [
+      `Estimado/a ${recipientName},`,
+      "",
+      "No se pudo generar el borrador automático de este correo. Revise los datos de la propuesta y recargue la página; si el problema continúa, contacte a soporte.",
+      "",
+      `Elaborado por: ${preparedBy}`,
+      "",
+      "Saludos cordiales,",
+      "Zuperio · zuperio.com.mx",
+    ].join("\n"),
+    attachments: [
+      {
+        kind: "ECONOMIC_PROPOSAL_PDF",
+        label: "Propuesta económica",
+        subtitle: "Documento comercial (PDF)",
+        filenameSuggestion: economicName,
+        mimeType: "application/pdf",
+        ready: false,
+        lastExportedAt: null,
+        downloadHref: proposalPdfPath,
+      },
+      {
+        kind: "CANDIDATE_CV_PDF",
+        label: "CV del candidato",
+        subtitle: "Formato Zuperio (PDF)",
+        filenameSuggestion: cvName,
+        mimeType: "application/pdf",
+        ready: false,
+        lastExportedAt: null,
+        downloadHref: cvPdfPath,
+      },
+    ],
+  };
+}
+
+/**
+ * Same as `buildProposalEmailDraft`, but never throws — falls back to a static draft on error.
+ */
+export function safeBuildProposalEmailDraft(
+  proposal: ProposalDetailUi,
+  ctx: ProposalEmailDraftContext,
+): ProposalEmailDraft {
+  try {
+    return buildProposalEmailDraft(proposal, ctx);
+  } catch (err) {
+    console.error("[proposals/email-draft] buildProposalEmailDraft failed", err);
+    return minimalProposalEmailDraftFallback(proposal, ctx);
+  }
+}
+
+/**
  * Deterministic, template-based copy for “send proposal”. No AI.
  */
 export function buildProposalEmailDraft(
