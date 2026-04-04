@@ -32,6 +32,7 @@ import { CandidateCvFileSection } from "./_components/candidate-cv-file-section"
 import { CandidateWhatsAppButton } from "./_components/candidate-whatsapp-button";
 import { CandidateCurrentAssignmentSection } from "./_components/candidate-current-assignment-section";
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
+import { CandidateSuggestedActions } from "./_components/candidate-suggested-actions";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
 import {
   getProposalQuickCreatePrefillForCandidate,
@@ -261,7 +262,12 @@ export default async function CandidateDetailPage({ params }: PageProps) {
                 candidates={proposalCandidates}
                 formDefaultsPartial={proposalQuickCreatePartial}
                 trigger={
-                  <Button type="button" variant="outline" className="shrink-0">
+                  <Button
+                    id="candidate-detail-proposal-trigger"
+                    type="button"
+                    variant="outline"
+                    className="shrink-0"
+                  >
                     Crear propuesta
                   </Button>
                 }
@@ -278,39 +284,58 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         }
       />
 
-      <SectionCard
-        title="Disponibilidad y contexto de reclutamiento"
-        description="Cómo está catalogado el candidato para priorización comercial y seguimiento."
+      <OptionalClientSectionBoundary
+        fallback={
+          <p className="text-sm text-muted-foreground">
+            No se pudo cargar el bloque de acciones sugeridas.
+          </p>
+        }
       >
-        <dl className="grid gap-4 text-sm sm:grid-cols-2">
-          <div className="space-y-2">
-            <dt className="text-xs font-medium text-muted-foreground">Disponibilidad</dt>
-            <dd className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-              <CandidateAvailabilityBadge
-                status={candidate.availabilityStatus}
-                label={candidate.availabilityBadgeLabel}
-              />
-              <span className="text-muted-foreground">
-                {safeDetailLine(candidate.availabilityBadgeLabel)}
-              </span>
-            </dd>
-          </div>
-          <div className="space-y-2">
-            <dt className="text-xs font-medium text-muted-foreground">
-              Contexto de reclutamiento
-            </dt>
-            <dd className="text-foreground">
-              {safeDetailLine(candidate.pipelineContextLabel)}
-            </dd>
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <dt className="text-xs font-medium text-muted-foreground">Vacante vinculada</dt>
-            <dd className="text-muted-foreground leading-relaxed">
-              {candidate.recruitingVacancyDetailLine}
-            </dd>
-          </div>
-        </dl>
-      </SectionCard>
+        <CandidateSuggestedActions
+          canManage={canManage}
+          canProposals={canProposals}
+          hasEditData={Boolean(editData)}
+          hasCvFile={Boolean(cvFileInfo?.cvFileName?.trim())}
+          pipelineVacancyId={candidate.pipelineVacancyId}
+          availabilityStatus={candidate.availabilityStatus}
+        />
+      </OptionalClientSectionBoundary>
+
+      <div id="candidate-section-reclutamiento">
+        <SectionCard
+          title="Disponibilidad y contexto de reclutamiento"
+          description="Cómo está catalogado el candidato para priorización comercial y seguimiento."
+        >
+          <dl className="grid gap-4 text-sm sm:grid-cols-2">
+            <div className="space-y-2">
+              <dt className="text-xs font-medium text-muted-foreground">Disponibilidad</dt>
+              <dd className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                <CandidateAvailabilityBadge
+                  status={candidate.availabilityStatus}
+                  label={candidate.availabilityBadgeLabel}
+                />
+                <span className="text-muted-foreground">
+                  {safeDetailLine(candidate.availabilityBadgeLabel)}
+                </span>
+              </dd>
+            </div>
+            <div className="space-y-2">
+              <dt className="text-xs font-medium text-muted-foreground">
+                Contexto de reclutamiento
+              </dt>
+              <dd className="text-foreground">
+                {safeDetailLine(candidate.pipelineContextLabel)}
+              </dd>
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <dt className="text-xs font-medium text-muted-foreground">Vacante vinculada</dt>
+              <dd className="text-muted-foreground leading-relaxed">
+                {candidate.recruitingVacancyDetailLine}
+              </dd>
+            </div>
+          </dl>
+        </SectionCard>
+      </div>
 
       <DetailGrid
         items={[
@@ -339,26 +364,28 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       </SectionCard>
 
       {canManage ? (
-        <SectionCard
-          title="CV original"
-          description="Archivo CV subido por el equipo de reclutamiento."
-        >
-          <OptionalClientSectionBoundary
-            fallback={
-              <p className="text-sm text-muted-foreground">
-                No se pudo cargar el bloque de CV original.
-              </p>
-            }
+        <div id="candidate-section-cv">
+          <SectionCard
+            title="CV original"
+            description="Archivo CV subido por el equipo de reclutamiento."
           >
-            <CandidateCvFileSection
-              candidateId={id}
-              cvFileName={cvFileInfo?.cvFileName ?? null}
-              cvUploadedAt={cvFileInfo?.cvUploadedAt ?? null}
-              canUpload={canManage}
-              canDelete={isDirector}
-            />
-          </OptionalClientSectionBoundary>
-        </SectionCard>
+            <OptionalClientSectionBoundary
+              fallback={
+                <p className="text-sm text-muted-foreground">
+                  No se pudo cargar el bloque de CV original.
+                </p>
+              }
+            >
+              <CandidateCvFileSection
+                candidateId={id}
+                cvFileName={cvFileInfo?.cvFileName ?? null}
+                cvUploadedAt={cvFileInfo?.cvUploadedAt ?? null}
+                canUpload={canManage}
+                canDelete={isDirector}
+              />
+            </OptionalClientSectionBoundary>
+          </SectionCard>
+        </div>
       ) : null}
 
       <CandidateCurrentAssignmentSection assignment={currentAssignment} />

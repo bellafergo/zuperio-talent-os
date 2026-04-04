@@ -69,6 +69,7 @@ export function CandidateEditDialog({
   return (
     <>
       <Button
+        id="candidate-detail-edit-trigger"
         type="button"
         variant="outline"
         size="sm"
