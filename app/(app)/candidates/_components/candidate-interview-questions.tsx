@@ -32,6 +32,9 @@ type Props = {
   vacancyTitle: string | null;
   candidateRole: string;
   vacancySkillsLine?: string | null;
+  vacancyRoleSummary?: string | null;
+  vacancySeniority?: string | null;
+  vacancyRequirementNames?: string | null;
   cvRawText: string | null;
   aiConfigured: boolean;
 };
@@ -49,6 +52,9 @@ export function CandidateInterviewQuestions({
   vacancyTitle,
   candidateRole,
   vacancySkillsLine,
+  vacancyRoleSummary,
+  vacancySeniority,
+  vacancyRequirementNames,
   cvRawText,
   aiConfigured,
 }: Props) {
@@ -61,6 +67,9 @@ export function CandidateInterviewQuestions({
     candidateRole,
     vacancyTitle: vacancyTitle ?? "",
     vacancySkillsLine,
+    vacancyRoleSummary,
+    vacancySeniority,
+    vacancyRequirementNames,
   });
   const templateGroups = getGenericInterviewGroups(templateKey);
   const templateLabel = genericInterviewTemplateLabelEs(templateKey);

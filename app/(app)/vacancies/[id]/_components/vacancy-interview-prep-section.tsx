@@ -70,9 +70,13 @@ export function VacancyInterviewPrepSection({
   );
 
   const templateKey = resolveInterviewTemplateKey({
-    candidateRole: selected?.role ?? "",
     vacancyTitle,
     vacancySkillsLine,
+    vacancyRoleSummary,
+    vacancySeniority,
+    vacancyRequirementNames:
+      requirementNames.length > 0 ? requirementNames.join(", ") : null,
+    candidateRole: "",
   });
 
   const groups = getGenericInterviewGroups(templateKey);

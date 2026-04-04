@@ -24,6 +24,10 @@ import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types
 import { listCandidateParticipatingVacanciesUi } from "@/lib/candidates/participating-vacancies-queries";
 
 import { isAnthropicConfigured } from "@/lib/ai/anthropic";
+import {
+  getVacancyTemplateContext,
+  type VacancyTemplateContext,
+} from "@/lib/interviews/vacancy-template-context";
 
 import { OptionalClientSectionBoundary } from "@/components/optional-client-section-boundary";
 import { CandidateCvAiHighlight } from "../_components/candidate-cv-ai-highlight";
@@ -161,6 +165,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     proposalPrefill,
     openVacanciesForm,
     cvPrintData,
+    pipelineVacancyInterviewCtx,
   ] = await Promise.all([
     safeCandidateSecondaryFetch(
       "listMatchesForCandidateUi",
@@ -255,6 +260,13 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       getCandidateCvPrintData(id),
       null,
     ),
+    candidate.pipelineVacancyId?.trim()
+      ? safeCandidateSecondaryFetch(
+          "getVacancyTemplateContext",
+          getVacancyTemplateContext(candidate.pipelineVacancyId.trim()),
+          null as VacancyTemplateContext | null,
+        )
+      : Promise.resolve(null as VacancyTemplateContext | null),
   ]);
 
   const headerTitle = safeDetailLine(candidate.displayName);
@@ -459,8 +471,12 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       <CandidateInterviewQuestions
         candidateId={id}
         vacancyId={candidate.pipelineVacancyId}
-        vacancyTitle={pipelineVacancyTitle}
+        vacancyTitle={pipelineVacancyInterviewCtx?.title ?? pipelineVacancyTitle}
         candidateRole={candidate.role ?? ""}
+        vacancySkillsLine={pipelineVacancyInterviewCtx?.skillsLine ?? null}
+        vacancyRoleSummary={pipelineVacancyInterviewCtx?.roleSummary ?? null}
+        vacancySeniority={pipelineVacancyInterviewCtx?.seniority ?? null}
+        vacancyRequirementNames={pipelineVacancyInterviewCtx?.requirementNamesLine ?? null}
         cvRawText={cvTextForAi}
         aiConfigured={aiConfigured}
       />

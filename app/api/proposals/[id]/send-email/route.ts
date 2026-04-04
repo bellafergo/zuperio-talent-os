@@ -7,6 +7,7 @@ import { canSendProposalClientEmail } from "@/lib/auth/proposal-access";
 import { prisma } from "@/lib/prisma";
 import { generateCandidateCvPdfPackage } from "@/lib/candidates/generate-candidate-cv-pdf";
 import { sendProposalPackageEmail } from "@/lib/email/send-proposal-package-email";
+import { buildProposalEmailHtml } from "@/lib/email/templates/proposal-email";
 import { generateProposalPdfPackage } from "@/lib/proposals/generate-proposal-pdf";
 import { proposalCandidateCvPdfFilename } from "@/lib/proposals/pdf-filename";
 import { resolveAppOriginFromHeaders } from "@/lib/proposals/resolve-app-origin";
@@ -16,6 +17,20 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function parseEmailArray(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((v): v is string => typeof v === "string")
+      .map((v) => v.trim())
+      .filter((v) => EMAIL_RE.test(v));
+  } catch {
+    return [];
+  }
+}
 
 export async function POST(
   request: Request,
@@ -32,33 +47,28 @@ export async function POST(
 
   const { id: proposalId } = await context.params;
 
-  let body: unknown;
+  // Parse multipart/form-data
+  let formData: FormData;
   try {
-    body = await request.json();
+    formData = await request.formData();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
   }
 
-  const to = typeof (body as { to?: unknown }).to === "string"
-    ? (body as { to: string }).to.trim()
-    : "";
-  const subject =
-    typeof (body as { subject?: unknown }).subject === "string"
-      ? (body as { subject: string }).subject.trim()
-      : "";
-  const bodyText =
-    typeof (body as { body?: unknown }).body === "string"
-      ? (body as { body: string }).body
-      : "";
+  const to = (formData.get("to") as string | null)?.trim() ?? "";
+  const cc = parseEmailArray(formData.get("cc") as string | null);
+  const bcc = parseEmailArray(formData.get("bcc") as string | null);
+  const subjectOverride = (formData.get("subject") as string | null)?.trim() ?? "";
+  const bodyText = (formData.get("bodyText") as string | null) ?? "";
+
+  // Extra file attachments (non-blocking; failures are logged, not thrown)
+  const extraFileEntries = formData.getAll("extraFile");
 
   if (!to || !EMAIL_RE.test(to)) {
-    return NextResponse.json({ error: "Valid \"to\" email is required" }, { status: 400 });
-  }
-  if (!subject) {
-    return NextResponse.json({ error: "Subject is required" }, { status: 400 });
-  }
-  if (!bodyText.trim()) {
-    return NextResponse.json({ error: "Body is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Valid "to" email is required' },
+      { status: 400 },
+    );
   }
 
   const proposal = await getProposalByIdForUi(proposalId);
@@ -84,28 +94,111 @@ export async function POST(
 
   const origin = resolveAppOriginFromHeaders(headersList);
 
-  try {
-    const economic = await generateProposalPdfPackage({
-      proposalId,
-      cookieHeader: cookie,
-      origin,
-    });
+  // Derive role label and subject
+  const roleLabel =
+    proposal.vacancyTitle !== "—"
+      ? proposal.vacancyTitle
+      : proposal.opportunityTitle !== "—"
+        ? proposal.opportunityTitle
+        : "el perfil acordado";
 
-    const cv = await generateCandidateCvPdfPackage({
-      candidateId: proposal.candidateId,
-      cookieHeader: cookie,
-      origin,
+  const subject =
+    subjectOverride || `Propuesta de recurso ${roleLabel} · Zuperio`;
+
+  // Sender display name
+  const senderName =
+    session.user.name?.trim() || session.user.email || "Zuperio";
+
+  // Recipient name from company contacts (non-critical)
+  let recipientName = "Cliente";
+  try {
+    const contact = await prisma.contact.findFirst({
+      where: { companyId: proposal.companyId, status: "ACTIVE", email: { not: null } },
+      orderBy: { updatedAt: "desc" },
+      select: { firstName: true, lastName: true },
     });
+    if (contact) {
+      const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim();
+      if (name) recipientName = name;
+    }
+  } catch {
+    /* non-critical */
+  }
+
+  const candidateName =
+    proposal.candidateName !== "—" ? proposal.candidateName : "el candidato";
+
+  // Build HTML using client-provided bodyText (falls back to generated default if empty)
+  const effectiveBodyText = bodyText.trim()
+    ? bodyText
+    : [
+        `Estimado/a ${recipientName},`,
+        "",
+        `Le compartimos nuestra propuesta para ${candidateName}, orientada a ${roleLabel} con ${proposal.companyName}.`,
+        "",
+        `Vigencia de esta propuesta: ${proposal.validityDays} días desde la fecha de emisión.`,
+        "",
+        "Adjunto encontrará la propuesta económica detallada y el CV del candidato en formato Zuperio.",
+        "",
+        "Quedamos atentos para una sesión de revisión cuando le sea conveniente.",
+        "",
+        "Saludos cordiales,",
+        senderName,
+      ].join("\n");
+
+  const html = buildProposalEmailHtml(
+    {
+      recipientName,
+      candidateName,
+      roleLabel,
+      companyName: proposal.companyName,
+      finalMonthlyRate: proposal.finalMonthlyRateLabel,
+      finalMonthlyRateWithVAT: proposal.finalMonthlyRateWithVATLabel,
+      validityDays: proposal.validityDays,
+      senderName,
+      currency: proposal.currency,
+    },
+    effectiveBodyText,
+  );
+
+  // Process extra file attachments (non-blocking)
+  type ExtraAttachment = { filename: string; content: Buffer };
+  const extraAttachments: ExtraAttachment[] = [];
+  for (const entry of extraFileEntries.slice(0, 3)) {
+    if (!(entry instanceof File)) continue;
+    try {
+      const buf = Buffer.from(await entry.arrayBuffer());
+      extraAttachments.push({ filename: entry.name, content: buf });
+    } catch (err) {
+      console.warn("[proposal-send-email] extra file processing failed", {
+        name: entry instanceof File ? entry.name : "unknown",
+        err,
+      });
+    }
+  }
+
+  try {
+    const [economic, cv] = await Promise.all([
+      generateProposalPdfPackage({ proposalId, cookieHeader: cookie, origin }),
+      generateCandidateCvPdfPackage({
+        candidateId: proposal.candidateId,
+        cookieHeader: cookie,
+        origin,
+      }),
+    ]);
 
     const cvFilename = proposalCandidateCvPdfFilename(proposal);
 
     const result = await sendProposalPackageEmail({
       to,
+      cc,
+      bcc,
       subject,
-      bodyText,
+      html,
       attachments: [
         { filename: economic.filename, content: economic.buffer },
         { filename: cvFilename, content: cv.buffer },
+        ...extraAttachments,
       ],
     });
 
@@ -115,10 +208,7 @@ export async function POST(
     });
     await prisma.proposal.update({
       where: { id: proposalId },
-      data: {
-        status: "SENT",
-        sentAt: prior?.sentAt ?? new Date(),
-      },
+      data: { status: "SENT", sentAt: prior?.sentAt ?? new Date() },
     });
 
     revalidatePath("/proposals");
@@ -127,24 +217,16 @@ export async function POST(
     console.info("[proposal-send-email] sent", {
       proposalId,
       to,
+      cc,
+      bcc,
+      extraCount: extraAttachments.length,
       messageId: result.messageId,
     });
 
-    return NextResponse.json({
-      ok: true,
-      messageId: result.messageId,
-    });
+    return NextResponse.json({ ok: true, messageId: result.messageId });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Send failed";
-    console.error("[proposal-send-email] failed", {
-      proposalId,
-      to,
-      error: message,
-    });
-
-    if (message === "NOT_FOUND") {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
+    console.error("[proposal-send-email] failed", { proposalId, to, error: message });
 
     if (message === "RESEND_API_KEY is not configured") {
       return NextResponse.json(
@@ -154,8 +236,7 @@ export async function POST(
     }
 
     const status =
-      message.toLowerCase().includes("chromium") ||
-      message.toLowerCase().includes("pdf")
+      message.toLowerCase().includes("chromium") || message.toLowerCase().includes("pdf")
         ? 503
         : 502;
 

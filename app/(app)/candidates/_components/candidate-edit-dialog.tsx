@@ -116,7 +116,7 @@ export function CandidateEditDialog({
         }}
       >
         <DialogContent
-          className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
+          className="flex max-h-[90dvh] min-h-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
           showCloseButton
         >
           <DialogHeader className="shrink-0 space-y-2 px-4 pt-4 pb-2 pr-14">
@@ -129,7 +129,7 @@ export function CandidateEditDialog({
             ref={autofillFormRef}
             key={formKey}
             onSubmit={onSubmit}
-            className="flex min-h-0 flex-1 flex-col"
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 pr-3">
               <div className="space-y-4">

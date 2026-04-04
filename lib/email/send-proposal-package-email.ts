@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import { getResendClient } from "./resend-client";
 
 export type EmailAttachmentInput = {
   filename: string;
@@ -6,31 +6,29 @@ export type EmailAttachmentInput = {
 };
 
 /**
- * Sends a plain-text email with PDF attachments via Resend.
- * Configure RESEND_API_KEY and EMAIL_FROM (verified sender).
+ * Sends an HTML email with PDF attachments via Resend.
+ * Configure RESEND_API_KEY and optionally EMAIL_FROM (verified sender).
+ * From is always Zuperio <admin@zuperio.com.mx>.
  */
 export async function sendProposalPackageEmail(opts: {
   to: string;
+  cc?: string[];
+  bcc?: string[];
   subject: string;
-  bodyText: string;
+  html: string;
   attachments: EmailAttachmentInput[];
 }): Promise<{ messageId: string }> {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY is not configured");
-  }
+  const resend = getResendClient();
 
-  const from =
-    process.env.EMAIL_FROM?.trim() ||
-    "Zuperio Talent OS <onboarding@resend.dev>";
-
-  const resend = new Resend(apiKey);
+  const from = "Zuperio <admin@zuperio.com.mx>";
 
   const { data, error } = await resend.emails.send({
     from,
     to: [opts.to],
+    ...(opts.cc && opts.cc.length > 0 ? { cc: opts.cc } : {}),
+    ...(opts.bcc && opts.bcc.length > 0 ? { bcc: opts.bcc } : {}),
     subject: opts.subject,
-    text: opts.bodyText,
+    html: opts.html,
     attachments: opts.attachments.map((a) => ({
       filename: a.filename,
       content: a.content,

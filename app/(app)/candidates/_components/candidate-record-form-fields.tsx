@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import type { CvAutofillApplyPayload, CvAutofillProvenanceField } from "@/lib/candidates/cv-autofill-types";
 import type { SkillOption } from "@/lib/skills/queries";
+import { buildCandidateCvTextForSkillSuggest } from "@/lib/skills/suggest-from-text";
 import {
   CANDIDATE_RECRUITMENT_STAGE_LABELS,
   CANDIDATE_RECRUITMENT_STAGE_ORDER,
@@ -678,6 +679,7 @@ export function CandidateRecordFormFields({
         value={structuredSkills}
         onChange={setStructuredSkills}
         error={fieldErrors?.structuredSkills}
+        cvSuggestionSourceText={buildCandidateCvTextForSkillSuggest(m)}
       />
     </div>
   );

@@ -86,6 +86,15 @@ export function VacancyRecordFormFields({
     defaults?.requirements ?? [],
   );
 
+  const [titleForSuggest, setTitleForSuggest] = React.useState(defaults?.title ?? "");
+  const [summaryForSuggest, setSummaryForSuggest] = React.useState(
+    defaults?.roleSummaryLine ?? "",
+  );
+  React.useEffect(() => {
+    setTitleForSuggest(defaults?.title ?? "");
+    setSummaryForSuggest(defaults?.roleSummaryLine ?? "");
+  }, [defaults?.title, defaults?.roleSummaryLine, vacancyId]);
+
   const statusOrder = Object.values(VacancyStatusConst) as VacancyStatus[];
   const seniorityOrder = Object.values(VacancySeniorityConst) as VacancySeniority[];
 
@@ -122,7 +131,8 @@ export function VacancyRecordFormFields({
           name="title"
           required
           maxLength={200}
-          defaultValue={defaults?.title ?? ""}
+          value={titleForSuggest}
+          onChange={(e) => setTitleForSuggest(e.target.value)}
           aria-invalid={Boolean(fieldErrors?.title)}
         />
         {fieldErrors?.title ? (
@@ -307,7 +317,8 @@ export function VacancyRecordFormFields({
           id={vacancyId ? `edit-roleSummary-${vacancyId}` : "new-roleSummary"}
           name="roleSummary"
           maxLength={400}
-          defaultValue={defaults?.roleSummaryLine ?? ""}
+          value={summaryForSuggest}
+          onChange={(e) => setSummaryForSuggest(e.target.value)}
           aria-invalid={Boolean(fieldErrors?.roleSummary)}
         />
         {fieldErrors?.roleSummary ? (
@@ -357,6 +368,7 @@ export function VacancyRecordFormFields({
         value={requirements}
         onChange={setRequirements}
         error={fieldErrors?.requirements}
+        suggestionSeedText={`${titleForSuggest} ${summaryForSuggest}`.trim()}
       />
     </div>
   );

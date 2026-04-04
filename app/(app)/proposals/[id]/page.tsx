@@ -8,6 +8,8 @@ import {
 } from "@/lib/auth/proposal-access";
 import { getComparisonMatrixForPair } from "@/lib/matching/queries";
 import { safeBuildProposalEmailDraft } from "@/lib/proposals/email-draft";
+import { isResendConfigured } from "@/lib/email/resend-client";
+import { type ProposalEmailTemplateData } from "@/lib/email/templates/proposal-email";
 import {
   listCandidatesForProposalForm,
   listCompaniesForProposalForm,
@@ -172,6 +174,28 @@ export default async function ProposalDetailPage({ params }: PageProps) {
       ? proposal.validityDays
       : "—";
 
+  const emailRoleLabel =
+    vacTitle && vacTitle !== "—"
+      ? vacTitle
+      : oppTitle && oppTitle !== "—"
+        ? oppTitle
+        : "el perfil acordado";
+
+  const templateData: ProposalEmailTemplateData = {
+    recipientName: contact?.displayName?.trim() || "Cliente",
+    candidateName:
+      candName && candName !== "—" ? candName : "el candidato",
+    roleLabel: emailRoleLabel,
+    companyName: proposal.companyName,
+    finalMonthlyRate: proposal.finalMonthlyRateLabel,
+    finalMonthlyRateWithVAT: proposal.finalMonthlyRateWithVATLabel,
+    validityDays: proposal.validityDays,
+    senderName: preparedByDisplay,
+    currency: proposal.currency,
+  };
+
+  const defaultSubject = `Propuesta de recurso ${emailRoleLabel} · Zuperio`;
+
   const emailDraft = safeBuildProposalEmailDraft(proposal, {
     preparedByDisplay,
     recipientDisplayName: contact?.displayName ?? null,
@@ -314,6 +338,9 @@ export default async function ProposalDetailPage({ params }: PageProps) {
               proposalId={proposal.id}
               canSendEmail={canSendEmail}
               hasCandidate={hasCandidate}
+              resendConfigured={isResendConfigured()}
+              templateData={templateData}
+              defaultSubject={defaultSubject}
             />
           </OptionalClientSectionBoundary>
         }
