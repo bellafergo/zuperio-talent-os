@@ -18,6 +18,8 @@ import type { CandidateUi } from "@/lib/candidates/types";
 import { cn } from "@/lib/utils";
 
 import { CandidateAvailabilityBadge } from "./candidate-availability-badge";
+import { CandidateListStageSelect } from "./candidate-list-stage-select";
+import { CandidateRecruitmentStageBadge } from "./candidate-recruitment-stage-badge";
 
 export type CandidatesTableRowActions = {
   canManage: boolean;
@@ -65,6 +67,7 @@ export function CandidatesDataTable({
           <TableHead className="max-w-[280px]">Competencias</TableHead>
           <TableHead className="w-[90px]">Senioridad</TableHead>
           <TableHead className="min-w-[128px] max-w-[200px]">Disponibilidad</TableHead>
+          <TableHead className="min-w-[120px] max-w-[168px]">Etapa</TableHead>
           <TableHead className="min-w-[120px] max-w-[160px]">Reclutamiento</TableHead>
           <TableHead className="min-w-[120px] max-w-[200px]">Vacante</TableHead>
           <TableHead className="w-[100px]">Actualizado</TableHead>
@@ -103,6 +106,23 @@ export function CandidatesDataTable({
                   {row.availabilityBadgeLabel}
                 </span>
               </div>
+            </TableCell>
+            <TableCell
+              className="align-top"
+              onClick={
+                showActions && rowActions?.canManage
+                  ? (e) => e.stopPropagation()
+                  : undefined
+              }
+            >
+              {showActions && rowActions?.canManage ? (
+                <CandidateListStageSelect
+                  candidateId={row.id}
+                  value={row.recruitmentStage}
+                />
+              ) : (
+                <CandidateRecruitmentStageBadge stage={row.recruitmentStage} />
+              )}
             </TableCell>
             <TableCell
               className="max-w-[160px] align-top text-muted-foreground"

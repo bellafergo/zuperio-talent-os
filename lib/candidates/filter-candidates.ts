@@ -9,7 +9,7 @@ export function filterCandidates(
   return rows.filter((r) => {
     if (q) {
       const haystack =
-        `${r.displayName} ${r.role} ${r.skills} ${r.seniority} ${r.availabilityStatus} ${r.availabilityBadgeLabel} ${r.email} ${r.currentCompany} ${r.pipelineContextLabel} ${r.pipelineVacancyLine}`.toLowerCase();
+        `${r.displayName} ${r.role} ${r.skills} ${r.seniority} ${r.availabilityStatus} ${r.availabilityBadgeLabel} ${r.email} ${r.currentCompany} ${r.pipelineContextLabel} ${r.pipelineVacancyLine} ${r.recruitmentStageLabel}`.toLowerCase();
       if (!haystack.includes(q)) return false;
     }
     if (filters.seniority !== "all" && r.seniority !== filters.seniority)

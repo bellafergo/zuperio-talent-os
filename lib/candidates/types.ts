@@ -1,4 +1,7 @@
-import type { CandidatePipelineIntent } from "@/generated/prisma/enums";
+import type {
+  CandidatePipelineIntent,
+  CandidateRecruitmentStage,
+} from "@/generated/prisma/enums";
 import type { VacancySeniorityUi } from "@/lib/vacancies/types";
 
 export type CandidateAvailabilityUi =
@@ -28,6 +31,8 @@ export type CandidateUi = {
   recruitingVacancyDetailLine: string;
   /** FK when set; null if not linked or cleared after vacancy removal. */
   pipelineVacancyId: string | null;
+  recruitmentStage: CandidateRecruitmentStage;
+  recruitmentStageLabel: string;
   email: string;
   phone: string;
   currentCompany: string;

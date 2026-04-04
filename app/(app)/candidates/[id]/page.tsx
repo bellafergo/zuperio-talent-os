@@ -25,6 +25,7 @@ import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types
 
 import { OptionalClientSectionBoundary } from "@/components/optional-client-section-boundary";
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
+import { CandidateRecruitmentStageBadge } from "../_components/candidate-recruitment-stage-badge";
 import { CandidateEditDialog } from "../_components/candidate-edit-dialog";
 import { CandidateApplicationsSection } from "./_components/candidate-applications-section";
 import { CandidateCvDownloadButton } from "./_components/candidate-cv-download-button";
@@ -317,6 +318,14 @@ export default async function CandidateDetailPage({ params }: PageProps) {
                 <span className="text-muted-foreground">
                   {safeDetailLine(candidate.availabilityBadgeLabel)}
                 </span>
+              </dd>
+            </div>
+            <div className="space-y-2">
+              <dt className="text-xs font-medium text-muted-foreground">
+                Etapa del proceso
+              </dt>
+              <dd>
+                <CandidateRecruitmentStageBadge stage={candidate.recruitmentStage} />
               </dd>
             </div>
             <div className="space-y-2">

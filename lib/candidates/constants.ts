@@ -1,4 +1,7 @@
-import type { CandidatePipelineIntent } from "@/generated/prisma/enums";
+import type {
+  CandidatePipelineIntent,
+  CandidateRecruitmentStage,
+} from "@/generated/prisma/enums";
 
 import type { CandidateAvailabilityUi } from "./types";
 
@@ -46,6 +49,30 @@ export const CANDIDATE_LINKED_VACANCY_FILTER_OPTIONS = [
   { value: "yes", label: "Con vacante vinculada" },
   { value: "no", label: "Sin vacante vinculada" },
 ] as const;
+
+/** Process stage labels (list, detail, forms). */
+export const CANDIDATE_RECRUITMENT_STAGE_LABELS: Record<
+  CandidateRecruitmentStage,
+  string
+> = {
+  NUEVO: "Nuevo",
+  CONTACTADO: "Contactado",
+  ENTREVISTA: "En entrevista",
+  PERFIL_ENVIADO: "Perfil enviado",
+  NEGOCIACION: "En negociación",
+  COLOCADO: "Colocado",
+  DESCARTADO: "Descartado",
+};
+
+export const CANDIDATE_RECRUITMENT_STAGE_ORDER: CandidateRecruitmentStage[] = [
+  "NUEVO",
+  "CONTACTADO",
+  "ENTREVISTA",
+  "PERFIL_ENVIADO",
+  "NEGOCIACION",
+  "COLOCADO",
+  "DESCARTADO",
+];
 
 /** Canonical work modality values for candidate intake (legacy free text still round-trips). */
 export const CANDIDATE_WORK_MODALITY_OPTIONS = [

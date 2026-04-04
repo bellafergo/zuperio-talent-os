@@ -1,8 +1,10 @@
 import {
   CandidatePipelineIntent as PipelineIntentConst,
+  CandidateRecruitmentStage as RecruitmentStageConst,
   VacancySeniority as SeniorityConst,
   type CandidateAvailabilityStatus,
   type CandidatePipelineIntent,
+  type CandidateRecruitmentStage,
   type VacancySeniority,
 } from "@/generated/prisma/enums";
 
@@ -14,6 +16,7 @@ export type CandidateSkillDraft = {
 
 const SENIORITY_SET = new Set<string>(Object.values(SeniorityConst));
 const PIPELINE_INTENT_SET = new Set<string>(Object.values(PipelineIntentConst));
+const RECRUITMENT_STAGE_SET = new Set<string>(Object.values(RecruitmentStageConst));
 
 const AVAILABILITY_MODE_SET = new Set<string>([
   "IMMEDIATE",
@@ -119,6 +122,7 @@ export type CandidateFormParsed = {
   availabilitySpecificDate: string | null;
   pipelineIntent: CandidatePipelineIntent;
   pipelineVacancyId: string | null;
+  recruitmentStage: CandidateRecruitmentStage;
   currentCompany: string | null;
   notes: string | null;
   structuredSkills: CandidateSkillDraft[];
@@ -271,6 +275,12 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
   }
   const pipelineIntent = pipelineIntentRaw as CandidatePipelineIntent;
 
+  const recruitmentStageRaw = parseOptionalTrimmed(formData, "recruitmentStage") ?? "";
+  if (!recruitmentStageRaw || !RECRUITMENT_STAGE_SET.has(recruitmentStageRaw)) {
+    fieldErrors.recruitmentStage = "Selecciona una etapa del proceso.";
+  }
+  const recruitmentStage = recruitmentStageRaw as CandidateRecruitmentStage;
+
   const pipelineVacancyRaw = parseOptionalTrimmed(formData, "pipelineVacancyId");
   let pipelineVacancyId: string | null = null;
   if (pipelineIntent === "OPEN_VACANCY") {
@@ -367,6 +377,7 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
       availabilitySpecificDate,
       pipelineIntent,
       pipelineVacancyId,
+      recruitmentStage,
       currentCompany,
       notes,
       structuredSkills,

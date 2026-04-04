@@ -1,4 +1,7 @@
-import type { CandidatePipelineIntent } from "@/generated/prisma/enums";
+import type {
+  CandidatePipelineIntent,
+  CandidateRecruitmentStage,
+} from "@/generated/prisma/enums";
 
 import { prisma } from "@/lib/prisma";
 
@@ -61,6 +64,7 @@ export type CandidateEditData = {
   availabilityStartDate: Date | null;
   pipelineIntentValue: CandidatePipelineIntent;
   pipelineVacancyId: string | null;
+  recruitmentStageValue: CandidateRecruitmentStage;
   currentCompany: string | null;
   notes: string | null;
   structuredSkills: CandidateSkillDraft[];
@@ -101,6 +105,7 @@ export async function getCandidateEditData(
       availabilityStartDate: true,
       pipelineIntent: true,
       pipelineVacancyId: true,
+      recruitmentStage: true,
       currentCompany: true,
       notes: true,
       locationCity: true,
@@ -133,6 +138,7 @@ export async function getCandidateEditData(
     availabilityStartDate: row.availabilityStartDate,
     pipelineIntentValue: row.pipelineIntent as CandidatePipelineIntent,
     pipelineVacancyId: row.pipelineVacancyId,
+    recruitmentStageValue: row.recruitmentStage as CandidateRecruitmentStage,
     currentCompany: row.currentCompany,
     notes: row.notes,
     structuredSkills: row.structuredSkills.map((s) => ({

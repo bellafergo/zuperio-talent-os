@@ -1,11 +1,16 @@
-import type {
-  CandidateAvailabilityStatus as PrismaAvailability,
-  CandidatePipelineIntent,
-  VacancySeniority as PrismaSeniority,
+import {
+  CandidateRecruitmentStage as RecruitmentStageConst,
+  type CandidateAvailabilityStatus as PrismaAvailability,
+  type CandidatePipelineIntent,
+  type CandidateRecruitmentStage,
+  type VacancySeniority as PrismaSeniority,
 } from "@/generated/prisma/enums";
 import type { VacancySeniorityUi } from "@/lib/vacancies/types";
 
-import { CANDIDATE_PIPELINE_CONTEXT_LABELS } from "./constants";
+import {
+  CANDIDATE_PIPELINE_CONTEXT_LABELS,
+  CANDIDATE_RECRUITMENT_STAGE_LABELS,
+} from "./constants";
 import type { CandidateAvailabilityUi, CandidateUi } from "./types";
 
 const prismaSeniorityToUi: Record<PrismaSeniority, VacancySeniorityUi> = {
@@ -52,6 +57,18 @@ function normalizePipelineIntent(v: unknown): CandidatePipelineIntent {
     return v;
   }
   return "NO_VACANCY";
+}
+
+const RECRUITMENT_STAGE_SET = new Set<string>(
+  Object.values(RecruitmentStageConst),
+);
+
+/** Safe default for unexpected/nullable values (e.g. stale clients, partial rows). */
+function normalizeRecruitmentStage(v: unknown): CandidateRecruitmentStage {
+  if (typeof v === "string" && RECRUITMENT_STAGE_SET.has(v)) {
+    return v as CandidateRecruitmentStage;
+  }
+  return "NUEVO";
 }
 
 /** List/table: vacancy column when intent is open role targeting. */
@@ -127,11 +144,13 @@ export type CandidateRow = {
   pipelineIntent: CandidatePipelineIntent;
   pipelineVacancyId: string | null;
   pipelineVacancy?: { title: string } | null;
+  recruitmentStage: CandidateRecruitmentStage;
 };
 
 export function mapCandidateToUi(row: CandidateRow): CandidateUi {
   const displayName = `${row.firstName} ${row.lastName}`.trim();
   const pipelineIntent = normalizePipelineIntent(row.pipelineIntent);
+  const recruitmentStage = normalizeRecruitmentStage(row.recruitmentStage);
   const vacancyTitle = row.pipelineVacancy?.title ?? null;
   return {
     id: row.id,
@@ -158,6 +177,8 @@ export function mapCandidateToUi(row: CandidateRow): CandidateUi {
       vacancyTitle,
     ),
     pipelineVacancyId: row.pipelineVacancyId ?? null,
+    recruitmentStage,
+    recruitmentStageLabel: CANDIDATE_RECRUITMENT_STAGE_LABELS[recruitmentStage],
     email: dash(row.email),
     phone: dash(row.phone),
     currentCompany: dash(row.currentCompany),

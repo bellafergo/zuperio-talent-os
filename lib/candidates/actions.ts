@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
-import type { VacancyStatus } from "@/generated/prisma/enums";
+import {
+  CandidateRecruitmentStage as RecruitmentStageConst,
+  type CandidateRecruitmentStage,
+  type VacancyStatus,
+} from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { syncAllCandidateVacancyMatches } from "@/lib/matching/sync";
 
@@ -66,6 +70,47 @@ function scheduleMatchResync() {
   void syncAllCandidateVacancyMatches().catch((err) => {
     console.error("[matching] sync after candidate mutation failed", err);
   });
+}
+
+const RECRUITMENT_STAGE_SET = new Set<string>(Object.values(RecruitmentStageConst));
+
+export type CandidateRecruitmentStageActionState =
+  | { ok: true }
+  | { ok: false; message: string };
+
+/**
+ * Updates only `recruitmentStage` (list quick-edit). Does not touch matches or skills.
+ */
+export async function updateCandidateRecruitmentStage(
+  candidateId: string,
+  recruitmentStage: CandidateRecruitmentStage,
+): Promise<CandidateRecruitmentStageActionState> {
+  const gate = await ensureCanManage();
+  if (!gate.ok) {
+    const msg =
+      gate.state.ok === false ? (gate.state.message ?? "Sin permiso.") : "Sin permiso.";
+    return { ok: false, message: msg };
+  }
+  const id = candidateId.trim();
+  if (!id) return { ok: false, message: "Identificador no válido." };
+  if (!RECRUITMENT_STAGE_SET.has(recruitmentStage)) {
+    return { ok: false, message: "Etapa no válida." };
+  }
+  try {
+    const res = await prisma.candidate.updateMany({
+      where: { id },
+      data: { recruitmentStage },
+    });
+    if (res.count === 0) {
+      return { ok: false, message: "Candidato no encontrado." };
+    }
+    revalidatePath("/candidates");
+    revalidatePath(`/candidates/${id}`);
+    return { ok: true };
+  } catch (err) {
+    console.error("[updateCandidateRecruitmentStage]", err);
+    return { ok: false, message: "No se pudo actualizar la etapa." };
+  }
 }
 
 export type CandidateActionState =
@@ -165,6 +210,7 @@ export async function createCandidate(
             availabilityStartDate: avail.availabilityStartDate,
             pipelineIntent: data.pipelineIntent,
             pipelineVacancyId: data.pipelineVacancyId,
+            recruitmentStage: data.recruitmentStage,
             currentCompany: data.currentCompany,
             notes: data.notes,
             skills: legacy,
@@ -212,6 +258,7 @@ export async function createCandidate(
         availabilityStartDate: avail.availabilityStartDate,
         pipelineIntent: data.pipelineIntent,
         pipelineVacancyId: data.pipelineVacancyId,
+        recruitmentStage: data.recruitmentStage,
         currentCompany: data.currentCompany,
         notes: data.notes,
         skills: "",
@@ -295,6 +342,7 @@ export async function updateCandidate(
           availabilityStartDate: avail.availabilityStartDate,
           pipelineIntent: data.pipelineIntent,
           pipelineVacancyId: data.pipelineVacancyId,
+          recruitmentStage: data.recruitmentStage,
           currentCompany: data.currentCompany,
           notes: data.notes,
           skills: legacySkills,

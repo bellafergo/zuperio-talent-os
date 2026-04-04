@@ -73,6 +73,17 @@ enum CandidatePipelineIntent {
   TALENT_POOL
 }
 
+/// Lightweight recruiting process stage (no workflow engine).
+enum CandidateRecruitmentStage {
+  NUEVO
+  CONTACTADO
+  ENTREVISTA
+  PERFIL_ENVIADO
+  NEGOCIACION
+  COLOCADO
+  DESCARTADO
+}
+
 enum MatchRecommendation {
   STRONG_MATCH
   PARTIAL_MATCH
@@ -318,6 +329,8 @@ model Candidate {
   pipelineIntent    CandidatePipelineIntent @default(NO_VACANCY)
   pipelineVacancyId String?
   pipelineVacancy   Vacancy?                @relation("CandidatePipelineVacancy", fields: [pipelineVacancyId], references: [id], onDelete: SetNull)
+
+  recruitmentStage CandidateRecruitmentStage @default(NUEVO)
 
   /// Last successful server-side Zuperio CV PDF export.
   candidateCvExportedAt DateTime?

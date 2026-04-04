@@ -5,6 +5,7 @@ import type { RefObject } from "react";
 
 import {
   CandidatePipelineIntent as PipelineIntentConst,
+  CandidateRecruitmentStage as RecruitmentStageConst,
   VacancySeniority as SeniorityConst,
   type CandidatePipelineIntent,
   type VacancySeniority,
@@ -12,7 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import type { CvAutofillApplyPayload, CvAutofillProvenanceField } from "@/lib/candidates/cv-autofill-types";
 import type { SkillOption } from "@/lib/skills/queries";
-import { CANDIDATE_WORK_MODALITY_OPTIONS } from "@/lib/candidates/constants";
+import {
+  CANDIDATE_RECRUITMENT_STAGE_LABELS,
+  CANDIDATE_RECRUITMENT_STAGE_ORDER,
+  CANDIDATE_WORK_MODALITY_OPTIONS,
+} from "@/lib/candidates/constants";
 import type { CandidateEditData } from "@/lib/candidates/queries";
 import type {
   CandidateAvailabilityFormMode,
@@ -428,6 +433,36 @@ export function CandidateRecordFormFields({
           ) : null}
         </div>
       ) : null}
+
+      <div className="space-y-2">
+        <label
+          htmlFor={candidateId ? `edit-stage-${candidateId}` : "new-stage"}
+          className="text-sm font-medium"
+        >
+          Etapa del proceso
+        </label>
+        <select
+          id={candidateId ? `edit-stage-${candidateId}` : "new-stage"}
+          key={`recruitmentStage-${fieldKey}`}
+          name="recruitmentStage"
+          className={selectClass}
+          defaultValue={
+            defaults?.recruitmentStageValue ?? RecruitmentStageConst.NUEVO
+          }
+          aria-invalid={Boolean(fieldErrors?.recruitmentStage)}
+        >
+          {CANDIDATE_RECRUITMENT_STAGE_ORDER.map((v) => (
+            <option key={v} value={v}>
+              {CANDIDATE_RECRUITMENT_STAGE_LABELS[v]}
+            </option>
+          ))}
+        </select>
+        {fieldErrors?.recruitmentStage ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.recruitmentStage}
+          </p>
+        ) : null}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
