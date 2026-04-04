@@ -278,6 +278,40 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         }
       />
 
+      <SectionCard
+        title="Disponibilidad y contexto de reclutamiento"
+        description="Cómo está catalogado el candidato para priorización comercial y seguimiento."
+      >
+        <dl className="grid gap-4 text-sm sm:grid-cols-2">
+          <div className="space-y-2">
+            <dt className="text-xs font-medium text-muted-foreground">Disponibilidad</dt>
+            <dd className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <CandidateAvailabilityBadge
+                status={candidate.availabilityStatus}
+                label={candidate.availabilityBadgeLabel}
+              />
+              <span className="text-muted-foreground">
+                {safeDetailLine(candidate.availabilityBadgeLabel)}
+              </span>
+            </dd>
+          </div>
+          <div className="space-y-2">
+            <dt className="text-xs font-medium text-muted-foreground">
+              Contexto de reclutamiento
+            </dt>
+            <dd className="text-foreground">
+              {safeDetailLine(candidate.pipelineContextLabel)}
+            </dd>
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <dt className="text-xs font-medium text-muted-foreground">Vacante vinculada</dt>
+            <dd className="text-muted-foreground leading-relaxed">
+              {candidate.recruitingVacancyDetailLine}
+            </dd>
+          </div>
+        </dl>
+      </SectionCard>
+
       <DetailGrid
         items={[
           { label: "Rol", value: safeDetailLine(candidate.role) },

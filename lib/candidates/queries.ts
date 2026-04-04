@@ -7,10 +7,18 @@ import type { CandidateUi } from "./types";
 import type { CandidateSkillDraft } from "./validation";
 
 export async function listCandidatesForUi(): Promise<CandidateUi[]> {
-  const rows = await prisma.candidate.findMany({
-    orderBy: [{ updatedAt: "desc" }, { lastName: "asc" }, { firstName: "asc" }],
-  });
-  return rows.map((row) => mapCandidateToUi(row as CandidateRow));
+  try {
+    const rows = await prisma.candidate.findMany({
+      orderBy: [{ updatedAt: "desc" }, { lastName: "asc" }, { firstName: "asc" }],
+      include: {
+        pipelineVacancy: { select: { title: true } },
+      },
+    });
+    return rows.map((row) => mapCandidateToUi(row as unknown as CandidateRow));
+  } catch (err) {
+    console.error("[listCandidatesForUi] failed", err);
+    return [];
+  }
 }
 
 export type CandidateCvFileInfo = {
@@ -23,8 +31,11 @@ export async function getCandidateByIdForUi(
 ): Promise<CandidateUi | null> {
   const row = await prisma.candidate.findUnique({
     where: { id },
+    include: {
+      pipelineVacancy: { select: { title: true } },
+    },
   });
-  return row ? mapCandidateToUi(row as CandidateRow) : null;
+  return row ? mapCandidateToUi(row as unknown as CandidateRow) : null;
 }
 
 export async function getCandidateCvFileInfo(

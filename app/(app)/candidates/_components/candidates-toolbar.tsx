@@ -10,6 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   CANDIDATE_AVAILABILITY,
+  CANDIDATE_LINKED_VACANCY_FILTER_OPTIONS,
+  CANDIDATE_PIPELINE_INTENT_FILTER_OPTIONS,
   CANDIDATE_SENIORITIES,
 } from "@/lib/candidates/constants";
 import type { CandidateFilterState } from "@/lib/candidates/types";
@@ -59,6 +61,23 @@ export function CandidatesToolbar({
             { value: "all", label: "Todos los estados" },
             ...CANDIDATE_AVAILABILITY.map((s) => ({ value: s, label: s })),
           ]}
+        />
+        <FilterSelect
+          label="Contexto de reclutamiento"
+          value={filters.pipelineIntent}
+          onValueChange={(pipelineIntent) => patch({ pipelineIntent })}
+          placeholder="Todos los contextos"
+          options={CANDIDATE_PIPELINE_INTENT_FILTER_OPTIONS.map((o) => ({
+            value: o.value,
+            label: o.label,
+          }))}
+        />
+        <FilterSelect
+          label="Vacante vinculada"
+          value={filters.linkedVacancy}
+          onValueChange={(linkedVacancy) => patch({ linkedVacancy })}
+          placeholder="Todas"
+          options={[...CANDIDATE_LINKED_VACANCY_FILTER_OPTIONS]}
         />
       </div>
     </div>

@@ -1,9 +1,11 @@
 import type {
   CandidateAvailabilityStatus as PrismaAvailability,
+  CandidatePipelineIntent,
   VacancySeniority as PrismaSeniority,
 } from "@/generated/prisma/enums";
 import type { VacancySeniorityUi } from "@/lib/vacancies/types";
 
+import { CANDIDATE_PIPELINE_CONTEXT_LABELS } from "./constants";
 import type { CandidateAvailabilityUi, CandidateUi } from "./types";
 
 const prismaSeniorityToUi: Record<PrismaSeniority, VacancySeniorityUi> = {
@@ -43,6 +45,43 @@ function formatUpdatedAt(d: Date) {
 function dash(s: string | null | undefined) {
   const t = s?.trim();
   return t ? t : "—";
+}
+
+function normalizePipelineIntent(v: unknown): CandidatePipelineIntent {
+  if (v === "OPEN_VACANCY" || v === "NO_VACANCY" || v === "TALENT_POOL") {
+    return v;
+  }
+  return "NO_VACANCY";
+}
+
+/** List/table: vacancy column when intent is open role targeting. */
+export function buildPipelineVacancyLine(
+  intent: CandidatePipelineIntent,
+  vacancyId: string | null | undefined,
+  vacancyTitle: string | null | undefined,
+): string {
+  if (intent !== "OPEN_VACANCY") return "—";
+  const title = vacancyTitle?.trim();
+  if (vacancyId && title) return title;
+  if (vacancyId && !title) return "Vacante no disponible";
+  return "Sin vacante vinculada";
+}
+
+/** Detail copy when not tied to a concrete vacancy row. */
+export function buildPipelineVacancyDetailLine(
+  intent: CandidatePipelineIntent,
+  vacancyId: string | null | undefined,
+  vacancyTitle: string | null | undefined,
+): string {
+  if (intent !== "OPEN_VACANCY") {
+    return "No aplica (sin vacante vinculada)";
+  }
+  const title = vacancyTitle?.trim();
+  if (vacancyId && title) return title;
+  if (vacancyId && !title) {
+    return "Vacante ya no disponible (ID guardado; revisa en edición)";
+  }
+  return "Sin vacante vinculada (contexto: vacante abierta)";
 }
 
 function startOfUTCDay(d: Date): Date {
@@ -85,10 +124,15 @@ export type CandidateRow = {
   currentCompany: string | null;
   notes: string | null;
   updatedAt: Date;
+  pipelineIntent: CandidatePipelineIntent;
+  pipelineVacancyId: string | null;
+  pipelineVacancy?: { title: string } | null;
 };
 
 export function mapCandidateToUi(row: CandidateRow): CandidateUi {
   const displayName = `${row.firstName} ${row.lastName}`.trim();
+  const pipelineIntent = normalizePipelineIntent(row.pipelineIntent);
+  const vacancyTitle = row.pipelineVacancy?.title ?? null;
   return {
     id: row.id,
     displayName,
@@ -101,6 +145,19 @@ export function mapCandidateToUi(row: CandidateRow): CandidateUi {
       row.availabilityStatus,
       row.availabilityStartDate,
     ),
+    pipelineIntent,
+    pipelineContextLabel: CANDIDATE_PIPELINE_CONTEXT_LABELS[pipelineIntent],
+    pipelineVacancyLine: buildPipelineVacancyLine(
+      pipelineIntent,
+      row.pipelineVacancyId,
+      vacancyTitle,
+    ),
+    recruitingVacancyDetailLine: buildPipelineVacancyDetailLine(
+      pipelineIntent,
+      row.pipelineVacancyId,
+      vacancyTitle,
+    ),
+    pipelineVacancyId: row.pipelineVacancyId ?? null,
     email: dash(row.email),
     phone: dash(row.phone),
     currentCompany: dash(row.currentCompany),

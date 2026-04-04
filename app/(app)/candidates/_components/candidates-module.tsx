@@ -14,6 +14,8 @@ const defaultFilters: CandidateFilterState = {
   query: "",
   seniority: "all",
   availabilityStatus: "all",
+  pipelineIntent: "all",
+  linkedVacancy: "all",
 };
 
 export function CandidatesModule({ candidates }: { candidates: CandidateUi[] }) {

@@ -43,7 +43,9 @@ export function CandidatesDataTable({ candidates }: { candidates: CandidateUi[] 
           <TableHead>Rol</TableHead>
           <TableHead className="max-w-[280px]">Competencias</TableHead>
           <TableHead className="w-[90px]">Senioridad</TableHead>
-          <TableHead className="w-[120px]">Estado</TableHead>
+          <TableHead className="min-w-[128px] max-w-[200px]">Disponibilidad</TableHead>
+          <TableHead className="min-w-[120px] max-w-[160px]">Reclutamiento</TableHead>
+          <TableHead className="min-w-[120px] max-w-[200px]">Vacante</TableHead>
           <TableHead className="w-[100px]">Actualizado</TableHead>
         </TableRow>
       </TableHeader>
@@ -67,11 +69,32 @@ export function CandidatesDataTable({ candidates }: { candidates: CandidateUi[] 
               {row.skills}
             </TableCell>
             <TableCell className="text-muted-foreground">{row.seniority}</TableCell>
-            <TableCell>
-              <CandidateAvailabilityBadge
-                status={row.availabilityStatus}
-                label={row.availabilityBadgeLabel}
-              />
+            <TableCell className="align-top">
+              <div className="flex flex-col gap-1">
+                <CandidateAvailabilityBadge
+                  status={row.availabilityStatus}
+                  label={row.availabilityBadgeLabel}
+                />
+                <span className="text-[11px] leading-snug text-muted-foreground">
+                  {row.availabilityBadgeLabel}
+                </span>
+              </div>
+            </TableCell>
+            <TableCell
+              className="max-w-[160px] align-top text-muted-foreground"
+              title={row.pipelineContextLabel}
+            >
+              <span className="line-clamp-2 text-sm">{row.pipelineContextLabel}</span>
+            </TableCell>
+            <TableCell
+              className="max-w-[200px] align-top text-muted-foreground"
+              title={
+                row.pipelineVacancyLine === "—"
+                  ? undefined
+                  : row.pipelineVacancyLine
+              }
+            >
+              <span className="line-clamp-2 text-sm">{row.pipelineVacancyLine}</span>
             </TableCell>
             <TableCell className="text-muted-foreground">
               {row.updatedAtLabel}
