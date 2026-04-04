@@ -7,6 +7,7 @@ import { canManageProposals } from "@/lib/auth/proposal-access";
 import { prisma } from "@/lib/prisma";
 
 import type { ProposalActionState } from "./actions";
+import { commercialClosedAtPatchForStatusChange } from "./commercial-closed-at";
 
 async function gate(): Promise<
   { ok: true } | { ok: false; state: ProposalActionState }
@@ -54,13 +55,19 @@ export async function setProposalPipelineStatus(
     return { ok: true, proposalId };
   }
 
+  const closurePatch = commercialClosedAtPatchForStatusChange(
+    row.status,
+    status,
+  );
+
   await prisma.proposal.update({
     where: { id: proposalId },
-    data: { status },
+    data: { status, ...closurePatch },
   });
 
   revalidatePath("/proposals");
   revalidatePath(`/proposals/${proposalId}`);
+  revalidatePath("/dashboard");
   return { ok: true, proposalId };
 }
 

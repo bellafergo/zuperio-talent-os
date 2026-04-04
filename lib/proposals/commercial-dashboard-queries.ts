@@ -376,3 +376,47 @@ export async function getCommercialDashboardData(): Promise<CommercialDashboardD
     followUps,
   };
 }
+
+/** Safe fallback when the main dashboard aggregate query fails. */
+export function emptyCommercialDashboardData(): CommercialDashboardData {
+  const z = emptyCurrencySum();
+  return {
+    counts: {
+      total: 0,
+      draft: 0,
+      sent: 0,
+      viewed: 0,
+      followUpPending: 0,
+      inNegotiation: 0,
+      won: 0,
+      lost: 0,
+    },
+    revenue: {
+      pipelineNonLost: z,
+      pipelineSent: z,
+      pipelineNegotiation: z,
+      won: z,
+      lost: z,
+      avgMarginPercent: null,
+      avgProposalValue: null,
+    },
+    byStatus: STATUS_ORDER.map((status) => ({
+      status,
+      count: 0,
+      valueSum: emptyCurrencySum(),
+    })),
+    byCompany: [],
+    byOwner: [],
+    byFormat: (["SIMPLE", "DETAILED"] as ProposalFormat[]).map((format) => ({
+      format,
+      count: 0,
+      valueSum: emptyCurrencySum(),
+    })),
+    byScheme: (["MIXED", "FULL_IMSS"] as PricingScheme[]).map((scheme) => ({
+      scheme,
+      count: 0,
+      valueSum: emptyCurrencySum(),
+    })),
+    followUps: [],
+  };
+}

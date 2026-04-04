@@ -3,8 +3,21 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { canViewCommercialDashboard } from "@/lib/auth/commercial-dashboard-access";
+import { resolveDashboardMonthFromSearchParams } from "@/lib/datetime/dashboard-month";
+import {
+  listActiveVacanciesByCompany,
+  listMonthlyCommercialClosures,
+  listMonthlyHiredPlacements,
+  sumClosureMonthlyValue,
+} from "@/lib/dashboard/monthly-queries";
+import { safeDashboardQuery } from "@/lib/dashboard/safe-query";
 import { formatCurrencyValueSum } from "@/lib/currency";
-import { getCommercialDashboardData } from "@/lib/proposals/commercial-dashboard-queries";
+import {
+  emptyCommercialDashboardData,
+  getCommercialDashboardData,
+} from "@/lib/proposals/commercial-dashboard-queries";
+
+import { DashboardMonthControls } from "./_components/dashboard-month-controls";
 
 import {
   EmptyState,
@@ -58,7 +71,13 @@ function formatSentAt(d: Date): string {
   }).format(d);
 }
 
-export default async function CommercialDashboardPage() {
+type DashboardPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function CommercialDashboardPage({
+  searchParams,
+}: DashboardPageProps) {
   const session = await auth();
   if (!session?.user) {
     redirect("/login");
@@ -67,7 +86,35 @@ export default async function CommercialDashboardPage() {
     redirect("/");
   }
 
-  const d = await getCommercialDashboardData();
+  const sp = await searchParams;
+  const period = resolveDashboardMonthFromSearchParams(sp);
+  const isDirector = session.user.role === "DIRECTOR";
+
+  const d = await safeDashboardQuery(
+    "getCommercialDashboardData",
+    () => getCommercialDashboardData(),
+    emptyCommercialDashboardData(),
+  );
+
+  const monthlyClosures = await safeDashboardQuery(
+    "listMonthlyCommercialClosures",
+    () => listMonthlyCommercialClosures(period),
+    [],
+  );
+
+  const monthlyHires = await safeDashboardQuery(
+    "listMonthlyHiredPlacements",
+    () => listMonthlyHiredPlacements(period),
+    [],
+  );
+
+  const activeVacanciesByCompany = await safeDashboardQuery(
+    "listActiveVacanciesByCompany",
+    () => listActiveVacanciesByCompany(),
+    [],
+  );
+
+  const closureMonthValue = sumClosureMonthlyValue(monthlyClosures);
 
   const fmtSum = (b: Parameters<typeof formatCurrencyValueSum>[0]) =>
     formatCurrencyValueSum(b, 0);
@@ -80,15 +127,177 @@ export default async function CommercialDashboardPage() {
         variant="list"
         eyebrow="Comercial"
         title="Tablero"
-        description="Embudo de propuestas e importes mensuales según precios guardados. Sin conversión de divisa: MXN y USD se muestran por separado."
+        description="Embudo de propuestas e importes según precios guardados. El periodo seleccionado aplica al resumen mensual, contrataciones y reportes CSV (Dirección). Las tablas de embudo siguen siendo la vista global. Sin conversión de divisa: MXN y USD por separado."
       />
+
+      <DashboardMonthControls
+        year={period.year}
+        month={period.month}
+        periodLabel={period.label}
+        isDirector={isDirector}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <SectionCard
+          title={`Cierres comerciales (${period.label})`}
+          description="Propuestas ganadas (WON) con fecha de cierre en el mes UTC, o filas históricas sin fecha de cierre cuyo último cambio cayó en el mes (referencia aproximada)."
+        >
+          <div className="mb-4 grid gap-3 sm:grid-cols-2">
+            <KPIStatCard
+              label="Cierres del mes"
+              value={String(monthlyClosures.length)}
+              emphasis={monthlyClosures.length > 0}
+            />
+            <KPIStatCard
+              label="Valor tarifa mensual (cierres)"
+              value={formatCurrencyValueSum(closureMonthValue, 0)}
+              emphasis
+            />
+          </div>
+          {monthlyClosures.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No hay cierres registrados para este mes.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead>Candidato</TableHead>
+                  <TableHead className="text-right">Tarifa / mes</TableHead>
+                  <TableHead className="hidden sm:table-cell">Referencia</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {monthlyClosures.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/proposals/${r.id}`}
+                        className="underline-offset-4 hover:underline"
+                      >
+                        {r.companyName}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {r.candidateLabel}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {r.finalMonthlyRate != null
+                        ? `${r.currency} ${r.finalMonthlyRate.toLocaleString("es-MX", { maximumFractionDigits: 0 })}`
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="hidden text-xs text-muted-foreground sm:table-cell">
+                      {r.hasPreciseClosureAt ? "Cierre registrado" : "Legacy (updatedAt)"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </SectionCard>
+
+        <SectionCard
+          title={`Contrataciones (${period.label})`}
+          description="Colocaciones cuya fecha de inicio cae en el mes (UTC), cualquier estado actual."
+        >
+          <div className="mb-4">
+            <KPIStatCard
+              label="Inicios en el mes"
+              value={String(monthlyHires.length)}
+              emphasis={monthlyHires.length > 0}
+            />
+          </div>
+          {monthlyHires.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No hay inicios de colocación en este mes.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Candidato</TableHead>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead>Vacante</TableHead>
+                  <TableHead className="text-right">Inicio</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {monthlyHires.map((r) => (
+                  <TableRow key={r.placementId}>
+                    <TableCell className="font-medium">{r.candidateName}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {r.companyName}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate text-muted-foreground" title={r.vacancyTitle}>
+                      {r.vacancyTitle}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {new Intl.DateTimeFormat("es-MX", {
+                        dateStyle: "medium",
+                        timeZone: "UTC",
+                      }).format(r.startDate)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </SectionCard>
+      </div>
+
+      <SectionCard
+        title="Vacantes activas por empresa"
+        description="Estado actual (abierta, sourcing, entrevista, en pausa). No es un corte histórico por mes."
+      >
+        {activeVacanciesByCompany.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No hay vacantes activas en este momento.
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Empresa</TableHead>
+                <TableHead className="text-right">Vacantes</TableHead>
+                <TableHead className="hidden md:table-cell">Títulos</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {activeVacanciesByCompany.map((r) => (
+                <TableRow key={r.companyId}>
+                  <TableCell className="font-medium">
+                    {r.companyId !== "_unknown" ? (
+                      <Link
+                        href={`/companies/${r.companyId}`}
+                        className="underline-offset-4 hover:underline"
+                      >
+                        {r.companyName}
+                      </Link>
+                    ) : (
+                      r.companyName
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{r.count}</TableCell>
+                  <TableCell className="hidden max-w-[min(100%,28rem)] text-sm text-muted-foreground md:table-cell">
+                    <span className="line-clamp-2" title={r.titles.join(", ")}>
+                      {r.titles.slice(0, 6).join(" · ")}
+                      {r.titles.length > 6 ? ` (+${r.titles.length - 6})` : ""}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </SectionCard>
 
       <div className="space-y-10 rounded-2xl border border-border/70 bg-gradient-to-b from-muted/40 via-muted/15 to-transparent p-5 ring-1 ring-foreground/[0.04] sm:p-6">
         <section className="space-y-4">
           <SectionHeading
-            title="Embudo por etapa"
+            title="Embudo global por etapa"
             prominence="lead"
-            description="Mismas definiciones que el listado de propuestas."
+            description="Todas las propuestas en sistema; mismas definiciones que el listado de propuestas."
           />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
             <KPIStatCard label="Total" value={String(d.counts.total)} />

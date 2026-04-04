@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { canManageProposals } from "@/lib/auth/proposal-access";
 import { prisma } from "@/lib/prisma";
 
+import { commercialClosedAtPatchForStatusChange } from "./commercial-closed-at";
 import { computeProposalPricing } from "./pricing";
 import { parseProposalForm } from "./validation";
 
@@ -103,6 +104,9 @@ export async function createProposal(
           scopeNotes: data.scopeNotes,
           commercialNotes: data.commercialNotes,
           createdById: gate.userId,
+          ...(data.status === "WON" || data.status === "LOST"
+            ? { commercialClosedAt: new Date() }
+            : {}),
         },
         select: { id: true },
       });
@@ -143,6 +147,7 @@ export async function createProposal(
 
     revalidatePath("/proposals");
     revalidatePath(`/proposals/${created.id}`);
+    revalidatePath("/dashboard");
     return { ok: true, proposalId: created.id };
   } catch {
     return { ok: false, message: "Could not create the proposal. Try again." };
@@ -160,7 +165,10 @@ export async function updateProposal(
   const proposalId = typeof idRaw === "string" ? idRaw.trim() : "";
   if (!proposalId) return { ok: false, message: "Missing proposal id." };
 
-  const exists = await prisma.proposal.findUnique({ where: { id: proposalId }, select: { id: true } });
+  const exists = await prisma.proposal.findUnique({
+    where: { id: proposalId },
+    select: { id: true, status: true },
+  });
   if (!exists) return { ok: false, message: "Proposal was not found." };
 
   const parsed = parseProposalForm(formData);
@@ -215,6 +223,11 @@ export async function updateProposal(
     vatPercent: data.vatPercent,
   });
 
+  const closurePatch = commercialClosedAtPatchForStatusChange(
+    exists.status,
+    data.status,
+  );
+
   try {
     await prisma.$transaction(async (tx) => {
       await tx.proposal.update({
@@ -233,6 +246,7 @@ export async function updateProposal(
           profileSummary: data.profileSummary,
           scopeNotes: data.scopeNotes,
           commercialNotes: data.commercialNotes,
+          ...closurePatch,
         },
       });
 
@@ -298,6 +312,7 @@ export async function updateProposal(
 
     revalidatePath("/proposals");
     revalidatePath(`/proposals/${proposalId}`);
+    revalidatePath("/dashboard");
     return { ok: true, proposalId };
   } catch {
     return { ok: false, message: "Could not update the proposal. Try again." };
