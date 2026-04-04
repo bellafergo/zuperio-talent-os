@@ -74,10 +74,10 @@ export async function POST(request: Request) {
     );
   }
 
-  let plain: string | undefined;
+  let plain: string | null | undefined;
   try {
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-    plain = await extractTextFromCvBuffer(buffer, file.name);
+    plain = (await extractTextFromCvBuffer(buffer, file.name)) ?? undefined;
     if (!plain?.trim()) {
       const source = ext === "pdf" ? "empty" : "unsupported";
       const body: CvExtractPreviewResponse = {
