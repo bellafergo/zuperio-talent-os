@@ -23,6 +23,7 @@ import type { CandidateEditData } from "@/lib/candidates/queries";
 import type { CandidateSkillDraft } from "@/lib/candidates/validation";
 import type { SkillOption } from "@/lib/skills/queries";
 import { cn } from "@/lib/utils";
+import { matchCatalogSkillsFromSkillsLine } from "@/lib/candidates/cv-skill-line-match";
 import { CV_RAW_TEXT_MAX, CV_WORK_EXPERIENCE_FIELD_MAX } from "@/lib/candidates/cv-text-limits";
 
 /**
@@ -155,27 +156,6 @@ function buildExtractionSummary(
     languageLinesDetected: countNonEmptyLines(s.cvLanguagesText),
     certificationLinesDetected: countNonEmptyLines(s.cvCertificationsText),
   };
-}
-
-function matchSkillsFromLine(
-  line: string | undefined,
-  catalog: SkillOption[],
-): CandidateSkillDraft[] {
-  if (!line?.trim()) return [];
-  const parts = line
-    .split(/[,;·|]/)
-    .map((x) => x.trim())
-    .filter(Boolean);
-  const out: CandidateSkillDraft[] = [];
-  const seen = new Set<string>();
-  for (const part of parts) {
-    const m = catalog.find((c) => c.name.toLowerCase() === part.toLowerCase());
-    if (m && !seen.has(m.id)) {
-      seen.add(m.id);
-      out.push({ skillId: m.id, yearsExperience: null, level: null });
-    }
-  }
-  return out;
 }
 
 function hasCvDerivedTextOverwriteConflict(
@@ -318,7 +298,10 @@ export function CandidateFormCvSection({
       const isReapply = successfulSuggestCount >= 1;
       const skillsLineTrimmed = suggestions.skillsLine?.trim() ?? "";
       const replaceStructuredSkills = isReapply && Boolean(skillsLineTrimmed);
-      const newSkillsFromLine = matchSkillsFromLine(suggestions.skillsLine, skillsCatalog);
+      const newSkillsFromLine = matchCatalogSkillsFromSkillsLine(
+        suggestions.skillsLine,
+        skillsCatalog,
+      );
 
       let extraStructuredSkills: CandidateSkillDraft[];
       let skippedSkills = 0;

@@ -287,7 +287,7 @@ export function CandidateCvConsultingDocument({
                 <div className="cpdf-cv-lang-list">
                   {languagesList.map((lang, idx) => (
                     <div
-                      key={`${idx}-${lang.name}`}
+                      key={`lang-${idx}`}
                       className="cpdf-cv-lang-block"
                     >
                       <div className="cpdf-cv-lang-row cpdf-cv-lang-row--top">
@@ -321,11 +321,14 @@ export function CandidateCvConsultingDocument({
             {skillGroups.length > 0 ? (
               <div className="cpdf-cv-side-block">
                 <p className="cpdf-sec-label">Skills técnicos</p>
-                {skillGroups.map((g) => (
-                  <div key={g.category} className="cpdf-cv-skill-group">
+                {skillGroups.map((g, gi) => (
+                  <div key={`cat-${gi}-${g.category}`} className="cpdf-cv-skill-group">
                     <p className="cpdf-cv-skill-cat">{g.category}</p>
-                    {g.items.map((s) => (
-                      <div key={`${g.category}-${s.name}`} className="cpdf-cv-skill-row">
+                    {g.items.map((s, si) => (
+                      <div
+                        key={`sk-${gi}-${si}-${s.name}`}
+                        className="cpdf-cv-skill-row"
+                      >
                         <div className="cpdf-cv-skill-name">
                           <span>{s.name}</span>
                           <span className="cpdf-cv-skill-meta">
@@ -365,8 +368,8 @@ export function CandidateCvConsultingDocument({
                   <p className="cpdf-cv-soft-hint">{softSkillsSubtitle}</p>
                 ) : null}
                 <div className="cpdf-cv-soft-pills cpdf-cv-soft-pills--outlined">
-                  {softSkillNames.map((skill) => (
-                    <span key={skill} className="cpdf-cv-soft-pill-detailed">
+                  {softSkillNames.map((skill, si) => (
+                    <span key={`soft-${si}-${skill}`} className="cpdf-cv-soft-pill-detailed">
                       <span className="cpdf-cv-soft-pill-dot" aria-hidden>
                         ●
                       </span>
@@ -383,7 +386,7 @@ export function CandidateCvConsultingDocument({
                 <ul className="cpdf-cv-cert-list">
                   {certificationsList.map((c, cIdx) => (
                     <li
-                      key={`cert-${cIdx}-${c.slice(0, 48)}`}
+                      key={`cert-${cIdx}`}
                       className="cpdf-cv-cert-line"
                     >
                       {c}
@@ -399,7 +402,7 @@ export function CandidateCvConsultingDocument({
                 <div className="cpdf-cv-industry-pills">
                   {industriesList.slice(0, 12).map((ind, iIdx) => (
                     <span
-                      key={`${iIdx}-${ind.slice(0, 40)}`}
+                      key={`ind-${iIdx}`}
                       className="cpdf-cv-industry-pill cpdf-cv-industry-pill--solid"
                     >
                       {ind}
@@ -429,7 +432,7 @@ export function CandidateCvConsultingDocument({
                 <div className="cpdf-cv-work-from-cv">
                   {workExperienceParagraphs.map((block, i) => (
                     <p
-                      key={`wxp-${i}-${block.slice(0, 24)}`}
+                      key={`wxp-${i}`}
                       className="cpdf-cv-work-from-cv-para"
                     >
                       {block}

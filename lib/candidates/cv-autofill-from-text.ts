@@ -19,6 +19,32 @@ const PHONE_RE =
 const ROLE_HINT_RE =
   /\b(developer|engineer|ingeniero|consultant|consultor|manager|gerente|analyst|analista|architect|arquitecto|lead|scientist|diseñador|designer|product\s*owner|scrum\s*master|devops|sre|full\s*stack|frontend|backend|data)\b/i;
 
+/** Text that indicates the line is not a person’s legal/full name. */
+const NON_NAME_CONTEXT_RE =
+  /universidad|university|instituto|institute|tec\.?\s+de|tecnol[oó]g|monterrey|guadalajara|ciudad\s+de|licenciatura|bachillerato|maestr[ií]a|doctorado|\bmba\b|gpa|promedio|egresad|graduated|email|e-?mail|tel[eé]fono|phone|mobil|celular|linkedin|github|\.com\b|\.mx\b|http|www\.|^\s*cargo\s*:|^\s*puesto\s*:|^\s*fecha\s*:|^\s*título\s*:|periodo|desde\s+\d|hasta\s+\d|^\s*experien|^\s*education|^\s*educaci[oó]n|^\s*certific|^\s*skills\b|competencias\s*técn|ubicaci[oó]n|direcci[oó]n|r[ée]sum[ée]|curriculum|\bcv\b|años\s+de\s+exper|years\s+of\s+experience|logros\s+en|responsible\s+for|where\s+i\s|leading\s+a\s+team|desarroll[ée]\s+(un|el|la)\s|implementaci[oó]n\s+de/iu;
+
+const NARRATIVE_ROLE_RE =
+  /responsible\s+for|where\s+i\s|logr[ée]\s|implement[ée]\s+(un|el|la)|desarroll[ée]\s+(un|sistema)|más\s+de\s+\d+\s+años|over\s+\d+\s+years|experiencia\s+(de\s+)?\d+|@|\bwww\./i;
+
+function lineLooksNonNameContext(line: string): boolean {
+  return NON_NAME_CONTEXT_RE.test(line);
+}
+
+function isPlausiblePersonNameTokens(text: string): boolean {
+  const t = text.replace(/,/g, " ").replace(/\s+/g, " ").trim();
+  if (t.length < 3 || t.length > 72) return false;
+  if (/\d/.test(t)) return false;
+  const words = t.split(/\s+/).filter(Boolean);
+  if (words.length < 2 || words.length > 5) return false;
+  return words.every((w) => /^[\p{L}]+(?:['-][\p{L}]+)*$/u.test(w));
+}
+
+function isPlausibleNameSegment(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  return t.split(/\s+/).every((w) => /^[\p{L}]+(?:['-][\p{L}]+)*$/u.test(w));
+}
+
 const SECTION_HEADERS: { key: keyof SectionAcc; pattern: RegExp }[] = [
   { key: "skills", pattern: /^(skills|competencias|technical\s*skills|tech\s*stack|technologies|stack|habilidades\s*técnicas)\s*:?\s*$/i },
   { key: "languages", pattern: /^(languages|idiomas|language\s*skills)\s*:?\s*$/i },
@@ -123,25 +149,34 @@ function splitName(full: string): { firstName: string; lastName: string } {
   };
 }
 
-function guessNameFromLines(lines: string[]): string | null {
+function extractLabeledPersonName(lines: string[]): string | null {
   const labeled = extractLabelValue(
     lines,
     /^(name|nombre|full\s*name|nombre\s*completo)\s*:\s*(.+)$/i,
   );
-  if (labeled && labeled.length >= 3 && labeled.length <= 120) {
-    return labeled;
-  }
+  if (!labeled) return null;
+  const v = labeled.trim();
+  if (v.length < 3 || v.length > 80) return null;
+  if (lineLooksNonNameContext(v)) return null;
+  if (!isPlausiblePersonNameTokens(v)) return null;
+  return v;
+}
 
-  for (const line of lines.slice(0, 12)) {
+function guessNameFromLines(lines: string[]): string | null {
+  const labeled = extractLabeledPersonName(lines);
+  if (labeled) return labeled;
+
+  for (const line of lines.slice(0, 10)) {
     if (line.includes("@")) continue;
-    if (PHONE_RE.test(line) && line.length < 36) continue;
-    if (line.length < 4 || line.length > 90) continue;
     if (/^https?:\/\//i.test(line)) continue;
     if (/linkedin\.com/i.test(line)) continue;
+    if (PHONE_RE.test(line)) continue;
+    if (lineLooksNonNameContext(line)) continue;
+    if (line.length < 6 || line.length > 52) continue;
     const wordCount = line.split(/\s+/).length;
-    if (wordCount >= 2 && wordCount <= 6 && !/^\d+$/.test(line)) {
-      return line;
-    }
+    if (wordCount < 2 || wordCount > 4) continue;
+    if (!isPlausiblePersonNameTokens(line)) continue;
+    return line;
   }
   return null;
 }
@@ -181,17 +216,39 @@ function normalizeWorkModality(raw: string | undefined): string | undefined {
   return undefined;
 }
 
+function isPlausibleRoleTitleValue(raw: string): boolean {
+  const t = raw.trim();
+  if (t.length < 2 || t.length > 95) return false;
+  const wc = t.split(/\s+/).length;
+  if (wc > 14) return false;
+  const dots = (t.match(/\./g) ?? []).length;
+  if (dots >= 2) return false;
+  if (NARRATIVE_ROLE_RE.test(t)) return false;
+  return true;
+}
+
 function guessRole(lines: string[]): string | undefined {
   const labeled = extractLabelValue(
     lines,
     /^(title|puesto|position|cargo|rol)\s*:\s*(.+)$/i,
   );
-  if (labeled) return labeled.slice(0, 200);
+  if (labeled) {
+    const t = labeled.trim();
+    if (!isPlausibleRoleTitleValue(t)) return undefined;
+    return t.slice(0, 120);
+  }
 
-  for (const line of lines.slice(0, 25)) {
-    if (ROLE_HINT_RE.test(line) && line.length < 120) {
-      return line.slice(0, 200);
+  for (const line of lines.slice(0, 18)) {
+    if (line.length < 4 || line.length > 78) continue;
+    if (lineLooksNonNameContext(line)) continue;
+    if (/universidad|licenciatura|educaci[oó]n|certificat|experiencia\s+laboral/i.test(line)) {
+      continue;
     }
+    if (NARRATIVE_ROLE_RE.test(line)) continue;
+    const wc = line.split(/\s+/).length;
+    if (wc > 12) continue;
+    if (!ROLE_HINT_RE.test(line)) continue;
+    return line.slice(0, 120);
   }
   return undefined;
 }
@@ -234,9 +291,16 @@ export function parseCvPlainTextForAutofill(raw: string): CvAutofillSuggestions 
 
     const nameLine = guessNameFromLines(lines);
     if (nameLine) {
-      const { firstName, lastName } = splitName(nameLine);
-      if (firstName) out.firstName = firstName.slice(0, 120);
-      if (lastName) out.lastName = lastName.slice(0, 120);
+      const flat = nameLine.replace(/,/g, " ").replace(/\s+/g, " ").trim();
+      if (isPlausiblePersonNameTokens(flat)) {
+        const { firstName, lastName } = splitName(nameLine);
+        if (firstName && isPlausibleNameSegment(firstName)) {
+          out.firstName = firstName.slice(0, 120);
+        }
+        if (lastName && isPlausibleNameSegment(lastName)) {
+          out.lastName = lastName.slice(0, 120);
+        }
+      }
     }
 
     const role = guessRole(lines);
