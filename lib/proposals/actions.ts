@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { isMissingProposalCommercialClosedAtError } from "@/lib/prisma/proposal-commercial-closed-drift";
 
 import { commercialClosedAtPatchForStatusChange } from "./commercial-closed-at";
+import { mapProposalPersistError } from "./map-persist-error";
 import { computeProposalPricing } from "./pricing";
 import { parseProposalForm } from "./validation";
 
@@ -39,6 +40,15 @@ export async function createProposal(
   const parsed = parseProposalForm(formData);
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
   const { data } = parsed;
+
+  const rawCreatedBy = gate.userId?.trim() ?? "";
+  const createdByRow = rawCreatedBy
+    ? await prisma.user.findUnique({
+        where: { id: rawCreatedBy },
+        select: { id: true },
+      })
+    : null;
+  const createdById = createdByRow?.id ?? null;
 
   try {
     const company = await prisma.company.findUnique({ where: { id: data.companyId }, select: { id: true } });
@@ -104,7 +114,7 @@ export async function createProposal(
         profileSummary: data.profileSummary,
         scopeNotes: data.scopeNotes,
         commercialNotes: data.commercialNotes,
-        createdById: gate.userId,
+        createdById,
       };
 
       let proposal;
@@ -174,8 +184,8 @@ export async function createProposal(
     revalidatePath("/dashboard");
     return { ok: true, proposalId: created.id };
   } catch (err) {
-    console.error("[createProposal] unexpected error:", err);
-    return { ok: false, message: "No se pudo crear la propuesta. Intenta de nuevo." };
+    console.error("[createProposal] persist error:", err);
+    return { ok: false, message: mapProposalPersistError(err, "create") };
   }
 }
 
@@ -360,8 +370,9 @@ export async function updateProposal(
     revalidatePath(`/proposals/${proposalId}`);
     revalidatePath("/dashboard");
     return { ok: true, proposalId };
-  } catch {
-    return { ok: false, message: "Could not update the proposal. Try again." };
+  } catch (err) {
+    console.error("[updateProposal] persist error:", err);
+    return { ok: false, message: mapProposalPersistError(err, "update") };
   }
 }
 

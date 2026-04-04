@@ -133,6 +133,13 @@ export function ProposalRecordFormFields({
     [vacancies, companyId, opportunityId],
   );
 
+  const vacancySelectDefault = React.useMemo(() => {
+    const vid = defaults?.vacancyId?.trim() ?? "";
+    if (!vid) return "";
+    const allowed = filteredVacancies.some((v) => v.id === vid);
+    return allowed ? vid : "";
+  }, [defaults?.vacancyId, filteredVacancies]);
+
   return (
     <div className="grid gap-4">
       {proposalId ? <input type="hidden" name="proposalId" value={proposalId} /> : null}
@@ -197,9 +204,10 @@ export function ProposalRecordFormFields({
         <div className="space-y-2">
           <label className="text-sm font-medium">Vacante</label>
           <select
+            key={`vacancy-${companyId}-${opportunityId}`}
             name="vacancyId"
             className={selectClass}
-            defaultValue={defaults?.vacancyId ?? ""}
+            defaultValue={vacancySelectDefault}
             aria-invalid={Boolean(fieldErrors?.vacancyId)}
           >
             <option value="">Sin vacante</option>

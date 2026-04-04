@@ -1,13 +1,11 @@
 "use client";
 
-import { FileUpIcon, LinkIcon, PencilIcon, ScrollTextIcon, SparklesIcon } from "lucide-react";
+import { FileUpIcon, LinkIcon, PencilIcon, ScrollTextIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/layout";
 import type { CandidateAvailabilityUi } from "@/lib/candidates/types";
 import { cn } from "@/lib/utils";
-
-import { useCandidateOpenProposalDialog } from "./candidate-detail-proposal-context";
 
 function clickElementById(id: string) {
   if (typeof document === "undefined") return;
@@ -24,43 +22,25 @@ const SECTION_CV = "candidate-section-cv";
 const TRIGGER_EDIT = "candidate-detail-edit-trigger";
 export function CandidateSuggestedActions({
   canManage,
-  canProposals,
   hasEditData,
   hasCvFile,
   pipelineVacancyId,
   availabilityStatus,
 }: {
   canManage: boolean;
-  canProposals: boolean;
   hasEditData: boolean;
   hasCvFile: boolean;
   pipelineVacancyId: string | null;
   availabilityStatus: CandidateAvailabilityUi;
 }) {
-  const openProposalDialog = useCandidateOpenProposalDialog();
   const hasLinkedVacancy = Boolean(pipelineVacancyId?.trim());
   const showEdit = canManage && hasEditData;
-  const showProposal = canProposals;
   const showCvNav = canManage;
   const emphasizeVacancy = showEdit && !hasLinkedVacancy;
   const emphasizeCv = showCvNav && !hasCvFile;
   const availabilityBlocked = availabilityStatus === "No disponible";
 
   const editLabel = !hasLinkedVacancy ? "Vincular a vacante / editar ficha" : "Editar candidato";
-
-  const proposalButton = showProposal ? (
-    <Button
-      key="proposal"
-      type="button"
-      variant={showEdit || showCvNav ? "outline" : "default"}
-      size="sm"
-      className="justify-start gap-2 sm:min-w-0"
-      onClick={() => openProposalDialog()}
-    >
-      <SparklesIcon className="size-4 shrink-0 opacity-80" aria-hidden />
-      Crear propuesta
-    </Button>
-  ) : null;
 
   const editButton = showEdit ? (
     <Button
@@ -118,7 +98,6 @@ export function CandidateSuggestedActions({
   const orderedActions = [
     ...(emphasizeCv && cvButton ? [cvButton] : []),
     ...(emphasizeVacancy && editButton ? [editButton] : []),
-    ...(showProposal ? [proposalButton] : []),
     ...(showEdit && !emphasizeVacancy && editButton ? [editButton] : []),
     ...(showCvNav && !emphasizeCv && cvButton ? [cvButton] : []),
     availButton,
@@ -133,8 +112,8 @@ export function CandidateSuggestedActions({
 
       {availabilityBlocked ? (
         <p className="mt-3 text-xs text-muted-foreground">
-          Disponibilidad actual: no disponible. Aún puedes editar la ficha, subir CV o crear una
-          propuesta si tu rol lo permite.
+          Disponibilidad actual: no disponible. Aún puedes editar la ficha o subir CV; para crear
+          una propuesta usa el botón del encabezado si tu rol lo permite.
         </p>
       ) : null}
     </SectionCard>

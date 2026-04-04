@@ -2,21 +2,29 @@
 
 /* Hero band: sangría a márgenes de página (@page 15mm) */
 .consulting-pdf-root .cpdf-cv-hero-band {
-  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   background: #1565c0;
   margin: -15mm -15mm 0 -15mm;
   padding: 20px 24px;
   box-sizing: border-box;
 }
 
+/* Contenedor de texto: ocupa el espacio restante al logo */
+.consulting-pdf-root .cpdf-cv-hero-text {
+  flex: 1;
+  min-width: 0;
+}
+
 .consulting-pdf-root .cpdf-cv-hero-logo {
-  position: absolute;
-  top: 16px;
-  right: 24px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   height: 32px;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .consulting-pdf-root .cpdf-logo-mark--on-dark {
@@ -32,7 +40,6 @@
 
 .consulting-pdf-root .cpdf-cv-hero-name--on-dark {
   margin: 0;
-  padding-right: 140px;
   font-size: 42px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -42,7 +49,6 @@
 
 .consulting-pdf-root .cpdf-cv-hero-specialty {
   margin: 4px 0 0 0;
-  padding-right: 140px;
   font-size: 16px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);

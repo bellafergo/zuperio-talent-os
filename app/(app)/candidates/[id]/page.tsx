@@ -23,7 +23,11 @@ import { listApplicationsForCandidateUi } from "@/lib/vacancy-applications/queri
 import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types";
 import { listCandidateParticipatingVacanciesUi } from "@/lib/candidates/participating-vacancies-queries";
 
+import { isAnthropicConfigured } from "@/lib/ai/anthropic";
+
 import { OptionalClientSectionBoundary } from "@/components/optional-client-section-boundary";
+import { CandidateCvAiHighlight } from "../_components/candidate-cv-ai-highlight";
+import { CandidateInterviewQuestions } from "../_components/candidate-interview-questions";
 import { CandidateAvailabilityBadge } from "../_components/candidate-availability-badge";
 import { CandidateRecruitmentStageBadge } from "../_components/candidate-recruitment-stage-badge";
 import { CandidateEditDialog } from "../_components/candidate-edit-dialog";
@@ -256,6 +260,14 @@ export default async function CandidateDetailPage({ params }: PageProps) {
   const headerTitle = safeDetailLine(candidate.displayName);
   const title = headerTitle !== "—" ? headerTitle : "Candidato";
 
+  // AI features — cv text from editData (managers only); pipeline vacancy title from participatingVacancies
+  const aiConfigured = isAnthropicConfigured();
+  const cvTextForAi = editData?.cvWorkExperienceText?.trim() || editData?.cvRawText?.trim() || null;
+  const pipelineVacancyTitle =
+    candidate.pipelineVacancyId
+      ? (participatingVacancies.find((v) => v.vacancyId === candidate.pipelineVacancyId)?.title ?? null)
+      : null;
+
   const proposalQuickCreatePartial: Partial<ProposalFormDefaults> | undefined =
     canProposals
       ? {
@@ -319,7 +331,6 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       >
         <CandidateSuggestedActions
           canManage={canManage}
-          canProposals={canProposals}
           hasEditData={Boolean(editData)}
           hasCvFile={Boolean(cvFileInfo?.cvFileName?.trim())}
           pipelineVacancyId={candidate.pipelineVacancyId}
@@ -427,6 +438,16 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         </div>
       ) : null}
 
+      {canManage && candidate.pipelineVacancyId ? (
+        <CandidateCvAiHighlight
+          candidateId={id}
+          vacancyId={candidate.pipelineVacancyId}
+          vacancyTitle={pipelineVacancyTitle}
+          cvRawText={cvTextForAi}
+          aiConfigured={aiConfigured}
+        />
+      ) : null}
+
       <CandidateCurrentAssignmentSection assignment={currentAssignment} />
 
       <CandidateApplicationsSection applications={applications} />
@@ -434,6 +455,15 @@ export default async function CandidateDetailPage({ params }: PageProps) {
       <CandidateParticipatingVacanciesSection rows={participatingVacancies} />
 
       <CandidateVacancyMatchesSection matches={vacancyMatches} />
+
+      <CandidateInterviewQuestions
+        candidateId={id}
+        vacancyId={candidate.pipelineVacancyId}
+        vacancyTitle={pipelineVacancyTitle}
+        candidateRole={candidate.role ?? ""}
+        cvRawText={cvTextForAi}
+        aiConfigured={aiConfigured}
+      />
 
       <PlaceholderSection
         title="Actividad"

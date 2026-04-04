@@ -225,7 +225,8 @@ export async function getProposalQuickCreatePrefillForCandidate(
     if (activePlacement?.vacancy) {
       const v = activePlacement.vacancy;
       return {
-        companyId: activePlacement.companyId,
+        // Always align with the vacancy row (placement.companyId can drift if denormalized data is stale).
+        companyId: v.companyId,
         opportunityId: v.opportunityId,
         vacancyId: v.id,
         vacancyTitle: v.title,

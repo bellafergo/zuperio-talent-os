@@ -234,16 +234,18 @@ export function CandidateCvConsultingDocument({
         data-pdf-print-root="candidate-cv"
       >
         <div className="cpdf-cv-hero-band">
+          <div className="cpdf-cv-hero-text">
+            <h1 className="cpdf-cv-hero-name cpdf-cv-hero-name--on-dark">
+              {data.fullName}
+            </h1>
+            <p className="cpdf-cv-hero-specialty">{data.role}</p>
+          </div>
           <div className="cpdf-cv-hero-logo" aria-hidden>
             <span className="cpdf-logo-mark cpdf-logo-mark--on-dark">Z</span>
             <span className="cpdf-logo-text cpdf-logo-text--on-dark">
               ZUPERIO
             </span>
           </div>
-          <h1 className="cpdf-cv-hero-name cpdf-cv-hero-name--on-dark">
-            {data.fullName}
-          </h1>
-          <p className="cpdf-cv-hero-specialty">{data.role}</p>
         </div>
 
         <div className="cpdf-cv-hero-after">
