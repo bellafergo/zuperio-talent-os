@@ -1,60 +1,109 @@
 /* CV — layout & components (tokens: proposal-consulting-pdf.css on .consulting-pdf-root) */
 
-/* Hero (post-header): nombre, especialización, pill “Aplicando a”, meta chips */
-.consulting-pdf-root .cpdf-cv-hero {
-  margin-bottom: 1.35rem;
+/* Hero band: sangría a márgenes de página (@page 15mm) */
+.consulting-pdf-root .cpdf-cv-hero-band {
+  position: relative;
+  background: #1565c0;
+  margin: -15mm -15mm 0 -15mm;
+  padding: 20px 24px;
+  box-sizing: border-box;
 }
 
-.consulting-pdf-root .cpdf-cv-hero-name-wrap {
-  border-left: 3px solid var(--cpdf-primary);
-  padding-left: 0.9rem;
-  margin-bottom: 0.3rem;
+.consulting-pdf-root .cpdf-cv-hero-logo {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 32px;
 }
 
-.consulting-pdf-root .cpdf-cv-hero-name {
+.consulting-pdf-root .cpdf-logo-mark--on-dark {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.consulting-pdf-root .cpdf-logo-text--on-dark {
+  color: #fff;
+  line-height: 32px;
+}
+
+.consulting-pdf-root .cpdf-cv-hero-name--on-dark {
   margin: 0;
-  font-size: 32px;
+  padding-right: 140px;
+  font-size: 42px;
   font-weight: 800;
-  letter-spacing: -0.028em;
-  line-height: 1.08;
-  color: var(--cpdf-ink);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: #fff;
 }
 
-.consulting-pdf-root .cpdf-cv-hero-title {
-  margin: 0.2rem 0 0;
-  padding-left: calc(3px + 0.9rem);
-  font-size: 13px;
+.consulting-pdf-root .cpdf-cv-hero-specialty {
+  margin: 4px 0 0 0;
+  padding-right: 140px;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.35;
+}
+
+.consulting-pdf-root .cpdf-cv-hero-after {
+  padding: 12px 0 8px 0;
+}
+
+.consulting-pdf-root .cpdf-cv-apply-row {
+  margin: 0;
+}
+
+.consulting-pdf-root .cpdf-cv-apply-pill--square {
+  display: inline-block;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: #1565c0;
+  color: #fff;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--cpdf-secondary);
 }
 
-.consulting-pdf-root .cpdf-cv-apply-wrap {
-  margin: 0;
-}
-
-.consulting-pdf-root .cpdf-cv-apply-pill {
-  display: inline-block;
-  margin: 0.55rem 0 0;
-  padding: 5px 14px;
-  border-radius: 999px;
-  background: var(--cpdf-primary);
-  color: #fff;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-
-.consulting-pdf-root .cpdf-cv-apply-pill strong {
+.consulting-pdf-root .cpdf-cv-apply-pill--square strong {
   font-weight: 700;
 }
 
-.consulting-pdf-root .cpdf-cv-hero-meta {
-  margin: 0.45rem 0 0;
-  padding-left: calc(3px + 0.9rem);
-  font-size: 11.5px;
+.consulting-pdf-root .cpdf-cv-hero-meta-dots {
+  margin: 8px 0 0 0;
+  font-size: 12px;
   line-height: 1.5;
-  color: var(--cpdf-muted);
+  color: #616161;
+}
+
+.consulting-pdf-root .cpdf-cv-hero-meta-item {
+  display: inline;
+}
+
+.consulting-pdf-root .cpdf-cv-hero-meta-item + .cpdf-cv-hero-meta-item::before {
+  content: " · ";
+  color: #616161;
+}
+
+.consulting-pdf-root .cpdf-cv-hero-meta-bullet {
+  color: #1565c0;
+  margin-right: 2px;
+}
+
+.consulting-pdf-root .cpdf-cv-hero-rule {
+  border: none;
+  border-top: 2px solid #1565c0;
+  margin: 0 0 12px 0;
+}
+
+.consulting-pdf-root--screen .cpdf-cv-hero-band {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
 }
 
 /* Cuerpo 28% / 72% */
@@ -180,6 +229,35 @@
   white-space: nowrap;
 }
 
+.consulting-pdf-root .cpdf-cv-lang-block {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--cpdf-sidebar-rule);
+}
+
+.consulting-pdf-root .cpdf-cv-lang-block:last-child {
+  border-bottom: none;
+}
+
+.consulting-pdf-root .cpdf-cv-lang-row--top {
+  padding: 0;
+  border-bottom: none;
+}
+
+.consulting-pdf-root .cpdf-cv-lang-dots {
+  font-size: 10px;
+  letter-spacing: 1px;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.consulting-pdf-root .cpdf-cv-lang-dot {
+  color: #e0e0e0;
+}
+
+.consulting-pdf-root .cpdf-cv-lang-dot--on {
+  color: #1565c0;
+}
+
 /* Certificaciones */
 .consulting-pdf-root .cpdf-cv-cert-list {
   margin: 0.15rem 0 0;
@@ -226,6 +304,16 @@
   line-height: 1.3;
 }
 
+.consulting-pdf-root .cpdf-cv-industry-pill--solid {
+  background: #1565c0;
+  color: #fff;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
 /* Formación */
 .consulting-pdf-root .cpdf-cv-edu-block {
   margin: 0 0 0.55rem;
@@ -263,6 +351,38 @@
   content: "• ";
   color: var(--cpdf-primary);
   font-weight: 700;
+}
+
+.consulting-pdf-root .cpdf-cv-soft-hint {
+  margin: 0 0 6px 0;
+  font-style: italic;
+  font-size: 9px;
+  color: #9e9e9e;
+  line-height: 1.35;
+}
+
+.consulting-pdf-root .cpdf-cv-soft-pills--outlined {
+  gap: 4px;
+}
+
+.consulting-pdf-root .cpdf-cv-soft-pill-detailed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #42a5f5;
+  border-radius: 20px;
+  padding: 3px 10px;
+  background: #fff;
+  color: #1565c0;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.consulting-pdf-root .cpdf-cv-soft-pill-dot {
+  font-size: 7px;
+  line-height: 1;
+  color: #42a5f5;
 }
 
 /* Skills técnicos */

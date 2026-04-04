@@ -105,6 +105,8 @@ export function ProposalConsultingPdfDocument({
   const { left: termsLeft, right: termsRight } =
     splitTermsForColumns(STANDARD_CONDITIONS_ES);
 
+  const isSimpleFormat = proposal.formatValue === "SIMPLE";
+
   const rootClass = [
     "consulting-pdf-root",
     "consulting-pdf-root--proposal-executive",
@@ -126,10 +128,11 @@ export function ProposalConsultingPdfDocument({
             <span className="cpdf-logo-text">ZUPERIO</span>
           </div>
           <div className="cpdf-top-meta">
-            <strong>{refCode}</strong>
-            <span>{today}</span>
-            <span>Pág. 1 de 1</span>
-            <span>Vigencia {proposal.validityDays} días</span>
+            <div className="cpdf-top-meta-folio">{refCode}</div>
+            <div className="cpdf-top-meta-line">{today}</div>
+            <div className="cpdf-top-meta-line">
+              Pág. 1 de 1 · Vigencia {proposal.validityDays} días
+            </div>
           </div>
         </header>
         <div className="cpdf-rule-blue" aria-hidden />
@@ -171,9 +174,10 @@ export function ProposalConsultingPdfDocument({
           </div>
         </div>
 
-        {execSummary ? (
+        {!isSimpleFormat && execSummary ? (
           <p className="cpdf-lead">{execSummary}</p>
-        ) : (
+        ) : null}
+        {!isSimpleFormat && !execSummary ? (
           <p className="cpdf-lead">
             Propuesta comercial para{" "}
             <span className="cpdf-em">{candidateDisplay}</span>
@@ -185,13 +189,16 @@ export function ProposalConsultingPdfDocument({
               <>
                 {" "}
                 Cobertura de competencias requeridas:{" "}
-                <span className="cpdf-em">{comparisonMatrix.computedMatch.score}%</span>.
+                <span className="cpdf-em">
+                  {comparisonMatrix.computedMatch.score}%
+                </span>
+                .
               </>
             ) : (
               " Puede completar el resumen ejecutivo en Zuperio cuando corresponda."
             )}
           </p>
-        )}
+        ) : null}
 
         <section className="cpdf-section">
           <p className="cpdf-sec-label">Recurso propuesto</p>
@@ -334,61 +341,116 @@ export function ProposalConsultingPdfDocument({
           )}
         </section>
 
-        {scopeNotes?.trim() ? (
+        {!isSimpleFormat && scopeNotes?.trim() ? (
           <section className="cpdf-section cpdf-section--compact">
             <p className="cpdf-sec-label">Alcance</p>
             <p className="cpdf-closing cpdf-closing--tight">{scopeNotes.trim()}</p>
           </section>
         ) : null}
 
-        <section className="cpdf-section">
-          <p className="cpdf-sec-label">Términos y condiciones</p>
-          <ul className="cpdf-terms-grid">
-            {termsLeft.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-            {termsRight.map((line) => (
-              <li key={`r-${line}`}>{line}</li>
-            ))}
-          </ul>
-          {proposal.commercialNotes?.trim() ? (
-            <div className="cpdf-remark">
-              <p className="cpdf-remark-label">Observaciones comerciales</p>
-              <p className="cpdf-remark-body">
-                {proposal.commercialNotes.trim()}
-              </p>
-            </div>
-          ) : null}
-        </section>
+        {isSimpleFormat ? (
+          <div className="cpdf-terms-accept-wrap">
+            <section className="cpdf-section cpdf-section--terms-in-wrap">
+              <p className="cpdf-sec-label">Términos y condiciones</p>
+              <ul className="cpdf-terms-grid">
+                {termsLeft.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+                {termsRight.map((line) => (
+                  <li key={`r-${line}`}>{line}</li>
+                ))}
+              </ul>
+              {proposal.commercialNotes?.trim() ? (
+                <div className="cpdf-remark">
+                  <p className="cpdf-remark-label">Observaciones comerciales</p>
+                  <p className="cpdf-remark-body">
+                    {proposal.commercialNotes.trim()}
+                  </p>
+                </div>
+              ) : null}
+            </section>
 
-        <section className="cpdf-accept">
-          <p className="cpdf-accept-label">Aceptación</p>
-          <p className="cpdf-accept-intro">
-            Al firmar, el cliente confirma la aceptación de esta propuesta, sin
-            perjuicio del contrato definitivo.
-          </p>
-          <div className="cpdf-sign-grid">
-            <div className="cpdf-sign-card">
-              <div className="cpdf-sign-bar">{companyDisplay}</div>
-              <div className="cpdf-sign-body">
-                <div className="cpdf-sign-inkline" />
-                <p className="cpdf-sign-name-slot">Nombre y firma</p>
-                <p className="cpdf-sign-role-slot">Cargo</p>
+            <section className="cpdf-accept cpdf-accept--in-wrap">
+              <p className="cpdf-accept-label">Aceptación</p>
+              <p className="cpdf-accept-intro">
+                Al firmar, el cliente confirma la aceptación de esta propuesta,
+                sin perjuicio del contrato definitivo.
+              </p>
+              <div className="cpdf-sign-grid">
+                <div className="cpdf-sign-card">
+                  <div className="cpdf-sign-bar">{companyDisplay}</div>
+                  <div className="cpdf-sign-body">
+                    <div className="cpdf-sign-inkline" />
+                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
+                    <p className="cpdf-sign-role-slot">Cargo</p>
+                  </div>
+                </div>
+                <div className="cpdf-sign-card">
+                  <div className="cpdf-sign-bar">Zuperio</div>
+                  <div className="cpdf-sign-body">
+                    <div className="cpdf-sign-inkline" />
+                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
+                    <p className="cpdf-sign-role-slot">Cargo</p>
+                    <p className="cpdf-sign-fecha">
+                      Fecha de aceptación: ___________
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="cpdf-sign-card">
-              <div className="cpdf-sign-bar">Zuperio</div>
-              <div className="cpdf-sign-body">
-                <div className="cpdf-sign-inkline" />
-                <p className="cpdf-sign-name-slot">Nombre y firma</p>
-                <p className="cpdf-sign-role-slot">Cargo</p>
-                <p className="cpdf-sign-fecha">
-                  Fecha de aceptación: ___________
-                </p>
-              </div>
-            </div>
+            </section>
           </div>
-        </section>
+        ) : (
+          <>
+            <section className="cpdf-section">
+              <p className="cpdf-sec-label">Términos y condiciones</p>
+              <ul className="cpdf-terms-grid">
+                {termsLeft.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+                {termsRight.map((line) => (
+                  <li key={`r-${line}`}>{line}</li>
+                ))}
+              </ul>
+              {proposal.commercialNotes?.trim() ? (
+                <div className="cpdf-remark">
+                  <p className="cpdf-remark-label">Observaciones comerciales</p>
+                  <p className="cpdf-remark-body">
+                    {proposal.commercialNotes.trim()}
+                  </p>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="cpdf-accept">
+              <p className="cpdf-accept-label">Aceptación</p>
+              <p className="cpdf-accept-intro">
+                Al firmar, el cliente confirma la aceptación de esta propuesta,
+                sin perjuicio del contrato definitivo.
+              </p>
+              <div className="cpdf-sign-grid">
+                <div className="cpdf-sign-card">
+                  <div className="cpdf-sign-bar">{companyDisplay}</div>
+                  <div className="cpdf-sign-body">
+                    <div className="cpdf-sign-inkline" />
+                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
+                    <p className="cpdf-sign-role-slot">Cargo</p>
+                  </div>
+                </div>
+                <div className="cpdf-sign-card">
+                  <div className="cpdf-sign-bar">Zuperio</div>
+                  <div className="cpdf-sign-body">
+                    <div className="cpdf-sign-inkline" />
+                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
+                    <p className="cpdf-sign-role-slot">Cargo</p>
+                    <p className="cpdf-sign-fecha">
+                      Fecha de aceptación: ___________
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
 
         <footer className="cpdf-doc-footer">
           <span>

@@ -105,9 +105,20 @@
 
 .cpdf-top-meta {
   text-align: right;
-  font-size: 8.5px;
-  line-height: 1.55;
+  font-size: 9px;
+  line-height: 1.8;
   letter-spacing: 0.02em;
+  color: var(--cpdf-muted);
+}
+
+.cpdf-top-meta-folio {
+  font-weight: 700;
+  color: var(--cpdf-ink);
+  font-size: 9px;
+}
+
+.cpdf-top-meta-line {
+  font-size: 9px;
   color: var(--cpdf-muted);
 }
 
@@ -146,10 +157,20 @@
   min-width: 0;
 }
 
-/* Propuesta económica — barra + bloque sobre fondo #E3F2FD */
+/* Propuesta económica — fondo blanco, solo acento izquierdo (target) */
+.cpdf-title-block--economic {
+  border-left: 4px solid #1565c0;
+  padding-left: 14px;
+  gap: 0;
+}
+
+.cpdf-title-block--economic .cpdf-title-accent {
+  display: none;
+}
+
 .cpdf-title-block--economic .cpdf-title-inner {
-  background: var(--cpdf-tag-bg);
-  padding: 1rem 1.25rem 1.15rem;
+  background: transparent !important;
+  padding: 8px 0;
 }
 
 .cpdf-doc-title {
@@ -860,6 +881,11 @@ a.cpdf-party-email,
     break-inside: avoid;
     page-break-inside: avoid;
   }
+
+  .cpdf-terms-accept-wrap {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 
 /* ——— Executive one-page proposal (tighter rhythm; @page A4 matches Puppeteer) ——— */
@@ -880,7 +906,7 @@ a.cpdf-party-email,
 }
 
 .consulting-pdf-root--proposal-executive .cpdf-title-block--economic .cpdf-title-inner {
-  padding: 0.75rem 1rem 0.85rem;
+  padding: 8px 0;
 }
 
 .consulting-pdf-root--proposal-executive .cpdf-doc-title {
@@ -961,4 +987,20 @@ a.cpdf-party-email,
 .cpdf-closing--tight {
   font-size: 12px;
   line-height: 1.45;
+}
+
+/* Variante Sencilla: términos + aceptación no se parten entre páginas */
+.cpdf-terms-accept-wrap {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.cpdf-accept--in-wrap {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--cpdf-rule);
+}
+
+.cpdf-section--terms-in-wrap {
+  margin-bottom: 0.5rem;
 }

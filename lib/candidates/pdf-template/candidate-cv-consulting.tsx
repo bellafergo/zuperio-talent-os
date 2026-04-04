@@ -1,6 +1,6 @@
 /**
  * Candidate CV PDF body — print: app/(print)/candidates/[id]/cv-print/page.tsx (Puppeteer).
- * Proposal tab preview must pass variant="screen" for readable scaling; print uses variant="pdf".
+ * Proposal tab preview must pass variant="screen" for print parity.
  */
 import type { CandidateCvPrintData } from "@/lib/candidates/get-candidate-cv-print-data";
 
@@ -9,10 +9,31 @@ import "./candidate-cv.css";
 
 type CvSkillRow = CandidateCvPrintData["structuredSkills"][number];
 
+/** No hay campo Prisma dedicado: categorías de skill catalog que representan habilidades blandas. */
+const SOFT_SKILL_CATEGORY_RE =
+  /blanda|soft\b|interpersonal|comportamiento|liderazgo|socioemocional|power\s*skill|actitud|comunicaci/i;
+
+function partitionStructuredSkills(skills: CvSkillRow[]): {
+  technicalRows: CvSkillRow[];
+  softSkillNames: string[];
+} {
+  const soft: string[] = [];
+  const technicalRows: CvSkillRow[] = [];
+  for (const s of skills) {
+    if (SOFT_SKILL_CATEGORY_RE.test(s.category)) {
+      const n = s.name.trim();
+      if (n && !soft.includes(n)) soft.push(n);
+    } else {
+      technicalRows.push(s);
+    }
+  }
+  return { technicalRows, softSkillNames: soft };
+}
+
 function groupSkillsByCategory(
-  skills: CandidateCvPrintData["structuredSkills"],
-): { category: string; items: CandidateCvPrintData["structuredSkills"] }[] {
-  const map = new Map<string, CandidateCvPrintData["structuredSkills"]>();
+  skills: CvSkillRow[],
+): { category: string; items: CvSkillRow[] }[] {
+  const map = new Map<string, CvSkillRow[]>();
   for (const s of skills) {
     const list = map.get(s.category) ?? [];
     list.push(s);
@@ -23,13 +44,11 @@ function groupSkillsByCategory(
     .map(([category, items]) => ({ category, items }));
 }
 
-function maxSkillYears(
-  skills: CandidateCvPrintData["structuredSkills"],
-): number {
+function maxSkillYears(skills: CvSkillRow[]): number {
   return skills.reduce((m, s) => Math.max(m, s.yearsExperience ?? 0), 0);
 }
 
-function topSkills(skills: CandidateCvPrintData["structuredSkills"], n: number): CvSkillRow[] {
+function topSkills(skills: CvSkillRow[], n: number): CvSkillRow[] {
   return [...skills]
     .sort(
       (a, b) =>
@@ -44,7 +63,8 @@ function skillBarPercent(s: CvSkillRow): number {
   if (lv.includes("expert") || lv.includes("principal")) return 100;
   if (lv.includes("advanced") || lv.includes("avanz")) return 80;
   if (lv.includes("intermediate") || lv.includes("intermed")) return 55;
-  if (lv.includes("basic") || lv.includes("básic") || lv.includes("basico")) return 30;
+  if (lv.includes("basic") || lv.includes("básic") || lv.includes("basico"))
+    return 30;
   if (lv.length > 0) return 45;
   const y = s.yearsExperience;
   if (y != null && y >= 10) return 92;
@@ -53,9 +73,12 @@ function skillBarPercent(s: CvSkillRow): number {
   return 38;
 }
 
-function buildExecutiveParagraph(data: CandidateCvPrintData): string {
-  const mx = maxSkillYears(data.structuredSkills);
-  const top = topSkills(data.structuredSkills, 4).map((s) => s.name);
+function buildExecutiveParagraph(
+  data: CandidateCvPrintData,
+  technicalRows: CvSkillRow[],
+): string {
+  const mx = maxSkillYears(technicalRows);
+  const top = topSkills(technicalRows, 4).map((s) => s.name);
   const topPhrase =
     top.length > 0
       ? `Sus dominios más sólidos incluyen ${top.join(", ")}.`
@@ -86,61 +109,49 @@ function buildExecutiveParagraph(data: CandidateCvPrintData): string {
     .join(" ");
 }
 
-function buildHighlightBullets(data: CandidateCvPrintData): string[] {
-  const mx = maxSkillYears(data.structuredSkills);
-  const top = topSkills(data.structuredSkills, 5).map((s) => s.name);
-  const companies = [
-    ...new Set(data.placements.map((p) => p.companyName)),
-  ].slice(0, 4);
-
-  const bullets: string[] = [];
-
-  bullets.push(
-    mx > 0
-      ? `Hasta ${mx}+ años de experiencia en competencias técnicas registradas.`
-      : `Perfil ${data.seniorityLabel} con foco en ${data.role}.`,
-  );
-
-  if (top.length) {
-    bullets.push(`Dominios técnicos: ${top.join(", ")}.`);
-  } else if (data.legacySkillsText.trim()) {
-    const short = data.legacySkillsText.trim().slice(0, 120);
-    bullets.push(
-      data.legacySkillsText.length > 120
-        ? `Competencias: ${short}…`
-        : `Competencias: ${short}`,
-    );
-  }
-
-  if (companies.length) {
-    bullets.push(`Clientes / entornos recientes: ${companies.join(", ")}.`);
-  }
-
-  bullets.push(`Disponibilidad: ${data.availabilityLabel}.`);
-
-  return bullets.slice(0, 6);
-}
-
 function applyingRoleLabel(data: CandidateCvPrintData): string {
   return data.placements[0]?.roleTitle?.trim() || data.role;
 }
 
-function heroMetaLine(data: CandidateCvPrintData, mx: number): string {
-  const bits: string[] = [];
-  if (data.locationCity?.trim()) bits.push(data.locationCity.trim());
-  else if (data.currentCompany?.trim()) bits.push(data.currentCompany.trim());
-  if (mx > 0) bits.push(`${mx}+ años de experiencia`);
-  if (data.workModality?.trim()) bits.push(data.workModality.trim());
-  bits.push(data.availabilityLabel);
-  return bits.join(" · ");
+/** Segmentos con viñeta para la línea bajo el hero (ciudad, experiencia, modalidad, disponibilidad). */
+function heroMetaSegments(data: CandidateCvPrintData, mx: number): string[] {
+  const segs: string[] = [];
+  if (data.locationCity?.trim()) segs.push(data.locationCity.trim());
+  else if (data.currentCompany?.trim()) segs.push(data.currentCompany.trim());
+  if (mx > 0) segs.push(`${mx}+ años de experiencia`);
+  if (data.workModality?.trim()) segs.push(data.workModality.trim());
+  segs.push(data.availabilityLabel);
+  return segs;
 }
 
-function highlightsAsSoftPills(highlights: string[]): string[] {
-  return highlights.slice(0, 8).map((h) => {
-    const t = h.trim();
-    if (t.length <= 42) return t;
-    return `${t.slice(0, 39)}…`;
-  });
+const LANG_LEVEL_DOTS: Record<string, number> = {
+  Nativo: 5,
+  Native: 5,
+  C2: 5,
+  C1: 4,
+  B2: 3,
+  B1: 3,
+  "B1 — Intermedio": 3,
+  Intermedio: 3,
+  A2: 2,
+  A1: 1,
+  Básico: 1,
+  Basico: 1,
+};
+
+function languageDotCount(levelRaw: string): number {
+  const level = levelRaw.trim();
+  if (!level) return 3;
+  if (LANG_LEVEL_DOTS[level] != null) return LANG_LEVEL_DOTS[level];
+  const low = level.toLowerCase();
+  if (/nativ|native/.test(low)) return 5;
+  if (/\bc2\b/.test(low)) return 5;
+  if (/\bc1\b/.test(low)) return 4;
+  if (/\bb2\b/.test(low)) return 3;
+  if (/\bb1\b/.test(low) || /intermed/.test(low)) return 3;
+  if (/\ba2\b/.test(low)) return 2;
+  if (/\ba1\b/.test(low) || /básic|basico/.test(low)) return 1;
+  return 3;
 }
 
 function formatTodayEsMx(): string {
@@ -162,7 +173,6 @@ function availabilityDotClass(
 
 export type CandidateCvConsultingDocumentProps = {
   data: CandidateCvPrintData;
-  /** `screen` — vista previa en la app (misma plantilla y escala base que el PDF). */
   variant?: "pdf" | "screen";
 };
 
@@ -170,23 +180,31 @@ export function CandidateCvConsultingDocument({
   data,
   variant = "pdf",
 }: CandidateCvConsultingDocumentProps) {
-  const skillGroups = groupSkillsByCategory(data.structuredSkills);
-  const executive = buildExecutiveParagraph(data);
-  const highlights = buildHighlightBullets(data);
-  const softPills = highlightsAsSoftPills(highlights);
+  const { technicalRows, softSkillNames } = partitionStructuredSkills(
+    data.structuredSkills,
+  );
+  const skillGroups = groupSkillsByCategory(technicalRows);
+  const executive = buildExecutiveParagraph(data, technicalRows);
   const today = formatTodayEsMx();
   const refCode = `ZCV-${data.id.slice(0, 8).toUpperCase()}`;
-  const mx = maxSkillYears(data.structuredSkills);
+  const mx = maxSkillYears(technicalRows);
+  const metaSegments = heroMetaSegments(data, mx);
+
   const languagesList = data.languages.filter(
     (l) => l.name.trim() || l.level.trim(),
   );
   const showLanguages = languagesList.length > 0;
-  const certificationsList = data.certifications.map((c) => c.trim()).filter(Boolean);
+  const certificationsList = data.certifications
+    .map((c) => c.trim())
+    .filter(Boolean);
   const showCerts = certificationsList.length > 0;
   const industriesList = data.industries.map((s) => s.trim()).filter(Boolean);
   const showIndustries = industriesList.length > 0;
-  const educationBlocks = data.educationBlocks.map((b) => b.trim()).filter(Boolean);
+  const educationBlocks = data.educationBlocks
+    .map((b) => b.trim())
+    .filter(Boolean);
   const showEducation = educationBlocks.length > 0;
+  const showSoftSkills = softSkillNames.length > 0;
 
   const rootClass = [
     "consulting-pdf-root",
@@ -203,32 +221,37 @@ export function CandidateCvConsultingDocument({
         aria-label="Perfil del recurso"
         data-pdf-print-root="candidate-cv"
       >
-        <header className="cpdf-top">
-          <div className="cpdf-logo" aria-hidden>
-            <span className="cpdf-logo-mark">Z</span>
-            <span className="cpdf-logo-text">ZUPERIO</span>
+        <div className="cpdf-cv-hero-band">
+          <div className="cpdf-cv-hero-logo" aria-hidden>
+            <span className="cpdf-logo-mark cpdf-logo-mark--on-dark">Z</span>
+            <span className="cpdf-logo-text cpdf-logo-text--on-dark">
+              ZUPERIO
+            </span>
           </div>
-          <div className="cpdf-top-meta">
-            <strong>{refCode}</strong>
-            <span>{today}</span>
-            <span>Pág. 1 de 1</span>
-            <span>Vigencia conforme uso comercial</span>
-          </div>
-        </header>
-        <div className="cpdf-rule-blue" aria-hidden />
+          <h1 className="cpdf-cv-hero-name cpdf-cv-hero-name--on-dark">
+            {data.fullName}
+          </h1>
+          <p className="cpdf-cv-hero-specialty">{data.role}</p>
+        </div>
 
-        <section className="cpdf-cv-hero" aria-label="Identidad del candidato">
-          <div className="cpdf-cv-hero-name-wrap">
-            <h1 className="cpdf-cv-hero-name">{data.fullName}</h1>
-          </div>
-          <p className="cpdf-cv-hero-title">{data.role}</p>
-          <p className="cpdf-cv-apply-wrap">
-            <span className="cpdf-cv-apply-pill">
+        <div className="cpdf-cv-hero-after">
+          <div className="cpdf-cv-apply-row">
+            <span className="cpdf-cv-apply-pill cpdf-cv-apply-pill--square">
               Aplicando a: <strong>{applyingRoleLabel(data)}</strong>
             </span>
+          </div>
+          <p className="cpdf-cv-hero-meta-dots">
+            {metaSegments.map((seg, i) => (
+              <span key={i} className="cpdf-cv-hero-meta-item">
+                <span className="cpdf-cv-hero-meta-bullet" aria-hidden>
+                  ●
+                </span>
+                {seg}
+              </span>
+            ))}
           </p>
-          <p className="cpdf-cv-hero-meta">{heroMetaLine(data, mx)}</p>
-        </section>
+          <hr className="cpdf-cv-hero-rule" />
+        </div>
 
         <div className="cpdf-cv-body">
           <aside className="cpdf-cv-sidebar">
@@ -239,7 +262,9 @@ export function CandidateCvConsultingDocument({
                   className={availabilityDotClass(data.availabilityStatus)}
                   aria-hidden
                 />
-                <span className="cpdf-cv-avail-text">{data.availabilityLabel}</span>
+                <span className="cpdf-cv-avail-text">
+                  {data.availabilityLabel}
+                </span>
               </div>
               <p className="cpdf-cv-avail-sub">{data.seniorityLabel}</p>
             </div>
@@ -249,11 +274,32 @@ export function CandidateCvConsultingDocument({
                 <p className="cpdf-sec-label">Idiomas</p>
                 <div className="cpdf-cv-lang-list">
                   {languagesList.map((lang, idx) => (
-                    <div key={`${idx}-${lang.name}`} className="cpdf-cv-lang-row">
-                      <span className="cpdf-cv-lang-name">{lang.name}</span>
-                      {lang.level ? (
-                        <span className="cpdf-cv-lang-level">{lang.level}</span>
-                      ) : null}
+                    <div
+                      key={`${idx}-${lang.name}`}
+                      className="cpdf-cv-lang-block"
+                    >
+                      <div className="cpdf-cv-lang-row cpdf-cv-lang-row--top">
+                        <span className="cpdf-cv-lang-name">{lang.name}</span>
+                        {lang.level ? (
+                          <span className="cpdf-cv-lang-level">
+                            {lang.level}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="cpdf-cv-lang-dots" aria-hidden>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <span
+                            key={i}
+                            className={
+                              i < languageDotCount(lang.level || "Intermedio")
+                                ? "cpdf-cv-lang-dot cpdf-cv-lang-dot--on"
+                                : "cpdf-cv-lang-dot"
+                            }
+                          >
+                            ●
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -267,7 +313,7 @@ export function CandidateCvConsultingDocument({
                   <div key={g.category} className="cpdf-cv-skill-group">
                     <p className="cpdf-cv-skill-cat">{g.category}</p>
                     {g.items.map((s) => (
-                      <div key={s.name} className="cpdf-cv-skill-row">
+                      <div key={`${g.category}-${s.name}`} className="cpdf-cv-skill-row">
                         <div className="cpdf-cv-skill-name">
                           <span>{s.name}</span>
                           <span className="cpdf-cv-skill-meta">
@@ -300,13 +346,19 @@ export function CandidateCvConsultingDocument({
               </div>
             ) : null}
 
-            {softPills.length > 0 ? (
+            {showSoftSkills ? (
               <div className="cpdf-cv-side-block">
-                <p className="cpdf-sec-label">Habilidades blandas</p>
-                <div className="cpdf-cv-soft-pills">
-                  {softPills.map((label, idx) => (
-                    <span key={`${idx}-${label}`} className="cpdf-cv-soft-pill">
-                      {label}
+                <p className="cpdf-sec-label">Habilidades blandas detectadas</p>
+                <p className="cpdf-cv-soft-hint">
+                  Identificadas por análisis de perfil
+                </p>
+                <div className="cpdf-cv-soft-pills cpdf-cv-soft-pills--outlined">
+                  {softSkillNames.map((skill) => (
+                    <span key={skill} className="cpdf-cv-soft-pill-detailed">
+                      <span className="cpdf-cv-soft-pill-dot" aria-hidden>
+                        ●
+                      </span>
+                      {skill}
                     </span>
                   ))}
                 </div>
@@ -318,7 +370,10 @@ export function CandidateCvConsultingDocument({
                 <p className="cpdf-sec-label">Certificaciones</p>
                 <ul className="cpdf-cv-cert-list">
                   {certificationsList.map((c, cIdx) => (
-                    <li key={`cert-${cIdx}-${c.slice(0, 48)}`} className="cpdf-cv-cert-line">
+                    <li
+                      key={`cert-${cIdx}-${c.slice(0, 48)}`}
+                      className="cpdf-cv-cert-line"
+                    >
                       {c}
                     </li>
                   ))}
@@ -331,7 +386,10 @@ export function CandidateCvConsultingDocument({
                 <p className="cpdf-sec-label">Industrias y entornos</p>
                 <div className="cpdf-cv-industry-pills">
                   {industriesList.slice(0, 12).map((ind, iIdx) => (
-                    <span key={`${iIdx}-${ind.slice(0, 40)}`} className="cpdf-cv-industry-pill">
+                    <span
+                      key={`${iIdx}-${ind.slice(0, 40)}`}
+                      className="cpdf-cv-industry-pill cpdf-cv-industry-pill--solid"
+                    >
                       {ind}
                     </span>
                   ))}
@@ -368,7 +426,10 @@ export function CandidateCvConsultingDocument({
               <p className="cpdf-sec-label">Experiencia laboral</p>
               {data.placements.length > 0 ? (
                 data.placements.map((p, i) => (
-                  <div key={`${p.companyName}-${i}`} className="cpdf-cv-exp-block">
+                  <div
+                    key={`${p.companyName}-${i}`}
+                    className="cpdf-cv-exp-block"
+                  >
                     <div className="cpdf-cv-exp-head">
                       <div>
                         <p className="cpdf-cv-exp-role">{p.roleTitle}</p>
