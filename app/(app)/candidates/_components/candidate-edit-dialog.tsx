@@ -27,14 +27,24 @@ export function CandidateEditDialog({
   candidate,
   skillsCatalog,
   openVacancies = [],
+  hideDefaultTrigger = false,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: {
   candidate: CandidateEditData;
   skillsCatalog: SkillOption[];
   openVacancies?: OpenVacancyOptionForCandidateForm[];
+  hideDefaultTrigger?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const router = useRouter();
   const autofillFormRef = useRef<HTMLFormElement>(null);
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const controlled =
+    controlledOpen !== undefined && controlledOnOpenChange !== undefined;
+  const open = controlled ? controlledOpen : internalOpen;
+  const setOpen = controlled ? controlledOnOpenChange : setInternalOpen;
   const [formKey, setFormKey] = useState(0);
   const [state, setState] = useState<CandidateActionState | null>(null);
   const [pending, startTransition] = useTransition();
@@ -66,19 +76,25 @@ export function CandidateEditDialog({
     });
   }
 
+  function openDialog() {
+    setOpen(true);
+  }
+
   return (
     <>
-      <Button
-        id="candidate-detail-edit-trigger"
-        type="button"
-        variant="outline"
-        size="sm"
-        className="shrink-0 gap-1.5"
-        onClick={() => setOpen(true)}
-      >
-        <PencilIcon className="size-3.5" aria-hidden />
-        Editar
-      </Button>
+      {!hideDefaultTrigger ? (
+        <Button
+          id="candidate-detail-edit-trigger"
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0 gap-1.5"
+          onClick={openDialog}
+        >
+          <PencilIcon className="size-3.5" aria-hidden />
+          Editar
+        </Button>
+      ) : null}
       <Dialog
         open={open}
         onOpenChange={(next) => {
@@ -174,4 +190,3 @@ export function CandidateEditDialog({
     </>
   );
 }
-

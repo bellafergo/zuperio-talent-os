@@ -8,6 +8,10 @@ import type { VacancyStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { syncAllCandidateVacancyMatches } from "@/lib/matching/sync";
 
+import {
+  getCandidateEditData,
+  type CandidateEditDataJson,
+} from "./queries";
 import { saveCandidateCvFile } from "./cv-file-save";
 import {
   computeAvailabilityForPersistence,
@@ -67,6 +71,38 @@ function scheduleMatchResync() {
 export type CandidateActionState =
   | { ok: true; candidateId?: string }
   | { ok: false; message?: string; fieldErrors?: Record<string, string> };
+
+/**
+ * Loads edit payload for list row actions. Auth-gated; returns JSON-safe dates.
+ * Does not throw — callers show empty state on failure.
+ */
+export async function loadCandidateEditDataForListAction(
+  candidateId: string,
+): Promise<
+  { ok: true; data: CandidateEditDataJson } | { ok: false; message?: string }
+> {
+  const gate = await ensureCanManage();
+  if (!gate.ok) {
+    return { ok: false, message: "Sin permiso para editar candidatos." };
+  }
+  const id = candidateId.trim();
+  if (!id) return { ok: false, message: "Identificador no válido." };
+  try {
+    const data = await getCandidateEditData(id);
+    if (!data) return { ok: false, message: "Candidato no encontrado." };
+    return {
+      ok: true,
+      data: {
+        ...data,
+        availabilityStartDate: data.availabilityStartDate?.toISOString() ?? null,
+        cvUploadedAt: data.cvUploadedAt?.toISOString() ?? null,
+      },
+    };
+  } catch (err) {
+    console.error("[loadCandidateEditDataForListAction]", err);
+    return { ok: false, message: "No se pudo cargar la ficha." };
+  }
+}
 
 async function ensureCanManage(): Promise<
   { ok: true } | { ok: false; state: CandidateActionState }

@@ -74,6 +74,10 @@ export function ProposalsNewProposalDialog({
   candidates,
   formDefaultsPartial,
   trigger,
+  /** No trigger UI; parent controls `open` / `onOpenChange` (e.g. candidates list). */
+  headless = false,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
   dialogTitle = "Nueva propuesta",
   dialogDescription = "Constructor manual. Precios deterministas; textos editables sin IA.",
 }: {
@@ -83,11 +87,17 @@ export function ProposalsNewProposalDialog({
   candidates: ProposalCandidateOption[];
   formDefaultsPartial?: Partial<ProposalFormDefaults>;
   trigger?: ReactNode;
+  headless?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   dialogTitle?: string;
   dialogDescription?: string;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = headless || (controlledOpen !== undefined && controlledOnOpenChange);
+  const open = isControlled ? Boolean(controlledOpen) : internalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
   const [formKey, setFormKey] = useState(0);
   const [state, setState] = useState<ProposalActionState | null>(null);
   const [pending, startTransition] = useTransition();
@@ -124,14 +134,16 @@ export function ProposalsNewProposalDialog({
         }
       }}
     >
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button type="button" className="shrink-0 gap-1.5">
-            <PlusIcon className="size-4" aria-hidden />
-            Nueva propuesta
-          </Button>
-        )}
-      </DialogTrigger>
+      {!headless ? (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button type="button" className="shrink-0 gap-1.5">
+              <PlusIcon className="size-4" aria-hidden />
+              Nueva propuesta
+            </Button>
+          )}
+        </DialogTrigger>
+      ) : null}
       <DialogContent
         className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
         showCloseButton

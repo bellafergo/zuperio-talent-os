@@ -75,6 +75,15 @@ export type CandidateEditData = {
   cvUploadedAt: Date | null;
 };
 
+/** JSON-safe shape for server → client (e.g. list row → edit dialog). */
+export type CandidateEditDataJson = Omit<
+  CandidateEditData,
+  "availabilityStartDate" | "cvUploadedAt"
+> & {
+  availabilityStartDate: string | null;
+  cvUploadedAt: string | null;
+};
+
 export async function getCandidateEditData(
   id: string,
 ): Promise<CandidateEditData | null> {
