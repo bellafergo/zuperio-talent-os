@@ -19,7 +19,7 @@ export function CandidateZuperioCvPreviewSection({
   return (
     <SectionCard
       title="CV Zuperio (vista previa)"
-      description="Misma plantilla que el PDF exportable y la vista previa en propuestas. Los datos provienen del perfil del candidato y de los campos de CV (idiomas, certificaciones, educación, etc.) una vez guardados."
+      description="Misma plantilla que el PDF exportable y la vista previa en propuestas. La experiencia laboral se toma del texto persistido del CV (campo «Experiencia laboral (texto del CV)»), no de asignaciones internas."
     >
       {!safe ? (
         <p className="text-sm text-muted-foreground">

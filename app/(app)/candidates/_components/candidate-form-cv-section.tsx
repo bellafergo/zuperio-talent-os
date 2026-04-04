@@ -15,6 +15,7 @@ import type { CandidateEditData } from "@/lib/candidates/queries";
 import type { CandidateSkillDraft } from "@/lib/candidates/validation";
 import type { SkillOption } from "@/lib/skills/queries";
 import { cn } from "@/lib/utils";
+import { CV_RAW_TEXT_MAX, CV_WORK_EXPERIENCE_FIELD_MAX } from "@/lib/candidates/cv-text-limits";
 
 const MERGE_FIELD_NAMES: CvAutofillProvenanceField[] = [
   "firstName",
@@ -30,6 +31,8 @@ const MERGE_FIELD_NAMES: CvAutofillProvenanceField[] = [
   "cvEducationText",
   "cvSoftSkillsText",
   "cvIndustriesText",
+  "cvWorkExperienceText",
+  "cvRawText",
 ];
 
 function isEmptyFieldValue(v: string): boolean {
@@ -89,6 +92,14 @@ function suggestionsToFullPatch(s: CvAutofillSuggestions): Partial<CandidateEdit
   }
   if (s.cvIndustriesText?.trim()) {
     patch.cvIndustriesText = s.cvIndustriesText.trim().slice(0, 6000);
+  }
+  if (s.cvWorkExperienceText?.trim()) {
+    patch.cvWorkExperienceText = s.cvWorkExperienceText
+      .trim()
+      .slice(0, CV_WORK_EXPERIENCE_FIELD_MAX);
+  }
+  if (s.cvRawText?.trim()) {
+    patch.cvRawText = s.cvRawText.trim().slice(0, CV_RAW_TEXT_MAX);
   }
   return patch;
 }

@@ -5,6 +5,7 @@ import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { parseCvPlainTextForAutofill } from "@/lib/candidates/cv-autofill-from-text";
 import type { CvExtractPreviewResponse } from "@/lib/candidates/cv-autofill-types";
 import { CV_ALLOWED_MIME, CV_MAX_BYTES } from "@/lib/candidates/cv-file-save";
+import { CV_RAW_TEXT_MAX, CV_WORK_EXPERIENCE_FIELD_MAX } from "@/lib/candidates/cv-text-limits";
 import { extractTextFromCvBuffer } from "@/lib/candidates/cv-text-extract";
 
 export const dynamic = "force-dynamic";
@@ -73,9 +74,10 @@ export async function POST(request: Request) {
     );
   }
 
+  let plain: string | undefined;
   try {
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-    const plain = await extractTextFromCvBuffer(buffer, file.name);
+    plain = await extractTextFromCvBuffer(buffer, file.name);
     if (!plain?.trim()) {
       const source = ext === "pdf" ? "empty" : "unsupported";
       const body: CvExtractPreviewResponse = {
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
       skillsLine: suggestions.skillsLine ?? null,
       firstName: suggestions.firstName ?? null,
       lastName: suggestions.lastName ?? null,
+      hasRaw: Boolean(suggestions.cvRawText),
     });
     const body: CvExtractPreviewResponse = {
       ok: true,
@@ -102,6 +105,18 @@ export async function POST(request: Request) {
     return NextResponse.json(body);
   } catch (err) {
     console.error("[cv-extract-preview] failed", err);
+    const cleaned = plain?.replace(/\0/g, " ").trim() ?? "";
+    if (cleaned.length >= 20) {
+      const capped = cleaned.slice(0, CV_RAW_TEXT_MAX);
+      return NextResponse.json({
+        ok: true,
+        source: "empty",
+        suggestions: {
+          cvRawText: capped,
+          cvWorkExperienceText: capped.slice(0, CV_WORK_EXPERIENCE_FIELD_MAX),
+        },
+      } satisfies CvExtractPreviewResponse);
+    }
     return NextResponse.json(
       {
         ok: true,

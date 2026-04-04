@@ -632,6 +632,18 @@
   }
 }
 
+.consulting-pdf-root .cpdf-cv-work-from-cv {
+  margin-top: 0.25rem;
+}
+
+.consulting-pdf-root .cpdf-cv-work-from-cv-para {
+  margin: 0 0 0.75rem 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #424242;
+  white-space: pre-wrap;
+}
+
 @media screen and (max-width: 720px) {
   .consulting-pdf-root .cpdf-cv-body {
     grid-template-columns: 1fr;

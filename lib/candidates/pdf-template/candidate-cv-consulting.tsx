@@ -94,8 +94,6 @@ function buildExecutiveParagraph(
   let orgPhrase = "";
   if (data.currentCompany?.trim()) {
     orgPhrase = `Actualmente asociado a ${data.currentCompany.trim()}.`;
-  } else if (data.placements[0]) {
-    orgPhrase = `Última asignación registrada: ${data.placements[0].companyName}.`;
   }
 
   return [
@@ -110,7 +108,7 @@ function buildExecutiveParagraph(
 }
 
 function applyingRoleLabel(data: CandidateCvPrintData): string {
-  return data.placements[0]?.roleTitle?.trim() || data.role;
+  return data.role.trim() || "—";
 }
 
 /** Segmentos con viñeta para la línea bajo el hero (ciudad, experiencia, modalidad, disponibilidad). */
@@ -209,6 +207,16 @@ export function CandidateCvConsultingDocument({
     .filter(Boolean);
   const showEducation = educationBlocks.length > 0;
   const showSoftSkills = softSkillNames.length > 0;
+  const workExperienceParagraphs = data.workExperienceParagraphs
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const showWorkExperience = workExperienceParagraphs.length > 0;
+  const softSkillsSubtitle =
+    dedicatedSoft.length > 0
+      ? null
+      : softFromCategories.length > 0
+        ? "Referencia desde competencias estructuradas"
+        : null;
 
   const rootClass = [
     "consulting-pdf-root",
@@ -312,7 +320,7 @@ export function CandidateCvConsultingDocument({
 
             {skillGroups.length > 0 ? (
               <div className="cpdf-cv-side-block">
-                <p className="cpdf-sec-label">Competencias técnicas</p>
+                <p className="cpdf-sec-label">Skills técnicos</p>
                 {skillGroups.map((g) => (
                   <div key={g.category} className="cpdf-cv-skill-group">
                     <p className="cpdf-cv-skill-cat">{g.category}</p>
@@ -345,17 +353,17 @@ export function CandidateCvConsultingDocument({
 
             {data.legacySkillsText.trim() && skillGroups.length === 0 ? (
               <div className="cpdf-cv-side-block">
-                <p className="cpdf-sec-label">Competencias técnicas</p>
+                <p className="cpdf-sec-label">Skills técnicos</p>
                 <p className="cpdf-cv-legacy-compact">{data.legacySkillsText}</p>
               </div>
             ) : null}
 
             {showSoftSkills ? (
               <div className="cpdf-cv-side-block">
-                <p className="cpdf-sec-label">Habilidades blandas detectadas</p>
-                <p className="cpdf-cv-soft-hint">
-                  Identificadas por análisis de perfil
-                </p>
+                <p className="cpdf-sec-label">Habilidades blandas</p>
+                {softSkillsSubtitle ? (
+                  <p className="cpdf-cv-soft-hint">{softSkillsSubtitle}</p>
+                ) : null}
                 <div className="cpdf-cv-soft-pills cpdf-cv-soft-pills--outlined">
                   {softSkillNames.map((skill) => (
                     <span key={skill} className="cpdf-cv-soft-pill-detailed">
@@ -387,7 +395,7 @@ export function CandidateCvConsultingDocument({
 
             {showIndustries ? (
               <div className="cpdf-cv-side-block">
-                <p className="cpdf-sec-label">Industrias y entornos</p>
+                <p className="cpdf-sec-label">Industrias (CV)</p>
                 <div className="cpdf-cv-industry-pills">
                   {industriesList.slice(0, 12).map((ind, iIdx) => (
                     <span
@@ -415,65 +423,34 @@ export function CandidateCvConsultingDocument({
               </section>
             ) : null}
 
+            <section className="cpdf-section">
+              <p className="cpdf-sec-label">Experiencia laboral</p>
+              {showWorkExperience ? (
+                <div className="cpdf-cv-work-from-cv">
+                  {workExperienceParagraphs.map((block, i) => (
+                    <p
+                      key={`wxp-${i}-${block.slice(0, 24)}`}
+                      className="cpdf-cv-work-from-cv-para"
+                    >
+                      {block}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <p className="cpdf-intro cpdf-body--empty">
+                  No hay experiencia laboral capturada aún en el perfil.
+                </p>
+              )}
+            </section>
+
             {showEducation ? (
               <section className="cpdf-section">
-                <p className="cpdf-sec-label">Formación</p>
+                <p className="cpdf-sec-label">Educación</p>
                 {educationBlocks.map((block, i) => (
                   <p key={i} className="cpdf-cv-edu-block">
                     {block}
                   </p>
                 ))}
-              </section>
-            ) : null}
-
-            <section className="cpdf-section">
-              <p className="cpdf-sec-label">Experiencia laboral</p>
-              {data.placements.length > 0 ? (
-                data.placements.map((p, i) => (
-                  <div
-                    key={`${p.companyName}-${i}`}
-                    className="cpdf-cv-exp-block"
-                  >
-                    <div className="cpdf-cv-exp-head">
-                      <div>
-                        <p className="cpdf-cv-exp-role">{p.roleTitle}</p>
-                        <p className="cpdf-cv-exp-co">{p.companyName}</p>
-                      </div>
-                      <span className="cpdf-cv-exp-dates">
-                        {p.startLabel} — {p.endLabel}
-                      </span>
-                    </div>
-                    {p.highlights.length > 0 ? (
-                      <ul className="cpdf-cv-exp-bullets">
-                        {p.highlights.map((h) => (
-                          <li key={h}>{h}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="cpdf-cv-exp-fallback">
-                        Asignación en modelo de staff augmentation; el detalle de
-                        impacto se nutre de las bitácoras registradas en Zuperio.
-                      </p>
-                    )}
-                    <div className="cpdf-cv-exp-tags">
-                      <span className="cpdf-cv-exp-tag">{p.companyName}</span>
-                      <span className="cpdf-cv-exp-tag">{p.roleTitle}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="cpdf-intro cpdf-body--empty">
-                  Aún no hay historial de asignaciones registrado. La trayectoria
-                  comercial se actualizará conforme se documenten encargos en la
-                  plataforma.
-                </p>
-              )}
-            </section>
-
-            {data.legacySkillsText.trim() && skillGroups.length > 0 ? (
-              <section className="cpdf-section">
-                <p className="cpdf-sec-label">Notas complementarias</p>
-                <p className="cpdf-closing">{data.legacySkillsText}</p>
               </section>
             ) : null}
           </div>

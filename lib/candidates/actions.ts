@@ -221,6 +221,8 @@ export async function createCandidate(
             cvIndustriesText: data.cvIndustriesText,
             cvEducationText: data.cvEducationText,
             cvSoftSkillsText: data.cvSoftSkillsText,
+            cvWorkExperienceText: data.cvWorkExperienceText,
+            cvRawText: data.cvRawText,
           },
           select: { id: true },
         });
@@ -269,6 +271,8 @@ export async function createCandidate(
         cvIndustriesText: data.cvIndustriesText,
         cvEducationText: data.cvEducationText,
         cvSoftSkillsText: data.cvSoftSkillsText,
+        cvWorkExperienceText: data.cvWorkExperienceText,
+        cvRawText: data.cvRawText,
       },
       select: { id: true },
     });
@@ -353,6 +357,8 @@ export async function updateCandidate(
           cvIndustriesText: data.cvIndustriesText,
           cvEducationText: data.cvEducationText,
           cvSoftSkillsText: data.cvSoftSkillsText,
+          cvWorkExperienceText: data.cvWorkExperienceText,
+          cvRawText: data.cvRawText,
         },
       });
 

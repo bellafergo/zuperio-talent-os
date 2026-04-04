@@ -75,6 +75,8 @@ export type CandidateEditData = {
   cvIndustriesText: string | null;
   cvEducationText: string | null;
   cvSoftSkillsText: string | null;
+  cvWorkExperienceText: string | null;
+  cvRawText: string | null;
   cvFileName: string | null;
   cvUploadedAt: Date | null;
 };
@@ -115,6 +117,8 @@ export async function getCandidateEditData(
       cvIndustriesText: true,
       cvEducationText: true,
       cvSoftSkillsText: true,
+      cvWorkExperienceText: true,
+      cvRawText: true,
       cvFileName: true,
       cvUploadedAt: true,
       structuredSkills: {
@@ -153,6 +157,8 @@ export async function getCandidateEditData(
     cvIndustriesText: row.cvIndustriesText,
     cvEducationText: row.cvEducationText,
     cvSoftSkillsText: row.cvSoftSkillsText,
+    cvWorkExperienceText: row.cvWorkExperienceText,
+    cvRawText: row.cvRawText,
     cvFileName: row.cvFileName,
     cvUploadedAt: row.cvUploadedAt,
   };

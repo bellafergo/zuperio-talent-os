@@ -1,4 +1,5 @@
 import type { CvAutofillSuggestions } from "./cv-autofill-types";
+import { CV_RAW_TEXT_MAX, CV_WORK_EXPERIENCE_FIELD_MAX } from "./cv-text-limits";
 
 function normalizeLines(text: string): string[] {
   return text
@@ -156,91 +157,117 @@ function guessRole(lines: string[]): string | undefined {
   return undefined;
 }
 
+function rawAndWorkFallbackFromText(text: string): Pick<
+  CvAutofillSuggestions,
+  "cvRawText" | "cvWorkExperienceText"
+> {
+  const capped = text.slice(0, CV_RAW_TEXT_MAX);
+  return {
+    cvRawText: capped,
+    cvWorkExperienceText: capped.slice(0, CV_WORK_EXPERIENCE_FIELD_MAX),
+  };
+}
+
 /**
  * Deterministic heuristics — no network, no AI. Safe to call on untrusted text.
+ * No lanza: errores internos devuelven texto crudo como respaldo de experiencia.
  */
 export function parseCvPlainTextForAutofill(raw: string): CvAutofillSuggestions {
   const text = raw.replace(/\0/g, " ").trim();
   if (text.length < 20) return {};
 
-  const lines = normalizeLines(text);
-  const out: CvAutofillSuggestions = {};
+  try {
+    const lines = normalizeLines(text);
+    const out: CvAutofillSuggestions = {};
 
-  const emailMatch = text.match(EMAIL_RE);
-  if (emailMatch?.[0]) {
-    out.email = emailMatch[0].toLowerCase();
-  }
-
-  const phoneMatch = text.match(PHONE_RE);
-  if (phoneMatch?.[0]) {
-    const digits = phoneMatch[0].replace(/\D/g, "");
-    if (digits.length >= 10) {
-      out.phone = phoneMatch[0].trim().slice(0, 40);
+    const emailMatch = text.match(EMAIL_RE);
+    if (emailMatch?.[0]) {
+      out.email = emailMatch[0].toLowerCase();
     }
-  }
 
-  const nameLine = guessNameFromLines(lines);
-  if (nameLine) {
-    const { firstName, lastName } = splitName(nameLine);
-    if (firstName) out.firstName = firstName.slice(0, 120);
-    if (lastName) out.lastName = lastName.slice(0, 120);
-  }
-
-  const role = guessRole(lines);
-  if (role) out.role = role;
-
-  const loc = extractLabelValue(
-    lines,
-    /^(location|ubicación|ciudad|city)\s*:\s*(.+)$/i,
-  );
-  if (loc) out.locationCity = loc.slice(0, 200);
-
-  for (const line of lines.slice(0, 30)) {
-    const wm = normalizeWorkModality(line);
-    if (wm) {
-      out.workModality = wm;
-      break;
+    const phoneMatch = text.match(PHONE_RE);
+    if (phoneMatch?.[0]) {
+      const digits = phoneMatch[0].replace(/\D/g, "");
+      if (digits.length >= 10) {
+        out.phone = phoneMatch[0].trim().slice(0, 40);
+      }
     }
-  }
 
-  const sections = parseSections(lines);
-
-  if (sections.skills.length > 0) {
-    out.skillsLine = sections.skills.slice(0, 40).join(", ");
-  }
-
-  if (sections.languages.length > 0) {
-    out.cvLanguagesText = sections.languages.slice(0, 20).join("\n");
-  }
-
-  if (sections.certs.length > 0) {
-    out.cvCertificationsText = sections.certs.slice(0, 25).join("\n");
-  }
-
-  if (sections.education.length > 0) {
-    out.cvEducationText = sections.education.slice(0, 15).join("\n").slice(0, 4000);
-  }
-
-  if (sections.softSkills.length > 0) {
-    out.cvSoftSkillsText = sections.softSkills
-      .slice(0, 40)
-      .join("\n")
-      .slice(0, 6000);
-  }
-
-  if (sections.industries.length > 0) {
-    out.cvIndustriesText = sections.industries
-      .slice(0, 24)
-      .join(", ")
-      .slice(0, 6000);
-  }
-
-  if (sections.experience.length > 0) {
-    const snippet = sections.experience.slice(0, 8).join("\n").slice(0, 2000);
-    if (snippet.trim()) {
-      out.notes = `Resumen experiencia (extraído del CV):\n${snippet}`;
+    const nameLine = guessNameFromLines(lines);
+    if (nameLine) {
+      const { firstName, lastName } = splitName(nameLine);
+      if (firstName) out.firstName = firstName.slice(0, 120);
+      if (lastName) out.lastName = lastName.slice(0, 120);
     }
-  }
 
-  return out;
+    const role = guessRole(lines);
+    if (role) out.role = role;
+
+    const loc = extractLabelValue(
+      lines,
+      /^(location|ubicación|ciudad|city)\s*:\s*(.+)$/i,
+    );
+    if (loc) out.locationCity = loc.slice(0, 200);
+
+    for (const line of lines.slice(0, 30)) {
+      const wm = normalizeWorkModality(line);
+      if (wm) {
+        out.workModality = wm;
+        break;
+      }
+    }
+
+    const sections = parseSections(lines);
+
+    if (sections.skills.length > 0) {
+      out.skillsLine = sections.skills.slice(0, 40).join(", ");
+    }
+
+    if (sections.languages.length > 0) {
+      out.cvLanguagesText = sections.languages.slice(0, 20).join("\n");
+    }
+
+    if (sections.certs.length > 0) {
+      out.cvCertificationsText = sections.certs.slice(0, 25).join("\n");
+    }
+
+    if (sections.education.length > 0) {
+      out.cvEducationText = sections.education.slice(0, 15).join("\n").slice(0, 4000);
+    }
+
+    if (sections.softSkills.length > 0) {
+      out.cvSoftSkillsText = sections.softSkills
+        .slice(0, 40)
+        .join("\n")
+        .slice(0, 6000);
+    }
+
+    if (sections.industries.length > 0) {
+      out.cvIndustriesText = sections.industries
+        .slice(0, 24)
+        .join(", ")
+        .slice(0, 6000);
+    }
+
+    if (sections.experience.length > 0) {
+      const body = sections.experience
+        .slice(0, 60)
+        .join("\n\n")
+        .trim()
+        .slice(0, CV_WORK_EXPERIENCE_FIELD_MAX);
+      if (body) {
+        out.cvWorkExperienceText = body;
+      }
+    }
+
+    out.cvRawText = text.slice(0, CV_RAW_TEXT_MAX);
+    if (!out.cvWorkExperienceText?.trim()) {
+      out.cvWorkExperienceText = text.slice(0, CV_WORK_EXPERIENCE_FIELD_MAX);
+    }
+
+    return out;
+  } catch (err) {
+    console.error("[parseCvPlainTextForAutofill] failed, using raw fallback", err);
+    return rawAndWorkFallbackFromText(text);
+  }
 }

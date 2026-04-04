@@ -60,3 +60,18 @@ export function parseCvEducationBlocks(
     .map((l) => l.trim())
     .filter(Boolean);
 }
+
+/** Bloques/párrafos para la sección Experiencia laboral del CV Zuperio (texto persistido del CV). */
+export function parseCvWorkExperienceBlocks(
+  raw: string | null | undefined,
+): string[] {
+  if (!raw?.trim()) return [];
+  const t = raw.trim();
+  const paras = t.split(/\r?\n\r?\n+/).map((b) => b.trim()).filter(Boolean);
+  if (paras.length > 1) return paras.slice(0, 60);
+  return t
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, 200);
+}

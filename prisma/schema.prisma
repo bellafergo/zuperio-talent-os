@@ -356,6 +356,10 @@ model Candidate {
   cvEducationText       String? @db.Text
   /// Habilidades blandas para el CV PDF (una por línea). Si está vacío, se infieren por categoría de skills estructuradas.
   cvSoftSkillsText      String? @db.Text
+  /// Experiencia laboral tomada del CV (texto). Fuente principal de la sección "Experiencia laboral" del CV Zuperio.
+  cvWorkExperienceText  String? @db.Text
+  /// Texto plano completo extraído del CV (respaldo para experiencia y depuración heurística).
+  cvRawText             String? @db.Text
 
   vacancyMatches  CandidateVacancyMatch[]
   placements        Placement[]

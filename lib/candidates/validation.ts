@@ -8,6 +8,8 @@ import {
   type VacancySeniority,
 } from "@/generated/prisma/enums";
 
+import { CV_RAW_TEXT_MAX, CV_WORK_EXPERIENCE_FIELD_MAX } from "./cv-text-limits";
+
 export type CandidateSkillDraft = {
   skillId: string;
   yearsExperience: number | null;
@@ -133,6 +135,8 @@ export type CandidateFormParsed = {
   cvIndustriesText: string | null;
   cvEducationText: string | null;
   cvSoftSkillsText: string | null;
+  cvWorkExperienceText: string | null;
+  cvRawText: string | null;
 };
 
 export type CandidateFormValidationResult =
@@ -352,6 +356,20 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
     CV_TEXT_MAX,
     fieldErrors,
   );
+  const cvWorkExperienceText = parseOptionalLongText(
+    formData,
+    "cvWorkExperienceText",
+    "Experiencia laboral (CV)",
+    CV_WORK_EXPERIENCE_FIELD_MAX,
+    fieldErrors,
+  );
+  const cvRawText = parseOptionalLongText(
+    formData,
+    "cvRawText",
+    "Texto crudo del CV",
+    CV_RAW_TEXT_MAX,
+    fieldErrors,
+  );
 
   const skillsJsonRaw = parseOptionalTrimmed(formData, "structuredSkills");
   const skillsParsed = parseSkillsJson(skillsJsonRaw);
@@ -388,6 +406,8 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
       cvIndustriesText,
       cvEducationText,
       cvSoftSkillsText,
+      cvWorkExperienceText,
+      cvRawText,
     },
   };
 }

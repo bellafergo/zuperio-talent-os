@@ -10,10 +10,10 @@ import {
   parseCvIndustriesText,
   parseCvLanguagesText,
   parseCvSoftSkillsLines,
+  parseCvWorkExperienceBlocks,
   type CvLanguageEntry,
 } from "./cv-print-parsing";
 import { candidateAvailabilityLabel } from "./availability-ui";
-import { placementStatusLabel } from "./placement-status-ui";
 import { vacancySeniorityLabel } from "./seniority-ui";
 
 export type CandidateCvSkillRow = {
@@ -21,16 +21,6 @@ export type CandidateCvSkillRow = {
   category: string;
   yearsExperience: number | null;
   level: string | null;
-};
-
-export type CandidateCvPlacementRow = {
-  companyName: string;
-  roleTitle: string;
-  startLabel: string;
-  endLabel: string;
-  statusLabel: string;
-  /** Impact bullets from recent weekly logs (achievements), curated for PDF. */
-  highlights: string[];
 };
 
 export type CandidateCvPrintData = {
@@ -44,24 +34,29 @@ export type CandidateCvPrintData = {
   availabilityLabel: string;
   currentCompany: string | null;
   legacySkillsText: string;
+  /** Notas de perfil para "Por qué este perfil" (excluye texto solo de experiencia legada del extractor). */
   notes: string | null;
   structuredSkills: CandidateCvSkillRow[];
-  placements: CandidateCvPlacementRow[];
   /** Hero / chips — optional structured fields */
   locationCity: string | null;
   workModality: string | null;
   languages: CvLanguageEntry[];
   certifications: string[];
-  /** Industrias declaradas + organizaciones de placements (deduplicado) */
+  /** Solo texto de CV persistido (cvIndustriesText), sin asignaciones internas. */
   industries: string[];
   educationBlocks: string[];
   /** Parsed from `cvSoftSkillsText` when present; CV PDF uses this before skill-category heuristics. */
   softSkillsFromCvText: string[];
+  /** Experiencia laboral para el CV comercial: cvWorkExperienceText o legado en notas del extractor. */
+  workExperienceParagraphs: string[];
 };
 
 const AVAILABILITY_VALUES = new Set<string>(
   Object.values(AvailabilityEnum),
 );
+
+/** Texto que el extractor antiguo guardaba en `notes`; se usa solo si no hay `cvWorkExperienceText`. */
+const LEGACY_CV_EXP_PREFIX = "Resumen experiencia (extraído del CV):";
 
 function coerceAvailabilityStatus(
   raw: unknown,
@@ -72,6 +67,44 @@ function coerceAvailabilityStatus(
   return AvailabilityEnum.AVAILABLE;
 }
 
+function legacyWorkExperienceFromNotes(
+  notes: string | null | undefined,
+): string | null {
+  if (!notes?.trim()) return null;
+  const t = notes.trim();
+  if (!t.startsWith(LEGACY_CV_EXP_PREFIX)) return null;
+  const body = t.slice(LEGACY_CV_EXP_PREFIX.length).trim();
+  return body || null;
+}
+
+/** Evita duplicar en "Por qué este perfil" el bloque que solo era experiencia del CV. */
+function notesForWhyProfile(notes: string | null | undefined): string | null {
+  if (!notes?.trim()) return null;
+  const t = notes.trim();
+  if (t.startsWith(LEGACY_CV_EXP_PREFIX)) return null;
+  return t;
+}
+
+const WORK_EXP_FROM_RAW_CAP = 100_000;
+
+function resolveWorkExperienceParagraphs(
+  cvWorkExperienceText: string | null | undefined,
+  notes: string | null | undefined,
+  cvRawText: string | null | undefined,
+): string[] {
+  const fromCv = parseCvWorkExperienceBlocks(cvWorkExperienceText);
+  if (fromCv.length > 0) return fromCv;
+  const fromLegacy = parseCvWorkExperienceBlocks(
+    legacyWorkExperienceFromNotes(notes),
+  );
+  if (fromLegacy.length > 0) return fromLegacy;
+  const raw = cvRawText?.trim();
+  if (!raw) return [];
+  const fromParsed = parseCvWorkExperienceBlocks(raw);
+  if (fromParsed.length > 0) return fromParsed.slice(0, 200);
+  return [raw.slice(0, WORK_EXP_FROM_RAW_CAP)];
+}
+
 function isCvSkillRow(x: unknown): x is CandidateCvSkillRow {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
@@ -80,20 +113,6 @@ function isCvSkillRow(x: unknown): x is CandidateCvSkillRow {
     typeof o.category === "string" &&
     (o.yearsExperience === null || typeof o.yearsExperience === "number") &&
     (o.level === null || typeof o.level === "string")
-  );
-}
-
-function isCvPlacementRow(x: unknown): x is CandidateCvPlacementRow {
-  if (!x || typeof x !== "object") return false;
-  const o = x as Record<string, unknown>;
-  return (
-    typeof o.companyName === "string" &&
-    typeof o.roleTitle === "string" &&
-    typeof o.startLabel === "string" &&
-    typeof o.endLabel === "string" &&
-    typeof o.statusLabel === "string" &&
-    Array.isArray(o.highlights) &&
-    (o.highlights as unknown[]).every((h) => typeof h === "string")
   );
 }
 
@@ -133,8 +152,6 @@ export function isSafeCandidateCvPrintData(
     return false;
   if (!Array.isArray(data.structuredSkills)) return false;
   if (!data.structuredSkills.every(isCvSkillRow)) return false;
-  if (!Array.isArray(data.placements)) return false;
-  if (!data.placements.every(isCvPlacementRow)) return false;
   if (!Array.isArray(data.languages)) return false;
   if (!data.languages.every(isCvLanguageEntry)) return false;
   if (!Array.isArray(data.certifications)) return false;
@@ -146,38 +163,10 @@ export function isSafeCandidateCvPrintData(
   if (!Array.isArray(data.softSkillsFromCvText)) return false;
   if (!data.softSkillsFromCvText.every((c) => typeof c === "string"))
     return false;
+  if (!Array.isArray(data.workExperienceParagraphs)) return false;
+  if (!data.workExperienceParagraphs.every((c) => typeof c === "string"))
+    return false;
   return true;
-}
-
-function formatPlacementDate(d: Date): string {
-  return new Intl.DateTimeFormat("es-MX", {
-    month: "short",
-    year: "numeric",
-  }).format(d);
-}
-
-function achievementBulletsFromLogs(
-  logs: { achievements: string | null }[],
-): string[] {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const log of logs) {
-    const raw = log.achievements?.trim();
-    if (!raw) continue;
-    const parts = raw
-      .split(/\r?\n|•/g)
-      .map((s) => s.replace(/^[-*\d.)\s]+/, "").trim())
-      .filter((s) => s.length > 4);
-    for (const p of parts) {
-      if (out.length >= 4) break;
-      const key = p.slice(0, 96).toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(p.length > 160 ? `${p.slice(0, 157)}…` : p);
-    }
-    if (out.length >= 4) break;
-  }
-  return out;
 }
 
 const MAX_CANDIDATE_ID_LEN = 128;
@@ -217,6 +206,8 @@ export async function getCandidateCvPrintData(
         cvIndustriesText: true,
         cvEducationText: true,
         cvSoftSkillsText: true,
+        cvWorkExperienceText: true,
+        cvRawText: true,
         structuredSkills: {
           select: {
             yearsExperience: true,
@@ -224,23 +215,6 @@ export async function getCandidateCvPrintData(
             skill: { select: { name: true, category: true } },
           },
           orderBy: { skill: { name: "asc" } },
-        },
-        placements: {
-          orderBy: { startDate: "desc" },
-          take: 8,
-          select: {
-            startDate: true,
-            endDate: true,
-            status: true,
-            company: { select: { name: true } },
-            vacancy: { select: { title: true } },
-            weeklyLogs: {
-              where: { achievements: { not: null } },
-              orderBy: { weekStart: "desc" },
-              take: 8,
-              select: { achievements: true },
-            },
-          },
         },
       },
     });
@@ -263,28 +237,14 @@ export async function getCandidateCvPrintData(
       })
       .filter((s) => s.name.length > 0);
 
-    const placements: CandidateCvPlacementRow[] = [];
-    for (const p of row.placements) {
-      const companyName = p.company?.name?.trim();
-      const roleTitle = p.vacancy?.title?.trim();
-      if (!companyName || !roleTitle) continue;
-      placements.push({
-        companyName,
-        roleTitle,
-        startLabel: formatPlacementDate(p.startDate),
-        endLabel: p.endDate ? formatPlacementDate(p.endDate) : "Presente",
-        statusLabel: placementStatusLabel(p.status),
-        highlights: achievementBulletsFromLogs(p.weeklyLogs ?? []),
-      });
-    }
+    const workExperienceParagraphs = resolveWorkExperienceParagraphs(
+      row.cvWorkExperienceText,
+      row.notes,
+      row.cvRawText,
+    );
 
     const declaredIndustries = parseCvIndustriesText(row.cvIndustriesText);
-    const orgsFromPlacements = [
-      ...new Set(placements.map((p) => p.companyName)),
-    ];
-    const industriesMerged = [
-      ...new Set([...declaredIndustries, ...orgsFromPlacements]),
-    ].slice(0, 14);
+    const industriesMerged = declaredIndustries.slice(0, 14);
 
     const legacySkills =
       typeof row.skills === "string" ? row.skills : "";
@@ -303,9 +263,8 @@ export async function getCandidateCvPrintData(
       availabilityLabel: candidateAvailabilityLabel(availabilityStatus),
       currentCompany: row.currentCompany?.trim() || null,
       legacySkillsText: legacySkills.trim(),
-      notes: row.notes?.trim() || null,
+      notes: notesForWhyProfile(row.notes),
       structuredSkills,
-      placements,
       locationCity: row.locationCity?.trim() || null,
       workModality: row.workModality?.trim() || null,
       languages: parseCvLanguagesText(row.cvLanguagesText),
@@ -313,6 +272,7 @@ export async function getCandidateCvPrintData(
       industries: industriesMerged,
       educationBlocks: parseCvEducationBlocks(row.cvEducationText),
       softSkillsFromCvText: parseCvSoftSkillsLines(row.cvSoftSkillsText),
+      workExperienceParagraphs,
     };
   } catch (err) {
     console.error("[getCandidateCvPrintData] failed", {

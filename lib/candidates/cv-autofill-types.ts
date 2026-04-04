@@ -16,6 +16,9 @@ export type CvAutofillSuggestions = {
   cvEducationText?: string;
   cvSoftSkillsText?: string;
   cvIndustriesText?: string;
+  cvWorkExperienceText?: string;
+  /** Texto plano completo del CV (respaldo de experiencia y extracción). */
+  cvRawText?: string;
   /** Comma / semicolon separated skill names for catalog matching on the client. */
   skillsLine?: string;
 };
@@ -34,7 +37,9 @@ export type CvAutofillProvenanceField =
   | "cvCertificationsText"
   | "cvEducationText"
   | "cvIndustriesText"
-  | "cvSoftSkillsText";
+  | "cvSoftSkillsText"
+  | "cvWorkExperienceText"
+  | "cvRawText";
 
 /** Compact summary after extraction (for review before save). */
 export type CvExtractionSummary = {

@@ -603,6 +603,11 @@ export function CandidateRecordFormFields({
             ["cvCertificationsText", "Certificaciones (líneas)", m.cvCertificationsText],
             ["cvIndustriesText", "Industrias (coma)", m.cvIndustriesText],
             ["cvEducationText", "Educación (párrafos o líneas)", m.cvEducationText],
+            [
+              "cvWorkExperienceText",
+              "Experiencia laboral (texto del CV)",
+              m.cvWorkExperienceText,
+            ],
             ["cvSoftSkillsText", "Habilidades blandas (CV, una por línea)", m.cvSoftSkillsText],
           ] as const
         ).map(([name, label, val]) => (
@@ -617,9 +622,11 @@ export function CandidateRecordFormFields({
               name={name}
               defaultValue={val ?? ""}
               rows={
-                name === "cvEducationText" || name === "cvSoftSkillsText"
-                  ? 4
-                  : 3
+                name === "cvWorkExperienceText"
+                  ? 6
+                  : name === "cvEducationText" || name === "cvSoftSkillsText"
+                    ? 4
+                    : 3
               }
               className={cn(
                 "w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none",
@@ -635,6 +642,16 @@ export function CandidateRecordFormFields({
             ) : null}
           </div>
         ))}
+        <textarea
+          key={`cvRawText-${fieldKey}`}
+          name="cvRawText"
+          defaultValue={m.cvRawText ?? ""}
+          hidden
+          readOnly
+          aria-hidden
+          tabIndex={-1}
+          className="hidden"
+        />
       </div>
 
       {cvAutofillSkillsAddedLastApply > 0 ? (
