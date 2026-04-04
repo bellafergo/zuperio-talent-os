@@ -35,14 +35,41 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
+/** Core: `getCandidateByIdForUi`. Secondary queries use this wrapper so one failure does not abort the route. */
+async function safeCandidateSecondaryFetch<T>(
+  label: string,
+  promise: Promise<T>,
+  fallback: T,
+): Promise<T> {
+  try {
+    return await promise;
+  } catch (err) {
+    console.error(`[candidates/detail] ${label} failed`, err);
+    return fallback;
+  }
+}
+
+function safeDetailLine(value: unknown): string {
+  return typeof value === "string" && value.trim() ? value.trim() : "—";
+}
+
 export default async function CandidateDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = typeof rawId === "string" ? rawId.trim() : "";
+  if (!id) {
+    notFound();
+  }
+
   const session = await auth();
   const canManage = canManageCandidates(session?.user?.role);
   const isDirector = session?.user?.role === "DIRECTOR";
 
+  const candidate = await getCandidateByIdForUi(id);
+  if (!candidate) {
+    notFound();
+  }
+
   const [
-    candidate,
     vacancyMatches,
     currentAssignment,
     structuredSkills,
@@ -51,19 +78,51 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     skillsCatalog,
     cvFileInfo,
   ] = await Promise.all([
-    getCandidateByIdForUi(id),
-    listMatchesForCandidateUi(id),
-    getCurrentAssignmentForCandidateUi(id),
-    listCandidateStructuredSkillsForUi(id),
-    listApplicationsForCandidateUi(id),
-    canManage ? getCandidateEditData(id) : Promise.resolve(null),
-    canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
-    canManage ? getCandidateCvFileInfo(id) : Promise.resolve(null),
+    safeCandidateSecondaryFetch(
+      "listMatchesForCandidateUi",
+      listMatchesForCandidateUi(id),
+      [] as CandidateMatchRowUi[],
+    ),
+    safeCandidateSecondaryFetch(
+      "getCurrentAssignmentForCandidateUi",
+      getCurrentAssignmentForCandidateUi(id),
+      null as CandidateCurrentAssignmentUi | null,
+    ),
+    safeCandidateSecondaryFetch(
+      "listCandidateStructuredSkillsForUi",
+      listCandidateStructuredSkillsForUi(id),
+      [] as CandidateStructuredSkillUi[],
+    ),
+    safeCandidateSecondaryFetch(
+      "listApplicationsForCandidateUi",
+      listApplicationsForCandidateUi(id),
+      [] as CandidateApplicationRowUi[],
+    ),
+    canManage
+      ? safeCandidateSecondaryFetch(
+          "getCandidateEditData",
+          getCandidateEditData(id),
+          null,
+        )
+      : Promise.resolve(null),
+    canManage
+      ? safeCandidateSecondaryFetch(
+          "listSkillsForVacancyForm",
+          listSkillsForVacancyForm(),
+          [],
+        )
+      : Promise.resolve([]),
+    canManage
+      ? safeCandidateSecondaryFetch(
+          "getCandidateCvFileInfo",
+          getCandidateCvFileInfo(id),
+          null,
+        )
+      : Promise.resolve(null),
   ]);
 
-  if (!candidate) {
-    notFound();
-  }
+  const headerTitle = safeDetailLine(candidate.displayName);
+  const title = headerTitle !== "—" ? headerTitle : "Candidato";
 
   return (
     <div className="space-y-8">
@@ -71,12 +130,12 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         variant="detail"
         backHref="/candidates"
         backLabel="Volver a candidatos"
-        title={candidate.displayName}
+        title={title}
         description="Perfil de talento, skills estructurados, postulaciones y matches deterministas con vacantes."
         meta={<CandidateAvailabilityBadge status={candidate.availabilityStatus} />}
         actions={
           <div className="flex items-center gap-2">
-            {candidate.phone ? (
+            {candidate.phone && safeDetailLine(candidate.phone) !== "—" ? (
               <CandidateWhatsAppButton phone={candidate.phone} />
             ) : null}
             <CandidateCvDownloadButton candidateId={id} />
@@ -89,24 +148,28 @@ export default async function CandidateDetailPage({ params }: PageProps) {
 
       <DetailGrid
         items={[
-          { label: "Rol", value: candidate.role },
-          { label: "Senioridad", value: candidate.seniority },
-          { label: "Empresa actual", value: candidate.currentCompany },
-          { label: "Correo", value: candidate.email },
-          { label: "Teléfono", value: candidate.phone },
+          { label: "Rol", value: safeDetailLine(candidate.role) },
+          { label: "Senioridad", value: safeDetailLine(candidate.seniority) },
+          { label: "Empresa actual", value: safeDetailLine(candidate.currentCompany) },
+          { label: "Correo", value: safeDetailLine(candidate.email) },
+          { label: "Teléfono", value: safeDetailLine(candidate.phone) },
         ]}
       />
 
       <CandidateStructuredSkillsSection
         skills={structuredSkills}
-        legacySkillsLine={candidate.skills}
+        legacySkillsLine={
+          typeof candidate.skills === "string" ? candidate.skills : ""
+        }
       />
 
       <SectionCard
         title="Notas"
         description="Contexto interno, preferencias y notas de evaluación."
       >
-        <p className="text-sm leading-relaxed text-muted-foreground">{candidate.notes}</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {safeDetailLine(candidate.notes)}
+        </p>
       </SectionCard>
 
       {canManage ? (

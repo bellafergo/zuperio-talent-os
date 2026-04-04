@@ -60,6 +60,10 @@ async function safeProposalSecondaryFetch<T>(
   }
 }
 
+function safeProposalText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 export default async function ProposalDetailPage({ params }: PageProps) {
   const { id: rawId } = await params;
   const id = typeof rawId === "string" ? rawId.trim() : "";
@@ -141,6 +145,33 @@ export default async function ProposalDetailPage({ params }: PageProps) {
     session?.user?.email ||
     "Zuperio";
 
+  const identityParts: string[] = [];
+  const candName = safeProposalText(proposal.candidateName);
+  if (candName && candName !== "—") {
+    identityParts.push(`Candidato: ${candName}`);
+  }
+  const oppTitle = safeProposalText(proposal.opportunityTitle);
+  if (oppTitle && oppTitle !== "—") {
+    identityParts.push(`Oportunidad: ${oppTitle}`);
+  }
+  const vacTitle = safeProposalText(proposal.vacancyTitle);
+  if (vacTitle && vacTitle !== "—") {
+    identityParts.push(`Vacante: ${vacTitle}`);
+  }
+  const identityLine = identityParts.join(" · ");
+  const detailDescription = identityLine
+    ? `${identityLine}. Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.`
+    : "Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.";
+
+  const pageTitle = safeProposalText(proposal.companyName) || "Propuesta";
+  const currencyLabel = safeProposalText(proposal.currency) || "—";
+  const formatLabel = safeProposalText(proposal.format) || "—";
+  const validityLabel =
+    typeof proposal.validityDays === "number" &&
+    Number.isFinite(proposal.validityDays)
+      ? proposal.validityDays
+      : "—";
+
   const emailDraft = safeBuildProposalEmailDraft(proposal, {
     preparedByDisplay,
     recipientDisplayName: contact?.displayName ?? null,
@@ -150,23 +181,8 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         ? comparisonMatrix.computedMatch.score
         : null,
     vacancyTitleForMatch:
-      proposal.vacancyTitle !== "—" ? proposal.vacancyTitle : null,
+      vacTitle && vacTitle !== "—" ? vacTitle : null,
   });
-
-  const identityParts: string[] = [];
-  if (proposal.candidateName.trim() && proposal.candidateName !== "—") {
-    identityParts.push(`Candidato: ${proposal.candidateName}`);
-  }
-  if (proposal.opportunityTitle.trim() && proposal.opportunityTitle !== "—") {
-    identityParts.push(`Oportunidad: ${proposal.opportunityTitle}`);
-  }
-  if (proposal.vacancyTitle.trim() && proposal.vacancyTitle !== "—") {
-    identityParts.push(`Vacante: ${proposal.vacancyTitle}`);
-  }
-  const identityLine = identityParts.join(" · ");
-  const detailDescription = identityLine
-    ? `${identityLine}. Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.`
-    : "Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.";
 
   return (
     <div className="space-y-8">
@@ -175,7 +191,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         eyebrow="Detalle de propuesta"
         backHref="/proposals"
         backLabel="Volver a propuestas"
-        title={proposal.companyName}
+        title={pageTitle}
         description={detailDescription}
         meta={
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -185,9 +201,9 @@ export default async function ProposalDetailPage({ params }: PageProps) {
               aria-hidden
             />
             <span className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{proposal.currency}</span>
+              <span className="font-medium text-foreground">{currencyLabel}</span>
               {" · "}
-              vigencia {proposal.validityDays}d · {proposal.format}
+              vigencia {validityLabel}d · {formatLabel}
             </span>
           </div>
         }

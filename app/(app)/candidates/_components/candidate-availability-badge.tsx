@@ -16,8 +16,9 @@ export function CandidateAvailabilityBadge({
 }: {
   status: CandidateAvailabilityUi;
 }) {
+  const variant = variantByStatus[status] ?? "outline";
   return (
-    <Badge variant={variantByStatus[status]} className="whitespace-nowrap">
+    <Badge variant={variant} className="whitespace-nowrap">
       {status}
     </Badge>
   );
