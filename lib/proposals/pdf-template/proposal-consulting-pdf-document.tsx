@@ -35,8 +35,14 @@ function formatTodayEsMx(): string {
   }).format(new Date());
 }
 
-function proposalRefCode(id: string): string {
-  return `ZUP-${id.slice(0, 8).toUpperCase()}`;
+function safeTrim(s: string | null | undefined): string {
+  return typeof s === "string" ? s.trim() : "";
+}
+
+function proposalRefCode(id: string | null | undefined): string {
+  const raw = safeTrim(id);
+  if (!raw) return "ZUP-00000000";
+  return `ZUP-${raw.slice(0, 8).toUpperCase()}`;
 }
 
 function initialsFromDisplayName(name: string): string {
@@ -151,12 +157,12 @@ export function ProposalConsultingPdfDocument({
             <p className="cpdf-party-name">{companyDisplay}</p>
             <p className="cpdf-party-lines">
               {!isPlaceholderDash(proposal.opportunityTitle)
-                ? `Oportunidad: ${proposal.opportunityTitle.trim()}`
+                ? `Oportunidad: ${safeTrim(proposal.opportunityTitle)}`
                 : "Contacto y detalle de cuenta en Zuperio"}
               {!isPlaceholderDash(proposal.vacancyTitle) ? (
                 <>
                   <br />
-                  Vacante: {proposal.vacancyTitle.trim()}
+                  Vacante: {safeTrim(proposal.vacancyTitle)}
                 </>
               ) : null}
             </p>
@@ -185,7 +191,8 @@ export function ProposalConsultingPdfDocument({
             <span className="cpdf-em">{roleLine}</span>
             {" — "}
             <span className="cpdf-em">{companyDisplay}</span>.
-            {comparisonMatrix?.skillMatchActive ? (
+            {comparisonMatrix?.skillMatchActive &&
+            comparisonMatrix.computedMatch != null ? (
               <>
                 {" "}
                 Cobertura de competencias requeridas:{" "}
@@ -215,12 +222,12 @@ export function ProposalConsultingPdfDocument({
                       ? profileSummary.split(/\n/)[0].trim().slice(0, 140) ||
                         "Especialización según perfil vinculado en Zuperio."
                       : !isPlaceholderDash(proposal.opportunityTitle)
-                        ? proposal.opportunityTitle.trim()
+                        ? safeTrim(proposal.opportunityTitle)
                         : roleLine}
                   </p>
                 </div>
                 {!isPlaceholderDash(proposal.vacancyTitle) ? (
-                  <span className="cpdf-pill">{proposal.vacancyTitle.trim()}</span>
+                  <span className="cpdf-pill">{safeTrim(proposal.vacancyTitle)}</span>
                 ) : null}
               </div>
               {profileSummary &&
@@ -238,11 +245,12 @@ export function ProposalConsultingPdfDocument({
           </div>
         </section>
 
-        {comparisonMatrix?.skillMatchActive ? (
+        {comparisonMatrix?.skillMatchActive &&
+        comparisonMatrix.computedMatch != null ? (
           <p className="cpdf-match-inline">
             <strong>Alineación por competencias:</strong>{" "}
             {comparisonMatrix.computedMatch.score}% —{" "}
-            {comparisonMatrix.computedMatch.explanation}
+            {comparisonMatrix.computedMatch.explanation ?? ""}
           </p>
         ) : null}
 

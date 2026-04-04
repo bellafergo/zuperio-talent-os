@@ -13,6 +13,35 @@ import {
 import type { ProposalDetailUi } from "@/lib/proposals/types";
 import { cn } from "@/lib/utils";
 
+const KNOWN_PRISMA_MATCH_RECOMMENDATION = new Set<string>([
+  "STRONG_MATCH",
+  "PARTIAL_MATCH",
+  "LOW_MATCH",
+]);
+
+function safeOverviewLine(value: unknown): string {
+  return typeof value === "string" && value.trim() ? value.trim() : "—";
+}
+
+function safeOptionalMultiline(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function isSafeComparisonMatrixBundle(
+  b: ComparisonMatrixBundle | null | undefined,
+): b is ComparisonMatrixBundle {
+  if (!b || typeof b !== "object") return false;
+  if (!Array.isArray(b.rows)) return false;
+  const cm = b.computedMatch;
+  if (!cm || typeof cm !== "object") return false;
+  if (typeof cm.score !== "number" || !Number.isFinite(cm.score)) return false;
+  if (!KNOWN_PRISMA_MATCH_RECOMMENDATION.has(String(cm.recommendation))) {
+    return false;
+  }
+  if (typeof cm.explanation !== "string") return false;
+  return true;
+}
+
 export function ProposalOverviewPanel({
   proposal,
   comparisonMatrix,
@@ -23,24 +52,27 @@ export function ProposalOverviewPanel({
   const contextItems = [
     {
       label: "Empresa",
-      value: proposal.companyName,
-      href: `/companies/${proposal.companyId}`,
+      value: safeOverviewLine(proposal.companyName),
+      href:
+        typeof proposal.companyId === "string" && proposal.companyId.trim()
+          ? `/companies/${proposal.companyId.trim()}`
+          : undefined,
     },
     {
       label: "Oportunidad",
-      value: proposal.opportunityTitle,
+      value: safeOverviewLine(proposal.opportunityTitle),
       href: proposal.opportunityId
         ? `/opportunities/${proposal.opportunityId}`
         : undefined,
     },
     {
       label: "Vacante",
-      value: proposal.vacancyTitle,
+      value: safeOverviewLine(proposal.vacancyTitle),
       href: proposal.vacancyId ? `/vacancies/${proposal.vacancyId}` : undefined,
     },
     {
       label: "Candidato",
-      value: proposal.candidateName,
+      value: safeOverviewLine(proposal.candidateName),
       href: proposal.candidateId ? `/candidates/${proposal.candidateId}` : undefined,
     },
   ];
@@ -72,14 +104,26 @@ export function ProposalOverviewPanel({
         <DetailGrid items={contextItems} />
       </div>
 
-      {comparisonMatrix ? (
+      {isSafeComparisonMatrixBundle(comparisonMatrix) ? (
         <ComparisonMatrixCard bundle={comparisonMatrix} />
       ) : null}
 
-      <TextSection title="Resumen ejecutivo" value={proposal.executiveSummary} />
-      <TextSection title="Perfil del candidato" value={proposal.profileSummary} />
-      <TextSection title="Alcance y próximos pasos" value={proposal.scopeNotes} />
-      <TextSection title="Notas comerciales" value={proposal.commercialNotes} />
+      <TextSection
+        title="Resumen ejecutivo"
+        value={safeOptionalMultiline(proposal.executiveSummary)}
+      />
+      <TextSection
+        title="Perfil del candidato"
+        value={safeOptionalMultiline(proposal.profileSummary)}
+      />
+      <TextSection
+        title="Alcance y próximos pasos"
+        value={safeOptionalMultiline(proposal.scopeNotes)}
+      />
+      <TextSection
+        title="Notas comerciales"
+        value={safeOptionalMultiline(proposal.commercialNotes)}
+      />
     </div>
   );
 }

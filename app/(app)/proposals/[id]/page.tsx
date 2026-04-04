@@ -16,6 +16,12 @@ import {
   getCompanyPreferredContactForProposalEmail,
   getProposalByIdForUi,
 } from "@/lib/proposals/queries";
+import type {
+  ProposalCandidateOption,
+  ProposalCompanyOption,
+  ProposalOpportunityOption,
+  ProposalVacancyOption,
+} from "@/lib/proposals/types";
 
 import { getCandidateCvPrintData } from "@/lib/candidates/get-candidate-cv-print-data";
 import { CandidateCvConsultingDocument } from "@/lib/candidates/pdf-template/candidate-cv-consulting";
@@ -37,6 +43,19 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
+async function safeProposalSecondaryFetch<T>(
+  label: string,
+  promise: Promise<T>,
+  fallback: T,
+): Promise<T> {
+  try {
+    return await promise;
+  } catch (err) {
+    console.error(`[proposals/detail] ${label} failed`, err);
+    return fallback;
+  }
+}
+
 export default async function ProposalDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();
@@ -57,25 +76,55 @@ export default async function ProposalDetailPage({ params }: PageProps) {
     comparisonMatrix,
     cvPrintData,
   ] = await Promise.all([
-    canManage ? listCompaniesForProposalForm() : Promise.resolve([]),
-    canManage ? listOpportunitiesForProposalForm() : Promise.resolve([]),
-    canManage ? listVacanciesForProposalForm() : Promise.resolve([]),
-    canManage ? listCandidatesForProposalForm() : Promise.resolve([]),
-    getCompanyPreferredContactForProposalEmail(proposal.companyId),
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listCompaniesForProposalForm",
+          listCompaniesForProposalForm(),
+          [] as ProposalCompanyOption[],
+        )
+      : Promise.resolve([] as ProposalCompanyOption[]),
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listOpportunitiesForProposalForm",
+          listOpportunitiesForProposalForm(),
+          [] as ProposalOpportunityOption[],
+        )
+      : Promise.resolve([] as ProposalOpportunityOption[]),
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listVacanciesForProposalForm",
+          listVacanciesForProposalForm(),
+          [] as ProposalVacancyOption[],
+        )
+      : Promise.resolve([] as ProposalVacancyOption[]),
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listCandidatesForProposalForm",
+          listCandidatesForProposalForm(),
+          [] as ProposalCandidateOption[],
+        )
+      : Promise.resolve([] as ProposalCandidateOption[]),
+    safeProposalSecondaryFetch(
+      "getCompanyPreferredContactForProposalEmail",
+      getCompanyPreferredContactForProposalEmail(proposal.companyId),
+      null,
+    ),
     proposal.candidateId && proposal.vacancyId
-      ? getComparisonMatrixForPair(
-          proposal.candidateId,
-          proposal.vacancyId,
-        ).catch((err) => {
-          console.error("[proposals/detail] comparison matrix failed", err);
-          return null;
-        })
+      ? safeProposalSecondaryFetch(
+          "getComparisonMatrixForPair",
+          getComparisonMatrixForPair(
+            proposal.candidateId,
+            proposal.vacancyId,
+          ),
+          null,
+        )
       : Promise.resolve(null),
     proposal.candidateId
-      ? getCandidateCvPrintData(proposal.candidateId).catch((err) => {
-          console.error("[proposals/detail] CV print data failed", err);
-          return null;
-        })
+      ? safeProposalSecondaryFetch(
+          "getCandidateCvPrintData",
+          getCandidateCvPrintData(proposal.candidateId),
+          null,
+        )
       : Promise.resolve(null),
   ]);
 
