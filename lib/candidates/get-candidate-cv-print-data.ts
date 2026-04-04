@@ -87,106 +87,135 @@ function achievementBulletsFromLogs(
   return out;
 }
 
+const MAX_CANDIDATE_ID_LEN = 128;
+
+/**
+ * Loads normalized data for the consulting CV PDF / in-app preview.
+ * Never throws: invalid ids, missing rows, DB/client drift, and Prisma errors yield `null`.
+ */
 export async function getCandidateCvPrintData(
   id: string,
 ): Promise<CandidateCvPrintData | null> {
-  const row = await prisma.candidate.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      role: true,
-      seniority: true,
-      skills: true,
-      availabilityStatus: true,
-      currentCompany: true,
-      notes: true,
-      locationCity: true,
-      workModality: true,
-      cvLanguagesText: true,
-      cvCertificationsText: true,
-      cvIndustriesText: true,
-      cvEducationText: true,
-      cvSoftSkillsText: true,
-      structuredSkills: {
-        select: {
-          yearsExperience: true,
-          level: true,
-          skill: { select: { name: true, category: true } },
+  const trimmed =
+    typeof id === "string" ? id.trim() : "";
+  if (!trimmed || trimmed.length > MAX_CANDIDATE_ID_LEN) {
+    return null;
+  }
+
+  try {
+    const row = await prisma.candidate.findUnique({
+      where: { id: trimmed },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        role: true,
+        seniority: true,
+        skills: true,
+        availabilityStatus: true,
+        currentCompany: true,
+        notes: true,
+        locationCity: true,
+        workModality: true,
+        cvLanguagesText: true,
+        cvCertificationsText: true,
+        cvIndustriesText: true,
+        cvEducationText: true,
+        cvSoftSkillsText: true,
+        structuredSkills: {
+          select: {
+            yearsExperience: true,
+            level: true,
+            skill: { select: { name: true, category: true } },
+          },
+          orderBy: { skill: { name: "asc" } },
         },
-        orderBy: { skill: { name: "asc" } },
-      },
-      placements: {
-        orderBy: { startDate: "desc" },
-        take: 8,
-        select: {
-          startDate: true,
-          endDate: true,
-          status: true,
-          company: { select: { name: true } },
-          vacancy: { select: { title: true } },
-          weeklyLogs: {
-            where: { achievements: { not: null } },
-            orderBy: { weekStart: "desc" },
-            take: 8,
-            select: { achievements: true },
+        placements: {
+          orderBy: { startDate: "desc" },
+          take: 8,
+          select: {
+            startDate: true,
+            endDate: true,
+            status: true,
+            company: { select: { name: true } },
+            vacancy: { select: { title: true } },
+            weeklyLogs: {
+              where: { achievements: { not: null } },
+              orderBy: { weekStart: "desc" },
+              take: 8,
+              select: { achievements: true },
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!row) return null;
+    if (!row) return null;
 
-  const structuredSkills: CandidateCvSkillRow[] = row.structuredSkills.map(
-    (cs) => ({
-      name: cs.skill.name,
-      category: cs.skill.category?.trim() || "Skills",
-      yearsExperience: cs.yearsExperience,
-      level: cs.level?.trim() || null,
-    }),
-  );
+    const structuredSkills: CandidateCvSkillRow[] = row.structuredSkills
+      .map((cs) => ({
+        name: cs.skill?.name?.trim() || "",
+        category: cs.skill?.category?.trim() || "Skills",
+        yearsExperience: cs.yearsExperience,
+        level: cs.level?.trim() || null,
+      }))
+      .filter((s) => s.name.length > 0);
 
-  const placements: CandidateCvPlacementRow[] = row.placements.map((p) => ({
-    companyName: p.company.name,
-    roleTitle: p.vacancy.title,
-    startLabel: formatPlacementDate(p.startDate),
-    endLabel: p.endDate ? formatPlacementDate(p.endDate) : "Presente",
-    statusLabel: placementStatusLabel(p.status),
-    highlights: achievementBulletsFromLogs(p.weeklyLogs),
-  }));
+    const placements: CandidateCvPlacementRow[] = [];
+    for (const p of row.placements) {
+      const companyName = p.company?.name?.trim();
+      const roleTitle = p.vacancy?.title?.trim();
+      if (!companyName || !roleTitle) continue;
+      placements.push({
+        companyName,
+        roleTitle,
+        startLabel: formatPlacementDate(p.startDate),
+        endLabel: p.endDate ? formatPlacementDate(p.endDate) : "Presente",
+        statusLabel: placementStatusLabel(p.status),
+        highlights: achievementBulletsFromLogs(p.weeklyLogs ?? []),
+      });
+    }
 
-  const declaredIndustries = parseCvIndustriesText(row.cvIndustriesText);
-  const orgsFromPlacements = [
-    ...new Set(placements.map((p) => p.companyName)),
-  ];
-  const industriesMerged = [
-    ...new Set([...declaredIndustries, ...orgsFromPlacements]),
-  ].slice(0, 14);
+    const declaredIndustries = parseCvIndustriesText(row.cvIndustriesText);
+    const orgsFromPlacements = [
+      ...new Set(placements.map((p) => p.companyName)),
+    ];
+    const industriesMerged = [
+      ...new Set([...declaredIndustries, ...orgsFromPlacements]),
+    ].slice(0, 14);
 
-  return {
-    id: row.id,
-    fullName: `${row.firstName} ${row.lastName}`.trim(),
-    email: row.email?.trim() || null,
-    phone: row.phone?.trim() || null,
-    role: row.role,
-    seniorityLabel: vacancySeniorityLabel(row.seniority),
-    availabilityStatus: row.availabilityStatus,
-    availabilityLabel: candidateAvailabilityLabel(row.availabilityStatus),
-    currentCompany: row.currentCompany?.trim() || null,
-    legacySkillsText: row.skills.trim(),
-    notes: row.notes?.trim() || null,
-    structuredSkills,
-    placements,
-    locationCity: row.locationCity?.trim() || null,
-    workModality: row.workModality?.trim() || null,
-    languages: parseCvLanguagesText(row.cvLanguagesText),
-    certifications: parseCvCertificationLines(row.cvCertificationsText),
-    industries: industriesMerged,
-    educationBlocks: parseCvEducationBlocks(row.cvEducationText),
-    softSkillsFromCvText: parseCvSoftSkillsLines(row.cvSoftSkillsText),
-  };
+    const legacySkills =
+      typeof row.skills === "string" ? row.skills : "";
+
+    return {
+      id: row.id,
+      fullName: `${row.firstName ?? ""} ${row.lastName ?? ""}`.trim(),
+      email: row.email?.trim() || null,
+      phone: row.phone?.trim() || null,
+      role: row.role,
+      seniorityLabel: vacancySeniorityLabel(row.seniority),
+      availabilityStatus: row.availabilityStatus,
+      availabilityLabel: candidateAvailabilityLabel(row.availabilityStatus),
+      currentCompany: row.currentCompany?.trim() || null,
+      legacySkillsText: legacySkills.trim(),
+      notes: row.notes?.trim() || null,
+      structuredSkills,
+      placements,
+      locationCity: row.locationCity?.trim() || null,
+      workModality: row.workModality?.trim() || null,
+      languages: parseCvLanguagesText(row.cvLanguagesText),
+      certifications: parseCvCertificationLines(row.cvCertificationsText),
+      industries: industriesMerged,
+      educationBlocks: parseCvEducationBlocks(row.cvEducationText),
+      softSkillsFromCvText: parseCvSoftSkillsLines(row.cvSoftSkillsText),
+    };
+  } catch (err) {
+    console.error("[getCandidateCvPrintData] failed", {
+      candidateId: trimmed,
+      message: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
 }
