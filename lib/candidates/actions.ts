@@ -134,7 +134,19 @@ export async function loadCandidateEditDataForListAction(
   if (!id) return { ok: false, message: "Identificador no válido." };
   try {
     const data = await getCandidateEditData(id);
-    if (!data) return { ok: false, message: "Candidato no encontrado." };
+    if (!data) {
+      const exists = await prisma.candidate.findUnique({
+        where: { id },
+        select: { id: true },
+      });
+      if (!exists) {
+        return { ok: false, message: "Candidato no encontrado." };
+      }
+      return {
+        ok: false,
+        message: "No se pudo cargar la ficha para editar. Revisa consola o migraciones.",
+      };
+    }
     return {
       ok: true,
       data: {

@@ -14,6 +14,7 @@ import {
   type CvLanguageEntry,
 } from "./cv-print-parsing";
 import { candidateAvailabilityLabel } from "./availability-ui";
+import { logQuietCandidateLoadFailure } from "./log-candidate-load-error";
 import { vacancySeniorityLabel } from "./seniority-ui";
 
 export type CandidateCvSkillRow = {
@@ -221,7 +222,9 @@ export async function getCandidateCvPrintData(
 
     if (!row) return null;
 
-    const structuredSkills: CandidateCvSkillRow[] = row.structuredSkills
+    let structuredSkills: CandidateCvSkillRow[];
+    try {
+      structuredSkills = row.structuredSkills
       .map((cs) => {
         let years: number | null = cs.yearsExperience ?? null;
         if (years != null && typeof years !== "number") {
@@ -236,12 +239,20 @@ export async function getCandidateCvPrintData(
         };
       })
       .filter((s) => s.name.length > 0);
+    } catch {
+      structuredSkills = [];
+    }
 
-    const workExperienceParagraphs = resolveWorkExperienceParagraphs(
-      row.cvWorkExperienceText,
-      row.notes,
-      row.cvRawText,
-    );
+    let workExperienceParagraphs: string[];
+    try {
+      workExperienceParagraphs = resolveWorkExperienceParagraphs(
+        row.cvWorkExperienceText,
+        row.notes,
+        row.cvRawText,
+      );
+    } catch {
+      workExperienceParagraphs = [];
+    }
 
     const declaredIndustries = parseCvIndustriesText(row.cvIndustriesText);
     const industriesMerged = declaredIndustries.slice(0, 14);
@@ -251,34 +262,40 @@ export async function getCandidateCvPrintData(
 
     const availabilityStatus = coerceAvailabilityStatus(row.availabilityStatus);
 
-    return {
-      id: row.id,
-      fullName:
-        `${row.firstName ?? ""} ${row.lastName ?? ""}`.trim() || "—",
-      email: row.email?.trim() || null,
-      phone: row.phone?.trim() || null,
-      role: (row.role ?? "").trim() || "—",
-      seniorityLabel: vacancySeniorityLabel(row.seniority),
-      availabilityStatus,
-      availabilityLabel: candidateAvailabilityLabel(availabilityStatus),
-      currentCompany: row.currentCompany?.trim() || null,
-      legacySkillsText: legacySkills.trim(),
-      notes: notesForWhyProfile(row.notes),
-      structuredSkills,
-      locationCity: row.locationCity?.trim() || null,
-      workModality: row.workModality?.trim() || null,
-      languages: parseCvLanguagesText(row.cvLanguagesText),
-      certifications: parseCvCertificationLines(row.cvCertificationsText),
-      industries: industriesMerged,
-      educationBlocks: parseCvEducationBlocks(row.cvEducationText),
-      softSkillsFromCvText: parseCvSoftSkillsLines(row.cvSoftSkillsText),
-      workExperienceParagraphs,
-    };
+    try {
+      return {
+        id: row.id,
+        fullName:
+          `${row.firstName ?? ""} ${row.lastName ?? ""}`.trim() || "—",
+        email: row.email?.trim() || null,
+        phone: row.phone?.trim() || null,
+        role: (row.role ?? "").trim() || "—",
+        seniorityLabel: vacancySeniorityLabel(row.seniority),
+        availabilityStatus,
+        availabilityLabel: candidateAvailabilityLabel(availabilityStatus),
+        currentCompany: row.currentCompany?.trim() || null,
+        legacySkillsText: legacySkills.trim(),
+        notes: notesForWhyProfile(row.notes),
+        structuredSkills,
+        locationCity: row.locationCity?.trim() || null,
+        workModality: row.workModality?.trim() || null,
+        languages: parseCvLanguagesText(row.cvLanguagesText),
+        certifications: parseCvCertificationLines(row.cvCertificationsText),
+        industries: industriesMerged,
+        educationBlocks: parseCvEducationBlocks(row.cvEducationText),
+        softSkillsFromCvText: parseCvSoftSkillsLines(row.cvSoftSkillsText),
+        workExperienceParagraphs,
+      };
+    } catch (mapErr) {
+      logQuietCandidateLoadFailure(
+        "getCandidateCvPrintData/map",
+        trimmed,
+        mapErr,
+      );
+      return null;
+    }
   } catch (err) {
-    console.error("[getCandidateCvPrintData] failed", {
-      candidateId: trimmed,
-      message: err instanceof Error ? err.message : String(err),
-    });
+    logQuietCandidateLoadFailure("getCandidateCvPrintData", trimmed, err);
     return null;
   }
 }

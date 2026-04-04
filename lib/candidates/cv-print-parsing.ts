@@ -65,13 +65,18 @@ export function parseCvEducationBlocks(
 export function parseCvWorkExperienceBlocks(
   raw: string | null | undefined,
 ): string[] {
-  if (!raw?.trim()) return [];
-  const t = raw.trim();
-  const paras = t.split(/\r?\n\r?\n+/).map((b) => b.trim()).filter(Boolean);
-  if (paras.length > 1) return paras.slice(0, 60);
-  return t
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .slice(0, 200);
+  try {
+    if (raw == null) return [];
+    const t = (typeof raw === "string" ? raw : String(raw)).trim();
+    if (!t) return [];
+    const paras = t.split(/\r?\n\r?\n+/).map((b) => b.trim()).filter(Boolean);
+    if (paras.length > 1) return paras.slice(0, 60);
+    return t
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .slice(0, 200);
+  } catch {
+    return [];
+  }
 }

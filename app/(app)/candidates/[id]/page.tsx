@@ -62,6 +62,19 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
+function isPrismaClientValidationError(err: unknown): boolean {
+  return err instanceof Error && err.name === "PrismaClientValidationError";
+}
+
+function isPrismaMissingColumnMessage(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const m = err.message;
+  return (
+    err.name === "PrismaClientKnownRequestError" &&
+    (m.includes("does not exist") || m.includes("Column"))
+  );
+}
+
 /** Core: `getCandidateByIdForUi`. Secondary queries use this wrapper so one failure does not abort the route. */
 async function safeCandidateSecondaryFetch<T>(
   label: string,
@@ -71,7 +84,13 @@ async function safeCandidateSecondaryFetch<T>(
   try {
     return await promise;
   } catch (err) {
-    console.error(`[candidates/detail] ${label} failed`, err);
+    if (isPrismaClientValidationError(err) || isPrismaMissingColumnMessage(err)) {
+      console.warn(
+        `[candidates/detail] ${label} omitido (cliente Prisma o BD desalineados). \`npx prisma generate\`, migraciones y reiniciar dev.`,
+      );
+    } else {
+      console.error(`[candidates/detail] ${label} failed`, err);
+    }
     return fallback;
   }
 }

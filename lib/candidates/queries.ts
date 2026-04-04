@@ -5,6 +5,7 @@ import type {
 
 import { prisma } from "@/lib/prisma";
 
+import { logQuietCandidateLoadFailure } from "./log-candidate-load-error";
 import { mapCandidateToUi, type CandidateRow } from "./mappers";
 import type { CandidateUi } from "./types";
 import type { CandidateSkillDraft } from "./validation";
@@ -93,73 +94,78 @@ export type CandidateEditDataJson = Omit<
 export async function getCandidateEditData(
   id: string,
 ): Promise<CandidateEditData | null> {
-  const row = await prisma.candidate.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      role: true,
-      seniority: true,
-      availabilityStatus: true,
-      availabilityStartDate: true,
-      pipelineIntent: true,
-      pipelineVacancyId: true,
-      recruitmentStage: true,
-      currentCompany: true,
-      notes: true,
-      locationCity: true,
-      workModality: true,
-      cvLanguagesText: true,
-      cvCertificationsText: true,
-      cvIndustriesText: true,
-      cvEducationText: true,
-      cvSoftSkillsText: true,
-      cvWorkExperienceText: true,
-      cvRawText: true,
-      cvFileName: true,
-      cvUploadedAt: true,
-      structuredSkills: {
-        select: { skillId: true, yearsExperience: true, level: true },
-        orderBy: [{ updatedAt: "desc" }],
+  try {
+    const row = await prisma.candidate.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        role: true,
+        seniority: true,
+        availabilityStatus: true,
+        availabilityStartDate: true,
+        pipelineIntent: true,
+        pipelineVacancyId: true,
+        recruitmentStage: true,
+        currentCompany: true,
+        notes: true,
+        locationCity: true,
+        workModality: true,
+        cvLanguagesText: true,
+        cvCertificationsText: true,
+        cvIndustriesText: true,
+        cvEducationText: true,
+        cvSoftSkillsText: true,
+        cvWorkExperienceText: true,
+        cvRawText: true,
+        cvFileName: true,
+        cvUploadedAt: true,
+        structuredSkills: {
+          select: { skillId: true, yearsExperience: true, level: true },
+          orderBy: { updatedAt: "desc" },
+        },
       },
-    },
-  });
-  if (!row) return null;
+    });
+    if (!row) return null;
 
-  return {
-    id: row.id,
-    firstName: row.firstName,
-    lastName: row.lastName,
-    email: row.email,
-    phone: row.phone,
-    role: row.role,
-    seniorityValue: row.seniority as CandidateEditData["seniorityValue"],
-    availabilityStatusValue:
-      row.availabilityStatus as CandidateEditData["availabilityStatusValue"],
-    availabilityStartDate: row.availabilityStartDate,
-    pipelineIntentValue: row.pipelineIntent as CandidatePipelineIntent,
-    pipelineVacancyId: row.pipelineVacancyId,
-    recruitmentStageValue: row.recruitmentStage as CandidateRecruitmentStage,
-    currentCompany: row.currentCompany,
-    notes: row.notes,
-    structuredSkills: row.structuredSkills.map((s) => ({
-      skillId: s.skillId,
-      yearsExperience: s.yearsExperience,
-      level: s.level?.trim() || null,
-    })),
-    locationCity: row.locationCity,
-    workModality: row.workModality,
-    cvLanguagesText: row.cvLanguagesText,
-    cvCertificationsText: row.cvCertificationsText,
-    cvIndustriesText: row.cvIndustriesText,
-    cvEducationText: row.cvEducationText,
-    cvSoftSkillsText: row.cvSoftSkillsText,
-    cvWorkExperienceText: row.cvWorkExperienceText,
-    cvRawText: row.cvRawText,
-    cvFileName: row.cvFileName,
-    cvUploadedAt: row.cvUploadedAt,
-  };
+    return {
+      id: row.id,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      email: row.email,
+      phone: row.phone,
+      role: row.role,
+      seniorityValue: row.seniority as CandidateEditData["seniorityValue"],
+      availabilityStatusValue:
+        row.availabilityStatus as CandidateEditData["availabilityStatusValue"],
+      availabilityStartDate: row.availabilityStartDate,
+      pipelineIntentValue: row.pipelineIntent as CandidatePipelineIntent,
+      pipelineVacancyId: row.pipelineVacancyId,
+      recruitmentStageValue: row.recruitmentStage as CandidateRecruitmentStage,
+      currentCompany: row.currentCompany,
+      notes: row.notes,
+      structuredSkills: row.structuredSkills.map((s) => ({
+        skillId: s.skillId,
+        yearsExperience: s.yearsExperience,
+        level: s.level?.trim() || null,
+      })),
+      locationCity: row.locationCity,
+      workModality: row.workModality,
+      cvLanguagesText: row.cvLanguagesText,
+      cvCertificationsText: row.cvCertificationsText,
+      cvIndustriesText: row.cvIndustriesText,
+      cvEducationText: row.cvEducationText,
+      cvSoftSkillsText: row.cvSoftSkillsText,
+      cvWorkExperienceText: row.cvWorkExperienceText,
+      cvRawText: row.cvRawText,
+      cvFileName: row.cvFileName,
+      cvUploadedAt: row.cvUploadedAt,
+    };
+  } catch (err) {
+    logQuietCandidateLoadFailure("getCandidateEditData", id, err);
+    return null;
+  }
 }
