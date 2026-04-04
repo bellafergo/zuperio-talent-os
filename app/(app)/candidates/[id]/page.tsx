@@ -47,6 +47,10 @@ import type {
   ProposalOpportunityOption,
   ProposalVacancyOption,
 } from "@/lib/proposals/types";
+import {
+  listOpenVacanciesForCandidateForm,
+  type OpenVacancyOptionForCandidateForm,
+} from "@/lib/vacancies/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +129,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     proposalVacancies,
     proposalCandidates,
     proposalPrefill,
+    openVacanciesForm,
   ] = await Promise.all([
     safeCandidateSecondaryFetch(
       "listMatchesForCandidateUi",
@@ -202,6 +207,13 @@ export default async function CandidateDetailPage({ params }: PageProps) {
           emptyProposalQuickCreatePrefill,
         )
       : Promise.resolve(emptyProposalQuickCreatePrefill),
+    canManage
+      ? safeCandidateSecondaryFetch(
+          "listOpenVacanciesForCandidateForm",
+          listOpenVacanciesForCandidateForm(),
+          [] as OpenVacancyOptionForCandidateForm[],
+        )
+      : Promise.resolve([] as OpenVacancyOptionForCandidateForm[]),
   ]);
 
   const headerTitle = safeDetailLine(candidate.displayName);
@@ -229,7 +241,12 @@ export default async function CandidateDetailPage({ params }: PageProps) {
         backLabel="Volver a candidatos"
         title={title}
         description="Perfil de talento, skills estructurados, postulaciones y matches deterministas con vacantes."
-        meta={<CandidateAvailabilityBadge status={candidate.availabilityStatus} />}
+        meta={
+          <CandidateAvailabilityBadge
+            status={candidate.availabilityStatus}
+            label={candidate.availabilityBadgeLabel}
+          />
+        }
         actions={
           <div className="flex items-center gap-2">
             {candidate.phone && safeDetailLine(candidate.phone) !== "—" ? (
@@ -251,7 +268,11 @@ export default async function CandidateDetailPage({ params }: PageProps) {
               />
             ) : null}
             {canManage && editData ? (
-              <CandidateEditDialog candidate={editData} skillsCatalog={skillsCatalog} />
+              <CandidateEditDialog
+                candidate={editData}
+                skillsCatalog={skillsCatalog}
+                openVacancies={openVacanciesForm}
+              />
             ) : null}
           </div>
         }

@@ -17,13 +17,16 @@ import {
 } from "@/components/ui/dialog";
 import type { SkillOption } from "@/lib/skills/queries";
 import { createCandidate, type CandidateActionState } from "@/lib/candidates/actions";
+import type { OpenVacancyOptionForCandidateForm } from "@/lib/vacancies/queries";
 
 import { CandidateRecordFormFields } from "./candidate-record-form-fields";
 
 export function CandidatesNewCandidateDialog({
   skillsCatalog,
+  openVacancies = [],
 }: {
   skillsCatalog: SkillOption[];
+  openVacancies?: OpenVacancyOptionForCandidateForm[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -82,6 +85,7 @@ export function CandidatesNewCandidateDialog({
             <div className="space-y-4">
               <CandidateRecordFormFields
                 skillsCatalog={skillsCatalog}
+                openVacancies={openVacancies}
                 fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
               />
               {state?.ok === false && state.message ? (

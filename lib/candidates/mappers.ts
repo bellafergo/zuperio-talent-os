@@ -45,6 +45,32 @@ function dash(s: string | null | undefined) {
   return t ? t : "—";
 }
 
+function startOfUTCDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+export function formatAvailabilityBadgeLabel(
+  status: PrismaAvailability,
+  start: Date | null,
+  now: Date = new Date(),
+): string {
+  if (status === "NOT_AVAILABLE") return "No disponible";
+  if (status === "ASSIGNED") return "Asignado";
+  if (status === "IN_PROCESS") return "En proceso";
+  if (status !== "AVAILABLE") return prismaAvailabilityToUi[status];
+  if (!start) return "Disponible inmediata";
+  const nowDay = startOfUTCDay(now);
+  const startDay = startOfUTCDay(start);
+  const diffDays = Math.round(
+    (startDay.getTime() - nowDay.getTime()) / 86400000,
+  );
+  if (diffDays >= 12 && diffDays <= 16) return "Disponible en 2 semanas";
+  return `Disponible desde ${new Intl.DateTimeFormat("es-MX", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(start)}`;
+}
+
 export type CandidateRow = {
   id: string;
   firstName: string;
@@ -55,6 +81,7 @@ export type CandidateRow = {
   seniority: PrismaSeniority;
   skills: string;
   availabilityStatus: PrismaAvailability;
+  availabilityStartDate: Date | null;
   currentCompany: string | null;
   notes: string | null;
   updatedAt: Date;
@@ -70,6 +97,10 @@ export function mapCandidateToUi(row: CandidateRow): CandidateUi {
     skillTags: parseSkillTags(row.skills),
     seniority: prismaSeniorityToUi[row.seniority],
     availabilityStatus: prismaAvailabilityToUi[row.availabilityStatus],
+    availabilityBadgeLabel: formatAvailabilityBadgeLabel(
+      row.availabilityStatus,
+      row.availabilityStartDate,
+    ),
     email: dash(row.email),
     phone: dash(row.phone),
     currentCompany: dash(row.currentCompany),

@@ -3,16 +3,21 @@
 import * as React from "react";
 
 import {
-  CandidateAvailabilityStatus as AvailabilityConst,
+  CandidatePipelineIntent as PipelineIntentConst,
   VacancySeniority as SeniorityConst,
-  type CandidateAvailabilityStatus,
+  type CandidatePipelineIntent,
   type VacancySeniority,
 } from "@/generated/prisma/enums";
 import { Input } from "@/components/ui/input";
 import type { SkillOption } from "@/lib/skills/queries";
-import { cn } from "@/lib/utils";
+import { CANDIDATE_WORK_MODALITY_OPTIONS } from "@/lib/candidates/constants";
 import type { CandidateEditData } from "@/lib/candidates/queries";
-import type { CandidateSkillDraft } from "@/lib/candidates/validation";
+import type {
+  CandidateAvailabilityFormMode,
+  CandidateSkillDraft,
+} from "@/lib/candidates/validation";
+import type { OpenVacancyOptionForCandidateForm } from "@/lib/vacancies/queries";
+import { cn } from "@/lib/utils";
 
 import { CandidateSkillsEditor } from "./candidate-skills-editor";
 
@@ -23,13 +28,6 @@ const selectClass = cn(
   "dark:bg-input/30",
 );
 
-const AVAILABILITY_LABELS: Record<CandidateAvailabilityStatus, string> = {
-  AVAILABLE: "Disponible",
-  IN_PROCESS: "En proceso",
-  ASSIGNED: "Asignado",
-  NOT_AVAILABLE: "No disponible",
-};
-
 const SENIORITY_LABELS: Record<VacancySeniority, string> = {
   INTERN: "Interno",
   JUNIOR: "Junior",
@@ -39,25 +37,82 @@ const SENIORITY_LABELS: Record<VacancySeniority, string> = {
   PRINCIPAL: "Principal",
 };
 
+function deriveInitialAvailability(defaults?: CandidateEditData): {
+  mode: CandidateAvailabilityFormMode;
+  specificDate: string;
+} {
+  if (!defaults) {
+    return { mode: "IMMEDIATE", specificDate: "" };
+  }
+  const status = defaults.availabilityStatusValue;
+  if (status === "NOT_AVAILABLE") {
+    return { mode: "NOT_AVAILABLE", specificDate: "" };
+  }
+  if (status === "ASSIGNED") {
+    return { mode: "NOT_AVAILABLE", specificDate: "" };
+  }
+  if (status === "IN_PROCESS") {
+    return { mode: "TWO_WEEKS", specificDate: "" };
+  }
+  if (!defaults.availabilityStartDate) {
+    return { mode: "IMMEDIATE", specificDate: "" };
+  }
+  const dt = defaults.availabilityStartDate;
+  const y = dt.getUTCFullYear();
+  const m = String(dt.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(dt.getUTCDate()).padStart(2, "0");
+  return { mode: "SPECIFIC_DATE", specificDate: `${y}-${m}-${d}` };
+}
+
 export function CandidateRecordFormFields({
   skillsCatalog,
   defaults,
   candidateId,
   fieldErrors,
+  openVacancies = [],
 }: {
   skillsCatalog: SkillOption[];
   defaults?: CandidateEditData;
   candidateId?: string;
   fieldErrors?: Record<string, string>;
+  /** Safe optional; form still works when empty after a failed load. */
+  openVacancies?: OpenVacancyOptionForCandidateForm[];
 }) {
+  const initialAvail = deriveInitialAvailability(defaults);
+  const [availMode, setAvailMode] = React.useState<CandidateAvailabilityFormMode>(
+    initialAvail.mode,
+  );
+  const [availSpecificDate, setAvailSpecificDate] = React.useState(
+    initialAvail.specificDate,
+  );
+
+  const [pipelineIntent, setPipelineIntent] =
+    React.useState<CandidatePipelineIntent>(
+      defaults?.pipelineIntentValue ?? PipelineIntentConst.NO_VACANCY,
+    );
+  const [pipelineVacancyId, setPipelineVacancyId] = React.useState(
+    defaults?.pipelineVacancyId ?? "",
+  );
+
   const [structuredSkills, setStructuredSkills] = React.useState<
     CandidateSkillDraft[]
   >(defaults?.structuredSkills ?? []);
 
   const seniorityOrder = Object.values(SeniorityConst) as VacancySeniority[];
-  const availabilityOrder = Object.values(
-    AvailabilityConst,
-  ) as CandidateAvailabilityStatus[];
+
+  const workModalityCurrent = defaults?.workModality?.trim() ?? "";
+  const workModalityLegacy =
+    workModalityCurrent &&
+    !(CANDIDATE_WORK_MODALITY_OPTIONS as readonly string[]).includes(
+      workModalityCurrent,
+    )
+      ? workModalityCurrent
+      : null;
+
+  function onPipelineIntentChange(next: CandidatePipelineIntent) {
+    setPipelineIntent(next);
+    if (next !== "OPEN_VACANCY") setPipelineVacancyId("");
+  }
 
   return (
     <div className="grid gap-4">
@@ -70,10 +125,28 @@ export function CandidateRecordFormFields({
         name="structuredSkills"
         value={JSON.stringify(structuredSkills)}
       />
+      <input
+        type="hidden"
+        name="currentCompanyHidden"
+        value={defaults?.currentCompany ?? ""}
+      />
+      <input type="hidden" name="availabilityMode" value={availMode} />
+      <input
+        type="hidden"
+        name="availabilitySpecificDate"
+        value={availMode === "SPECIFIC_DATE" ? availSpecificDate : ""}
+      />
+      <input type="hidden" name="pipelineIntent" value={pipelineIntent} />
+      {pipelineIntent !== "OPEN_VACANCY" ? (
+        <input type="hidden" name="pipelineVacancyId" value="" />
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label htmlFor={candidateId ? `edit-first-${candidateId}` : "new-first"} className="text-sm font-medium">
+          <label
+            htmlFor={candidateId ? `edit-first-${candidateId}` : "new-first"}
+            className="text-sm font-medium"
+          >
             Nombre <span className="text-destructive">*</span>
           </label>
           <Input
@@ -92,7 +165,10 @@ export function CandidateRecordFormFields({
         </div>
 
         <div className="space-y-2">
-          <label htmlFor={candidateId ? `edit-last-${candidateId}` : "new-last"} className="text-sm font-medium">
+          <label
+            htmlFor={candidateId ? `edit-last-${candidateId}` : "new-last"}
+            className="text-sm font-medium"
+          >
             Apellido
           </label>
           <Input
@@ -111,7 +187,10 @@ export function CandidateRecordFormFields({
       </div>
 
       <div className="space-y-2">
-        <label htmlFor={candidateId ? `edit-role-${candidateId}` : "new-role"} className="text-sm font-medium">
+        <label
+          htmlFor={candidateId ? `edit-role-${candidateId}` : "new-role"}
+          className="text-sm font-medium"
+        >
           Rol <span className="text-destructive">*</span>
         </label>
         <Input
@@ -159,37 +238,128 @@ export function CandidateRecordFormFields({
         </div>
 
         <div className="space-y-2">
-          <label
-            htmlFor={candidateId ? `edit-availability-${candidateId}` : "new-availability"}
-            className="text-sm font-medium"
-          >
+          <label className="text-sm font-medium">
             Disponibilidad <span className="text-destructive">*</span>
           </label>
           <select
-            id={candidateId ? `edit-availability-${candidateId}` : "new-availability"}
-            name="availabilityStatus"
-            required
             className={selectClass}
-            defaultValue={defaults?.availabilityStatusValue ?? "AVAILABLE"}
-            aria-invalid={Boolean(fieldErrors?.availabilityStatus)}
+            value={availMode}
+            onChange={(e) => {
+              const v = e.target.value as CandidateAvailabilityFormMode;
+              setAvailMode(v);
+              if (v !== "SPECIFIC_DATE") setAvailSpecificDate("");
+            }}
+            aria-invalid={Boolean(
+              fieldErrors?.availabilityMode || fieldErrors?.availabilitySpecificDate,
+            )}
           >
-            {availabilityOrder.map((v) => (
-              <option key={v} value={v}>
-                {AVAILABILITY_LABELS[v]}
-              </option>
-            ))}
+            <option value="IMMEDIATE">Inmediata</option>
+            <option value="TWO_WEEKS">En 2 semanas</option>
+            <option value="SPECIFIC_DATE">Fecha específica</option>
+            <option value="NOT_AVAILABLE">No disponible</option>
           </select>
-          {fieldErrors?.availabilityStatus ? (
+          {fieldErrors?.availabilityMode ? (
             <p className="text-sm text-destructive" role="alert">
-              {fieldErrors.availabilityStatus}
+              {fieldErrors.availabilityMode}
             </p>
           ) : null}
         </div>
       </div>
 
+      {availMode === "SPECIFIC_DATE" ? (
+        <div className="space-y-2">
+          <label
+            htmlFor={candidateId ? `edit-avail-date-${candidateId}` : "new-avail-date"}
+            className="text-sm font-medium"
+          >
+            Fecha disponible <span className="text-destructive">*</span>
+          </label>
+          <Input
+            id={candidateId ? `edit-avail-date-${candidateId}` : "new-avail-date"}
+            type="date"
+            value={availSpecificDate}
+            onChange={(e) => setAvailSpecificDate(e.target.value)}
+            className={selectClass}
+            aria-invalid={Boolean(fieldErrors?.availabilitySpecificDate)}
+          />
+          {fieldErrors?.availabilitySpecificDate ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.availabilitySpecificDate}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">
+          Contexto de reclutamiento <span className="text-destructive">*</span>
+        </label>
+        <select
+          className={selectClass}
+          value={pipelineIntent}
+          onChange={(e) =>
+            onPipelineIntentChange(e.target.value as CandidatePipelineIntent)
+          }
+          aria-invalid={Boolean(fieldErrors?.pipelineIntent)}
+        >
+          <option value={PipelineIntentConst.OPEN_VACANCY}>Vacante abierta</option>
+          <option value={PipelineIntentConst.NO_VACANCY}>Sin vacante definida</option>
+          <option value={PipelineIntentConst.TALENT_POOL}>Pool de talento</option>
+        </select>
+        {fieldErrors?.pipelineIntent ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.pipelineIntent}
+          </p>
+        ) : null}
+      </div>
+
+      {pipelineIntent === "OPEN_VACANCY" ? (
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Vacante <span className="text-destructive">*</span>
+          </label>
+          <select
+            name="pipelineVacancyId"
+            className={selectClass}
+            value={pipelineVacancyId}
+            onChange={(e) => setPipelineVacancyId(e.target.value)}
+            aria-invalid={Boolean(fieldErrors?.pipelineVacancyId)}
+          >
+            <option value="" disabled>
+              Selecciona una vacante…
+            </option>
+            {defaults?.pipelineVacancyId &&
+            !openVacancies.some((v) => v.id === defaults.pipelineVacancyId) ? (
+              <option value={defaults.pipelineVacancyId}>
+                Vacante guardada (puede estar cerrada)
+              </option>
+            ) : null}
+            {openVacancies.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.title}
+              </option>
+            ))}
+          </select>
+          {openVacancies.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No se cargaron vacantes abiertas. Puedes guardar con otro contexto o
+              reintentar más tarde.
+            </p>
+          ) : null}
+          {fieldErrors?.pipelineVacancyId ? (
+            <p className="text-sm text-destructive" role="alert">
+              {fieldErrors.pipelineVacancyId}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label htmlFor={candidateId ? `edit-email-${candidateId}` : "new-email"} className="text-sm font-medium">
+          <label
+            htmlFor={candidateId ? `edit-email-${candidateId}` : "new-email"}
+            className="text-sm font-medium"
+          >
             Correo
           </label>
           <Input
@@ -208,7 +378,10 @@ export function CandidateRecordFormFields({
         </div>
 
         <div className="space-y-2">
-          <label htmlFor={candidateId ? `edit-phone-${candidateId}` : "new-phone"} className="text-sm font-medium">
+          <label
+            htmlFor={candidateId ? `edit-phone-${candidateId}` : "new-phone"}
+            className="text-sm font-medium"
+          >
             Teléfono
           </label>
           <Input
@@ -223,26 +396,6 @@ export function CandidateRecordFormFields({
             </p>
           ) : null}
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <label
-          htmlFor={candidateId ? `edit-currentCompany-${candidateId}` : "new-currentCompany"}
-          className="text-sm font-medium"
-        >
-          Empresa actual
-        </label>
-        <Input
-          id={candidateId ? `edit-currentCompany-${candidateId}` : "new-currentCompany"}
-          name="currentCompany"
-          defaultValue={defaults?.currentCompany ?? ""}
-          aria-invalid={Boolean(fieldErrors?.currentCompany)}
-        />
-        {fieldErrors?.currentCompany ? (
-          <p className="text-sm text-destructive" role="alert">
-            {fieldErrors.currentCompany}
-          </p>
-        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -292,14 +445,36 @@ export function CandidateRecordFormFields({
               htmlFor={candidateId ? `edit-mod-${candidateId}` : "new-mod"}
               className="text-xs font-medium text-muted-foreground"
             >
-              Modalidad (Remoto / Híbrido / Presencial)
+              Modalidad
             </label>
-            <Input
+            <select
               id={candidateId ? `edit-mod-${candidateId}` : "new-mod"}
               name="workModality"
-              maxLength={120}
-              defaultValue={defaults?.workModality ?? ""}
-            />
+              className={selectClass}
+              defaultValue={
+                workModalityLegacy
+                  ? workModalityLegacy
+                  : workModalityCurrent || ""
+              }
+              aria-invalid={Boolean(fieldErrors?.workModality)}
+            >
+              <option value="">Sin especificar</option>
+              {CANDIDATE_WORK_MODALITY_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+              {workModalityLegacy ? (
+                <option value={workModalityLegacy}>
+                  {workModalityLegacy} (valor actual)
+                </option>
+              ) : null}
+            </select>
+            {fieldErrors?.workModality ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.workModality}
+              </p>
+            ) : null}
           </div>
         </div>
         {(
@@ -349,4 +524,3 @@ export function CandidateRecordFormFields({
     </div>
   );
 }
-

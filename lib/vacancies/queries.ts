@@ -123,3 +123,27 @@ export async function getVacancyEditData(
     })),
   };
 }
+
+/** Vacancies that can still receive candidates (intake / pipeline). */
+const ACTIVE_VACANCY_STATUSES = [
+  "OPEN",
+  "SOURCING",
+  "INTERVIEWING",
+  "ON_HOLD",
+] as const;
+
+export type OpenVacancyOptionForCandidateForm = {
+  id: string;
+  title: string;
+};
+
+export async function listOpenVacanciesForCandidateForm(): Promise<
+  OpenVacancyOptionForCandidateForm[]
+> {
+  const rows = await prisma.vacancy.findMany({
+    where: { status: { in: [...ACTIVE_VACANCY_STATUSES] } },
+    select: { id: true, title: true },
+    orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
+  });
+  return rows;
+}

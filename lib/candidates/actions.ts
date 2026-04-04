@@ -4,10 +4,48 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
+import type { VacancyStatus } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { syncAllCandidateVacancyMatches } from "@/lib/matching/sync";
 
-import { parseCandidateForm } from "./validation";
+import {
+  computeAvailabilityForPersistence,
+  parseCandidateForm,
+  type CandidateFormParsed,
+} from "./validation";
+
+const OPEN_PIPELINE_VACANCY_STATUSES: VacancyStatus[] = [
+  "OPEN",
+  "SOURCING",
+  "INTERVIEWING",
+  "ON_HOLD",
+];
+
+async function validatePipelineVacancy(
+  data: CandidateFormParsed,
+): Promise<{ ok: true } | { ok: false; fieldErrors: Record<string, string> }> {
+  if (data.pipelineIntent !== "OPEN_VACANCY") return { ok: true };
+  const vid = data.pipelineVacancyId?.trim();
+  if (!vid) {
+    return {
+      ok: false,
+      fieldErrors: { pipelineVacancyId: "Selecciona una vacante abierta." },
+    };
+  }
+  const v = await prisma.vacancy.findUnique({
+    where: { id: vid },
+    select: { id: true, status: true },
+  });
+  if (!v || !OPEN_PIPELINE_VACANCY_STATUSES.includes(v.status)) {
+    return {
+      ok: false,
+      fieldErrors: {
+        pipelineVacancyId: "La vacante no existe o ya no está abierta.",
+      },
+    };
+  }
+  return { ok: true };
+}
 
 function scheduleMatchResync() {
   void syncAllCandidateVacancyMatches().catch((err) => {
@@ -46,6 +84,15 @@ export async function createCandidate(
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
   const { data } = parsed;
 
+  const avail = computeAvailabilityForPersistence(
+    data.availabilityMode,
+    data.availabilitySpecificDate,
+  );
+  if (!avail.ok) return { ok: false, fieldErrors: avail.fieldErrors };
+
+  const pipelineOk = await validatePipelineVacancy(data);
+  if (!pipelineOk.ok) return { ok: false, fieldErrors: pipelineOk.fieldErrors };
+
   if (data.structuredSkills.length > 0) {
     const skillIds = data.structuredSkills.map((s) => s.skillId);
     const skills = await prisma.skill.findMany({
@@ -67,7 +114,10 @@ export async function createCandidate(
             phone: data.phone,
             role: data.role,
             seniority: data.seniority,
-            availabilityStatus: data.availabilityStatus,
+            availabilityStatus: avail.availabilityStatus,
+            availabilityStartDate: avail.availabilityStartDate,
+            pipelineIntent: data.pipelineIntent,
+            pipelineVacancyId: data.pipelineVacancyId,
             currentCompany: data.currentCompany,
             notes: data.notes,
             skills: legacy,
@@ -110,7 +160,10 @@ export async function createCandidate(
         phone: data.phone,
         role: data.role,
         seniority: data.seniority,
-        availabilityStatus: data.availabilityStatus,
+        availabilityStatus: avail.availabilityStatus,
+        availabilityStartDate: avail.availabilityStartDate,
+        pipelineIntent: data.pipelineIntent,
+        pipelineVacancyId: data.pipelineVacancyId,
         currentCompany: data.currentCompany,
         notes: data.notes,
         skills: "",
@@ -120,6 +173,7 @@ export async function createCandidate(
         cvCertificationsText: data.cvCertificationsText,
         cvIndustriesText: data.cvIndustriesText,
         cvEducationText: data.cvEducationText,
+        cvSoftSkillsText: data.cvSoftSkillsText,
       },
       select: { id: true },
     });
@@ -154,6 +208,15 @@ export async function updateCandidate(
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
   const { data } = parsed;
 
+  const avail = computeAvailabilityForPersistence(
+    data.availabilityMode,
+    data.availabilitySpecificDate,
+  );
+  if (!avail.ok) return { ok: false, fieldErrors: avail.fieldErrors };
+
+  const pipelineOk = await validatePipelineVacancy(data);
+  if (!pipelineOk.ok) return { ok: false, fieldErrors: pipelineOk.fieldErrors };
+
   // Validate skills and build legacy string.
   let legacySkills = "";
   if (data.structuredSkills.length > 0) {
@@ -179,7 +242,10 @@ export async function updateCandidate(
           phone: data.phone,
           role: data.role,
           seniority: data.seniority,
-          availabilityStatus: data.availabilityStatus,
+          availabilityStatus: avail.availabilityStatus,
+          availabilityStartDate: avail.availabilityStartDate,
+          pipelineIntent: data.pipelineIntent,
+          pipelineVacancyId: data.pipelineVacancyId,
           currentCompany: data.currentCompany,
           notes: data.notes,
           skills: legacySkills,

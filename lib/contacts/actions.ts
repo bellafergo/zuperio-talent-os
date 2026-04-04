@@ -48,54 +48,64 @@ export async function createContact(
     return { ok: false, fieldErrors: { companyId: "No se encontró la empresa." } };
   }
 
-  const userId = gate.userId;
+  const actor = await prisma.user.findUnique({
+    where: { id: gate.userId },
+    select: { id: true },
+  });
+  /** Avoid FK violations if the session user id is stale or missing from DB. */
+  const createdById = actor?.id ?? null;
 
   try {
-    const created = await prisma.contact.create({
-      data: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        title: data.title,
-        companyId: data.companyId,
-        status: data.status,
-      },
-      select: { id: true },
+    const createdId = await prisma.$transaction(async (tx) => {
+      const created = await tx.contact.create({
+        data: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          title: data.title,
+          companyId: data.companyId,
+          status: data.status,
+        },
+        select: { id: true },
+      });
+
+      if (data.email) {
+        await tx.contactMethod.create({
+          data: {
+            contactId: created.id,
+            type: "EMAIL",
+            value: data.email,
+            isPrimary: true,
+            isActive: true,
+            createdById,
+          },
+        });
+      }
+      if (data.phone) {
+        await tx.contactMethod.create({
+          data: {
+            contactId: created.id,
+            type: "PHONE",
+            value: data.phone,
+            isPrimary: true,
+            isActive: true,
+            createdById,
+          },
+        });
+      }
+
+      return created.id;
     });
 
-    if (data.email) {
-      await prisma.contactMethod.create({
-        data: {
-          contactId: created.id,
-          type: "EMAIL",
-          value: data.email,
-          isPrimary: true,
-          isActive: true,
-          createdById: userId,
-        },
-      });
-    }
-    if (data.phone) {
-      await prisma.contactMethod.create({
-        data: {
-          contactId: created.id,
-          type: "PHONE",
-          value: data.phone,
-          isPrimary: true,
-          isActive: true,
-          createdById: userId,
-        },
-      });
-    }
-
-    await syncContactPrimaryFields(created.id);
+    await syncContactPrimaryFields(createdId);
 
     revalidatePath("/contacts");
-    revalidatePath(`/contacts/${created.id}`);
+    revalidatePath(`/contacts/${createdId}`);
     revalidatePath(`/companies/${data.companyId}`);
-    return { ok: true, contactId: created.id };
-  } catch {
+    return { ok: true, contactId: createdId };
+  } catch (err) {
+    console.error("[createContact] failed", err);
     return { ok: false, message: "No se pudo crear el contacto. Intenta de nuevo." };
   }
 }

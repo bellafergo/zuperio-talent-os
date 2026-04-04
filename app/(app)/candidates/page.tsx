@@ -3,6 +3,10 @@ import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { listSkillsForVacancyForm } from "@/lib/skills/queries";
 import type { SkillOption } from "@/lib/skills/queries";
 import { listCandidatesForUi } from "@/lib/candidates/queries";
+import {
+  listOpenVacanciesForCandidateForm,
+  type OpenVacancyOptionForCandidateForm,
+} from "@/lib/vacancies/queries";
 
 import { CandidatesHeader } from "./_components/candidates-header";
 import { CandidatesModule } from "./_components/candidates-module";
@@ -25,7 +29,7 @@ async function safeCandidatesListSecondaryFetch<T>(
 export default async function CandidatesPage() {
   const session = await auth();
   const canManage = canManageCandidates(session?.user?.role);
-  const [candidates, skillsCatalog] = await Promise.all([
+  const [candidates, skillsCatalog, openVacancies] = await Promise.all([
     listCandidatesForUi(),
     canManage
       ? safeCandidatesListSecondaryFetch(
@@ -34,11 +38,22 @@ export default async function CandidatesPage() {
           [] as SkillOption[],
         )
       : Promise.resolve([] as SkillOption[]),
+    canManage
+      ? safeCandidatesListSecondaryFetch(
+          "listOpenVacanciesForCandidateForm",
+          listOpenVacanciesForCandidateForm(),
+          [] as OpenVacancyOptionForCandidateForm[],
+        )
+      : Promise.resolve([] as OpenVacancyOptionForCandidateForm[]),
   ]);
 
   return (
     <div className="space-y-8">
-      <CandidatesHeader canManage={canManage} skillsCatalog={skillsCatalog} />
+      <CandidatesHeader
+        canManage={canManage}
+        skillsCatalog={skillsCatalog}
+        openVacancies={openVacancies}
+      />
       <CandidatesModule candidates={candidates} />
     </div>
   );

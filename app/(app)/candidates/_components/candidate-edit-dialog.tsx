@@ -17,15 +17,18 @@ import {
 import { updateCandidate, type CandidateActionState } from "@/lib/candidates/actions";
 import type { CandidateEditData } from "@/lib/candidates/queries";
 import type { SkillOption } from "@/lib/skills/queries";
+import type { OpenVacancyOptionForCandidateForm } from "@/lib/vacancies/queries";
 
 import { CandidateRecordFormFields } from "./candidate-record-form-fields";
 
 export function CandidateEditDialog({
   candidate,
   skillsCatalog,
+  openVacancies = [],
 }: {
   candidate: CandidateEditData;
   skillsCatalog: SkillOption[];
+  openVacancies?: OpenVacancyOptionForCandidateForm[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -90,6 +93,7 @@ export function CandidateEditDialog({
                   skillsCatalog={skillsCatalog}
                   defaults={candidate}
                   candidateId={candidate.id}
+                  openVacancies={openVacancies}
                   fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
                 />
                 {state?.ok === false && state.message ? (

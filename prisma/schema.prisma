@@ -66,6 +66,13 @@ enum CandidateAvailabilityStatus {
   NOT_AVAILABLE
 }
 
+/// Recruiting context for candidate intake (vacancy targeting vs pool).
+enum CandidatePipelineIntent {
+  OPEN_VACANCY
+  NO_VACANCY
+  TALENT_POOL
+}
+
 enum MatchRecommendation {
   STRONG_MATCH
   PARTIAL_MATCH
@@ -281,6 +288,7 @@ model Vacancy {
   skillRequirements  VacancyRequirement[]
   applications       VacancyApplication[]
   proposals          Proposal[]
+  pipelineCandidates Candidate[]             @relation("CandidatePipelineVacancy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -302,8 +310,14 @@ model Candidate {
   /// Legacy free-text skills (temporary; prefer CandidateSkill for new work).
   skills               String
   availabilityStatus   CandidateAvailabilityStatus @default(AVAILABLE)
+  /// When status is AVAILABLE, earliest date the candidate is free (date-only, UTC).
+  availabilityStartDate DateTime?
   currentCompany       String?
   notes                String?
+
+  pipelineIntent    CandidatePipelineIntent @default(NO_VACANCY)
+  pipelineVacancyId String?
+  pipelineVacancy   Vacancy?                @relation("CandidatePipelineVacancy", fields: [pipelineVacancyId], references: [id], onDelete: SetNull)
 
   /// Last successful server-side Zuperio CV PDF export.
   candidateCvExportedAt DateTime?
@@ -335,6 +349,7 @@ model Candidate {
   @@index([seniority])
   @@index([availabilityStatus])
   @@index([email])
+  @@index([pipelineVacancyId])
 }
 
 /// Recruitment pipeline for a candidate on a vacancy (separate from match scores and placements).

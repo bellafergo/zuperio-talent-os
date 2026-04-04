@@ -68,7 +68,10 @@ export function CandidatesDataTable({ candidates }: { candidates: CandidateUi[] 
             </TableCell>
             <TableCell className="text-muted-foreground">{row.seniority}</TableCell>
             <TableCell>
-              <CandidateAvailabilityBadge status={row.availabilityStatus} />
+              <CandidateAvailabilityBadge
+                status={row.availabilityStatus}
+                label={row.availabilityBadgeLabel}
+              />
             </TableCell>
             <TableCell className="text-muted-foreground">
               {row.updatedAtLabel}

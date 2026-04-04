@@ -13,13 +13,17 @@ const variantByStatus: Record<
 
 export function CandidateAvailabilityBadge({
   status,
+  label,
 }: {
   status: CandidateAvailabilityUi;
+  /** When set, shown instead of the coarse filter bucket (e.g. “Disponible inmediata”). */
+  label?: string;
 }) {
   const variant = variantByStatus[status] ?? "outline";
+  const text = label ?? status;
   return (
     <Badge variant={variant} className="whitespace-nowrap">
-      {status}
+      {text}
     </Badge>
   );
 }
