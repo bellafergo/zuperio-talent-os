@@ -80,60 +80,73 @@ export function ProposalEditDialog({
           }
         }}
       >
-        <DialogContent className="sm:max-w-3xl" showCloseButton>
-          <DialogHeader>
+        <DialogContent
+          className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
+          showCloseButton
+        >
+          <DialogHeader className="shrink-0 space-y-2 px-4 pt-4 pb-2 pr-14">
             <DialogTitle>Editar propuesta</DialogTitle>
             <DialogDescription>
               Actualiza selección, precios y textos. Los importes se recalculan al
               guardar.
             </DialogDescription>
           </DialogHeader>
-          <form key={formKey} onSubmit={onSubmit} className="space-y-4">
-            <ProposalRecordFormFields
-              proposalId={proposal.id}
-              companies={companies}
-              opportunities={opportunities}
-              vacancies={vacancies}
-              candidates={candidates}
-              defaults={{
-                companyId: proposal.companyId,
-                opportunityId: proposal.opportunityId,
-                vacancyId: proposal.vacancyId,
-                candidateId: proposal.candidateId,
-                typeValue: proposal.typeValue,
-                formatValue: proposal.formatValue,
-                statusValue: proposal.statusValue,
-                currency: proposal.currency,
-                validityDays: proposal.validityDays,
-                executiveSummary: proposal.executiveSummary ?? "",
-                profileSummary: proposal.profileSummary ?? "",
-                scopeNotes: proposal.scopeNotes ?? "",
-                commercialNotes: proposal.commercialNotes ?? "",
-                monthlyHours: proposal.pricing?.monthlyHours ?? 160,
-                candidateNetSalary: proposal.pricing?.candidateNetSalary ?? null,
-                schemeValue: proposal.pricing?.schemeValue ?? "MIXED",
-                marginPercent: proposal.pricing?.marginPercent ?? null,
-                employerLoadPercent: proposal.pricing?.employerLoadPercent ?? null,
-                bonuses: proposal.pricing?.bonuses ?? null,
-                benefits: proposal.pricing?.benefits ?? null,
-                operatingExpenses: proposal.pricing?.operatingExpenses ?? null,
-                discountPercent: proposal.pricing?.discountPercent ?? null,
-                estimatedDurationMonths: proposal.pricing?.estimatedDurationMonths ?? 6,
-                vatPercent: proposal.pricing?.vatPercent ?? null,
-                fullImssGrossFactor: proposal.pricing?.fullImssGrossFactor ?? null,
-              }}
-              fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
-            />
+          <form
+            key={formKey}
+            onSubmit={onSubmit}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2 pr-3">
+              <div className="space-y-4">
+                <ProposalRecordFormFields
+                  proposalId={proposal.id}
+                  companies={companies}
+                  opportunities={opportunities}
+                  vacancies={vacancies}
+                  candidates={candidates}
+                  defaults={{
+                    companyId: proposal.companyId,
+                    opportunityId: proposal.opportunityId,
+                    vacancyId: proposal.vacancyId,
+                    candidateId: proposal.candidateId,
+                    typeValue: proposal.typeValue,
+                    formatValue: proposal.formatValue,
+                    statusValue: proposal.statusValue,
+                    currency: proposal.currency,
+                    validityDays: proposal.validityDays,
+                    executiveSummary: proposal.executiveSummary ?? "",
+                    profileSummary: proposal.profileSummary ?? "",
+                    scopeNotes: proposal.scopeNotes ?? "",
+                    commercialNotes: proposal.commercialNotes ?? "",
+                    monthlyHours: proposal.pricing?.monthlyHours ?? 160,
+                    candidateNetSalary: proposal.pricing?.candidateNetSalary ?? null,
+                    schemeValue: proposal.pricing?.schemeValue ?? "MIXED",
+                    marginPercent: proposal.pricing?.marginPercent ?? null,
+                    employerLoadPercent: proposal.pricing?.employerLoadPercent ?? null,
+                    bonuses: proposal.pricing?.bonuses ?? null,
+                    benefits: proposal.pricing?.benefits ?? null,
+                    operatingExpenses: proposal.pricing?.operatingExpenses ?? null,
+                    discountPercent: proposal.pricing?.discountPercent ?? null,
+                    estimatedDurationMonths:
+                      proposal.pricing?.estimatedDurationMonths ?? 6,
+                    vatPercent: proposal.pricing?.vatPercent ?? null,
+                    fullImssGrossFactor:
+                      proposal.pricing?.fullImssGrossFactor ?? null,
+                  }}
+                  fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
+                />
 
-            {state?.ok === false && state.message ? (
-              <p className="text-sm text-destructive" role="alert">
-                {state.message}
-              </p>
-            ) : null}
+                {state?.ok === false && state.message ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {state.message}
+                  </p>
+                ) : null}
+              </div>
+            </div>
 
-            <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
+            <DialogFooter className="mx-0 mb-0 mt-0 shrink-0 gap-2 border-t bg-background px-4 pt-3 pb-4 sm:flex-row sm:justify-end sm:gap-2">
               <DialogClose asChild>
-                <Button type="button" variant="secondary" disabled={pending}>
+                <Button type="button" variant="ghost" disabled={pending}>
                   Cancelar
                 </Button>
               </DialogClose>

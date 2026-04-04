@@ -9,7 +9,7 @@ import "./candidate-cv.css";
 
 type CvSkillRow = CandidateCvPrintData["structuredSkills"][number];
 
-/** No hay campo Prisma dedicado: categorías de skill catalog que representan habilidades blandas. */
+/** Si `cvSoftSkillsText` está vacío: categorías del catálogo que representan habilidades blandas. */
 const SOFT_SKILL_CATEGORY_RE =
   /blanda|soft\b|interpersonal|comportamiento|liderazgo|socioemocional|power\s*skill|actitud|comunicaci/i;
 
@@ -180,9 +180,13 @@ export function CandidateCvConsultingDocument({
   data,
   variant = "pdf",
 }: CandidateCvConsultingDocumentProps) {
-  const { technicalRows, softSkillNames } = partitionStructuredSkills(
-    data.structuredSkills,
-  );
+  const { technicalRows, softSkillNames: softFromCategories } =
+    partitionStructuredSkills(data.structuredSkills);
+  const dedicatedSoft = data.softSkillsFromCvText
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const softSkillNames =
+    dedicatedSoft.length > 0 ? dedicatedSoft : softFromCategories;
   const skillGroups = groupSkillsByCategory(technicalRows);
   const executive = buildExecutiveParagraph(data, technicalRows);
   const today = formatTodayEsMx();

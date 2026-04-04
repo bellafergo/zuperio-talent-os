@@ -320,6 +320,8 @@ model Candidate {
   cvCertificationsText  String? @db.Text
   cvIndustriesText      String? @db.Text
   cvEducationText       String? @db.Text
+  /// Habilidades blandas para el CV PDF (una por línea). Si está vacío, se infieren por categoría de skills estructuradas.
+  cvSoftSkillsText      String? @db.Text
 
   vacancyMatches  CandidateVacancyMatch[]
   placements        Placement[]

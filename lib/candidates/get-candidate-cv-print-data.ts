@@ -6,6 +6,7 @@ import {
   parseCvEducationBlocks,
   parseCvIndustriesText,
   parseCvLanguagesText,
+  parseCvSoftSkillsLines,
   type CvLanguageEntry,
 } from "./cv-print-parsing";
 import { candidateAvailabilityLabel } from "./availability-ui";
@@ -51,6 +52,8 @@ export type CandidateCvPrintData = {
   /** Industrias declaradas + organizaciones de placements (deduplicado) */
   industries: string[];
   educationBlocks: string[];
+  /** Parsed from `cvSoftSkillsText` when present; CV PDF uses this before skill-category heuristics. */
+  softSkillsFromCvText: string[];
 };
 
 function formatPlacementDate(d: Date): string {
@@ -107,6 +110,7 @@ export async function getCandidateCvPrintData(
       cvCertificationsText: true,
       cvIndustriesText: true,
       cvEducationText: true,
+      cvSoftSkillsText: true,
       structuredSkills: {
         select: {
           yearsExperience: true,
@@ -183,5 +187,6 @@ export async function getCandidateCvPrintData(
     certifications: parseCvCertificationLines(row.cvCertificationsText),
     industries: industriesMerged,
     educationBlocks: parseCvEducationBlocks(row.cvEducationText),
+    softSkillsFromCvText: parseCvSoftSkillsLines(row.cvSoftSkillsText),
   };
 }

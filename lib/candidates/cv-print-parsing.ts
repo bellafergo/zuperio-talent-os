@@ -32,6 +32,13 @@ export function parseCvCertificationLines(
     .filter(Boolean);
 }
 
+/** One soft skill per line (same rules as certifications). */
+export function parseCvSoftSkillsLines(
+  raw: string | null | undefined,
+): string[] {
+  return parseCvCertificationLines(raw);
+}
+
 export function parseCvIndustriesText(
   raw: string | null | undefined,
 ): string[] {

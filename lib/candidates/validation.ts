@@ -33,6 +33,7 @@ export type CandidateFormParsed = {
   cvCertificationsText: string | null;
   cvIndustriesText: string | null;
   cvEducationText: string | null;
+  cvSoftSkillsText: string | null;
 };
 
 export type CandidateFormValidationResult =
@@ -203,6 +204,13 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
     CV_TEXT_MAX,
     fieldErrors,
   );
+  const cvSoftSkillsText = parseOptionalLongText(
+    formData,
+    "cvSoftSkillsText",
+    "Habilidades blandas (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
 
   const skillsJsonRaw = parseOptionalTrimmed(formData, "structuredSkills");
   const skillsParsed = parseSkillsJson(skillsJsonRaw);
@@ -234,6 +242,7 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
       cvCertificationsText,
       cvIndustriesText,
       cvEducationText,
+      cvSoftSkillsText,
     },
   };
 }

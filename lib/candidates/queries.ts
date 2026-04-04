@@ -54,6 +54,7 @@ export type CandidateEditData = {
   cvCertificationsText: string | null;
   cvIndustriesText: string | null;
   cvEducationText: string | null;
+  cvSoftSkillsText: string | null;
 };
 
 export async function getCandidateEditData(
@@ -78,6 +79,7 @@ export async function getCandidateEditData(
       cvCertificationsText: true,
       cvIndustriesText: true,
       cvEducationText: true,
+      cvSoftSkillsText: true,
       structuredSkills: {
         select: { skillId: true, yearsExperience: true, level: true },
         orderBy: [{ updatedAt: "desc" }],
@@ -109,5 +111,6 @@ export async function getCandidateEditData(
     cvCertificationsText: row.cvCertificationsText,
     cvIndustriesText: row.cvIndustriesText,
     cvEducationText: row.cvEducationText,
+    cvSoftSkillsText: row.cvSoftSkillsText,
   };
 }

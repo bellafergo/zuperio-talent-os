@@ -308,6 +308,7 @@ export function CandidateRecordFormFields({
             ["cvCertificationsText", "Certificaciones (líneas)", defaults?.cvCertificationsText],
             ["cvIndustriesText", "Industrias (coma)", defaults?.cvIndustriesText],
             ["cvEducationText", "Educación (párrafos o líneas)", defaults?.cvEducationText],
+            ["cvSoftSkillsText", "Habilidades blandas (CV, una por línea)", defaults?.cvSoftSkillsText],
           ] as const
         ).map(([name, label, val]) => (
           <div key={name} className="space-y-2">
@@ -318,7 +319,11 @@ export function CandidateRecordFormFields({
               id={`${candidateId ?? "new"}-${name}`}
               name={name}
               defaultValue={val ?? ""}
-              rows={name === "cvEducationText" ? 4 : 3}
+              rows={
+                name === "cvEducationText" || name === "cvSoftSkillsText"
+                  ? 4
+                  : 3
+              }
               className={cn(
                 "w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none",
                 "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",

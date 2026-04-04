@@ -77,6 +77,7 @@ export async function createCandidate(
             cvCertificationsText: data.cvCertificationsText,
             cvIndustriesText: data.cvIndustriesText,
             cvEducationText: data.cvEducationText,
+            cvSoftSkillsText: data.cvSoftSkillsText,
           },
           select: { id: true },
         });
@@ -188,6 +189,7 @@ export async function updateCandidate(
           cvCertificationsText: data.cvCertificationsText,
           cvIndustriesText: data.cvIndustriesText,
           cvEducationText: data.cvEducationText,
+          cvSoftSkillsText: data.cvSoftSkillsText,
         },
       });
 
