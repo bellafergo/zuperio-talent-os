@@ -221,6 +221,7 @@ export function CandidateRecordFormFields({
         <CandidateFormCvSection
           skillsCatalog={skillsCatalog}
           existingCvFileName={defaults?.cvFileName ?? null}
+          storedCvCandidateId={candidateId ?? null}
           autofillFormRef={autofillFormRef}
           onAutofillApplied={onCvAutofillApplied}
           formResetKey={formResetKey}

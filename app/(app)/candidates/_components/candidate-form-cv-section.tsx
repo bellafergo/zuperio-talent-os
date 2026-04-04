@@ -214,12 +214,15 @@ function needsReapplyConfirmation(args: {
 export function CandidateFormCvSection({
   skillsCatalog,
   existingCvFileName,
+  /** When set (edit candidato), extraction puede usar el CV ya persistido sin re-elegir archivo. */
+  storedCvCandidateId,
   autofillFormRef,
   onAutofillApplied,
   formResetKey = 0,
 }: {
   skillsCatalog: SkillOption[];
   existingCvFileName?: string | null;
+  storedCvCandidateId?: string | null;
   autofillFormRef: RefObject<HTMLFormElement | null>;
   onAutofillApplied: (payload: CvAutofillApplyPayload) => void;
   /** Bumps when the parent dialog remounts the form — resets first/reapply counters. */
@@ -234,6 +237,8 @@ export function CandidateFormCvSection({
   const [successfulSuggestCount, setSuccessfulSuggestCount] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const pendingPayloadRef = useRef<CvAutofillApplyPayload | null>(null);
+
+  const isEditCandidate = Boolean(storedCvCandidateId?.trim());
 
   useEffect(() => {
     setSuccessfulSuggestCount(0);
@@ -271,16 +276,23 @@ export function CandidateFormCvSection({
     setError(null);
     setHint(null);
     const file = selectedFile ?? inputRef.current?.files?.[0] ?? null;
-    if (!file) {
+    const cid = storedCvCandidateId?.trim() ?? "";
+
+    if (!file && !cid) {
       setError("Selecciona un archivo CV primero.");
       return;
     }
+
     const form = autofillFormRef.current;
 
     setExtracting(true);
     try {
       const fd = new FormData();
-      fd.append("file", file);
+      if (file) {
+        fd.append("file", file);
+      } else {
+        fd.append("candidateId", cid);
+      }
       const res = await fetch("/api/candidates/cv-extract-preview", {
         method: "POST",
         credentials: "include",
@@ -449,32 +461,68 @@ export function CandidateFormCvSection({
       <div className="flex items-start gap-2">
         <FileTextIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
         <div className="min-w-0 space-y-1">
-          <p className="text-sm font-medium">CV original (opcional)</p>
-          <p className="text-xs text-muted-foreground">
-            Sube el CV con el formulario. PDF, DOC o DOCX (máx. 10 MB). La primera sugerencia rellena
-            desde el CV; las siguientes vuelven a importar esos campos (con confirmación si ya hay
-            datos). Si el análisis falla, el formulario sigue funcionando.
+          <p className="text-sm font-medium">
+            {isEditCandidate ? "CV del candidato" : "CV original (opcional)"}
+          </p>
+          <p className="text-xs text-muted-foreground text-pretty">
+            {isEditCandidate ? (
+              <>
+                <span className="font-medium text-foreground/90">Actualizar o reemplazar CV:</span>{" "}
+                elige un archivo PDF, DOC o DOCX (máx. 10 MB) para adjuntarlo al guardar.{" "}
+                <span className="font-medium text-foreground/90">Sugerir datos del CV</span> puede
+                usar ese archivo nuevo o, si no eliges ninguno, el CV ya guardado en la ficha (el
+                mismo que subes desde el detalle del candidato). Las reaplicaciones siguen pidiendo
+                confirmación cuando corresponda.
+              </>
+            ) : (
+              <>
+                Sube el CV con el formulario. PDF, DOC o DOCX (máx. 10 MB). La primera sugerencia
+                rellena desde el CV; las siguientes vuelven a importar esos campos (con confirmación
+                si ya hay datos). Si el análisis falla, el formulario sigue funcionando.
+              </>
+            )}
           </p>
           {existingCvFileName ? (
             <p className="text-xs text-muted-foreground">
               CV en ficha: <span className="font-medium text-foreground">{existingCvFileName}</span>
-              {" — "}
-              al guardar con un archivo nuevo, se reemplaza.
+              {isEditCandidate
+                ? " — al guardar con un archivo nuevo aquí, se reemplaza en el servidor."
+                : " — al guardar con un archivo nuevo, se reemplaza."}
+            </p>
+          ) : isEditCandidate ? (
+            <p className="text-xs text-muted-foreground">
+              Aún no hay CV en la ficha: sube uno aquí o desde el detalle del candidato para poder
+              sugerir datos sin adjuntar el archivo en cada edición.
             </p>
           ) : null}
         </div>
       </div>
 
-      <input
-        ref={inputRef}
-        type="file"
-        name="cvFile"
-        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        className="block w-full max-w-md text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium"
-        onChange={(e) => {
-          setSelectedFile(e.target.files?.[0] ?? null);
-        }}
-      />
+      <div className="space-y-1.5">
+        {isEditCandidate ? (
+          <label
+            htmlFor={`cv-file-input-${storedCvCandidateId ?? "new"}`}
+            className="text-xs font-medium text-foreground"
+          >
+            Archivo para actualizar / reemplazar CV
+          </label>
+        ) : null}
+        <input
+          id={
+            isEditCandidate
+              ? `cv-file-input-${storedCvCandidateId ?? "edit"}`
+              : "cv-file-input-new-candidate"
+          }
+          ref={inputRef}
+          type="file"
+          name="cvFile"
+          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          className="block w-full max-w-md text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium"
+          onChange={(e) => {
+            setSelectedFile(e.target.files?.[0] ?? null);
+          }}
+        />
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <Button

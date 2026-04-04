@@ -158,7 +158,11 @@ export function CandidateCvFileSection({
             className="gap-1.5"
           >
             <UploadIcon className="size-3.5" aria-hidden />
-            {uploading ? "Subiendo…" : cvFileName ? "Reemplazar CV" : "Subir CV original"}
+            {uploading
+              ? "Subiendo…"
+              : cvFileName
+                ? "Actualizar CV"
+                : "Subir CV original"}
           </Button>
         </>
       ) : null}

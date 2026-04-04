@@ -23,6 +23,7 @@ import {
 
 import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
 import { VacancyCandidatesInProcessSection } from "./_components/vacancy-candidates-in-process-section";
+import { VacancyInterviewPrepSection } from "./_components/vacancy-interview-prep-section";
 import { VacancyRecruitmentPipelineSection } from "./_components/vacancy-recruitment-pipeline-section";
 import { VacancyRequirementsSection } from "./_components/vacancy-requirements-section";
 import { VacancyWorkModalitySection } from "./_components/vacancy-work-modality-section";
@@ -129,6 +130,21 @@ export default async function VacancyDetailPage({ params }: PageProps) {
       <VacancyCandidatesInProcessSection
         vacancyId={vacancy.id}
         rows={candidatesInProcess}
+      />
+
+      <VacancyInterviewPrepSection
+        key={vacancy.id}
+        vacancyId={vacancy.id}
+        vacancyTitle={vacancy.title}
+        vacancySeniority={vacancy.seniority}
+        vacancySkillsLine={vacancy.skillsLine}
+        vacancyRoleSummary={vacancy.roleSummaryLine}
+        requirementNames={requirements.map((r) => r.name)}
+        candidates={candidatesInProcess.map((r) => ({
+          id: r.candidateId,
+          displayName: r.displayName,
+          role: r.role,
+        }))}
       />
 
       <VacancyRecruitmentPipelineSection
