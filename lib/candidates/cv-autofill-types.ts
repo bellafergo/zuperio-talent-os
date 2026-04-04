@@ -14,6 +14,8 @@ export type CvAutofillSuggestions = {
   cvLanguagesText?: string;
   cvCertificationsText?: string;
   cvEducationText?: string;
+  cvSoftSkillsText?: string;
+  cvIndustriesText?: string;
   /** Comma / semicolon separated skill names for catalog matching on the client. */
   skillsLine?: string;
 };

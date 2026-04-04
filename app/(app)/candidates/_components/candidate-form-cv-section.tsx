@@ -84,6 +84,12 @@ function suggestionsToFullPatch(s: CvAutofillSuggestions): Partial<CandidateEdit
   if (s.cvLanguagesText?.trim()) patch.cvLanguagesText = s.cvLanguagesText.trim();
   if (s.cvCertificationsText?.trim()) patch.cvCertificationsText = s.cvCertificationsText.trim();
   if (s.cvEducationText?.trim()) patch.cvEducationText = s.cvEducationText.trim();
+  if (s.cvSoftSkillsText?.trim()) {
+    patch.cvSoftSkillsText = s.cvSoftSkillsText.trim().slice(0, 6000);
+  }
+  if (s.cvIndustriesText?.trim()) {
+    patch.cvIndustriesText = s.cvIndustriesText.trim().slice(0, 6000);
+  }
   return patch;
 }
 

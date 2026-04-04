@@ -63,6 +63,15 @@ const AVAILABILITY_VALUES = new Set<string>(
   Object.values(AvailabilityEnum),
 );
 
+function coerceAvailabilityStatus(
+  raw: unknown,
+): CandidateAvailabilityStatus {
+  if (typeof raw === "string" && AVAILABILITY_VALUES.has(raw)) {
+    return raw as CandidateAvailabilityStatus;
+  }
+  return AvailabilityEnum.AVAILABLE;
+}
+
 function isCvSkillRow(x: unknown): x is CandidateCvSkillRow {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
@@ -239,12 +248,19 @@ export async function getCandidateCvPrintData(
     if (!row) return null;
 
     const structuredSkills: CandidateCvSkillRow[] = row.structuredSkills
-      .map((cs) => ({
-        name: cs.skill?.name?.trim() || "",
-        category: cs.skill?.category?.trim() || "Skills",
-        yearsExperience: cs.yearsExperience,
-        level: cs.level?.trim() || null,
-      }))
+      .map((cs) => {
+        let years: number | null = cs.yearsExperience ?? null;
+        if (years != null && typeof years !== "number") {
+          const n = Number(years);
+          years = Number.isFinite(n) ? Math.floor(n) : null;
+        }
+        return {
+          name: cs.skill?.name?.trim() || "",
+          category: cs.skill?.category?.trim() || "Skills",
+          yearsExperience: years,
+          level: cs.level?.trim() || null,
+        };
+      })
       .filter((s) => s.name.length > 0);
 
     const placements: CandidateCvPlacementRow[] = [];
@@ -273,15 +289,18 @@ export async function getCandidateCvPrintData(
     const legacySkills =
       typeof row.skills === "string" ? row.skills : "";
 
+    const availabilityStatus = coerceAvailabilityStatus(row.availabilityStatus);
+
     return {
       id: row.id,
-      fullName: `${row.firstName ?? ""} ${row.lastName ?? ""}`.trim(),
+      fullName:
+        `${row.firstName ?? ""} ${row.lastName ?? ""}`.trim() || "—",
       email: row.email?.trim() || null,
       phone: row.phone?.trim() || null,
-      role: row.role,
+      role: (row.role ?? "").trim() || "—",
       seniorityLabel: vacancySeniorityLabel(row.seniority),
-      availabilityStatus: row.availabilityStatus,
-      availabilityLabel: candidateAvailabilityLabel(row.availabilityStatus),
+      availabilityStatus,
+      availabilityLabel: candidateAvailabilityLabel(availabilityStatus),
       currentCompany: row.currentCompany?.trim() || null,
       legacySkillsText: legacySkills.trim(),
       notes: row.notes?.trim() || null,

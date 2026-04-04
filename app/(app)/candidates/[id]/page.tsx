@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
 import { canManageProposals } from "@/lib/auth/proposal-access";
 import type { CandidateUi } from "@/lib/candidates/types";
+import { getCandidateCvPrintData } from "@/lib/candidates/get-candidate-cv-print-data";
 import { getCandidateByIdForUi, getCandidateEditData, getCandidateCvFileInfo } from "@/lib/candidates/queries";
 import type { CandidateMatchRowUi } from "@/lib/matching/types";
 import { listMatchesForCandidateUi } from "@/lib/matching/queries";
@@ -35,6 +36,7 @@ import { CandidateCurrentAssignmentSection } from "./_components/candidate-curre
 import { CandidateStructuredSkillsSection } from "./_components/candidate-structured-skills-section";
 import { CandidateSuggestedActions } from "./_components/candidate-suggested-actions";
 import { CandidateVacancyMatchesSection } from "./_components/candidate-vacancy-matches-section";
+import { CandidateZuperioCvPreviewSection } from "./_components/candidate-zuperio-cv-preview-section";
 import {
   getProposalQuickCreatePrefillForCandidate,
   listCandidatesForProposalForm,
@@ -132,6 +134,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
     proposalCandidates,
     proposalPrefill,
     openVacanciesForm,
+    cvPrintData,
   ] = await Promise.all([
     safeCandidateSecondaryFetch(
       "listMatchesForCandidateUi",
@@ -216,6 +219,11 @@ export default async function CandidateDetailPage({ params }: PageProps) {
           [] as OpenVacancyOptionForCandidateForm[],
         )
       : Promise.resolve([] as OpenVacancyOptionForCandidateForm[]),
+    safeCandidateSecondaryFetch(
+      "getCandidateCvPrintData",
+      getCandidateCvPrintData(id),
+      null,
+    ),
   ]);
 
   const headerTitle = safeDetailLine(candidate.displayName);
@@ -354,6 +362,11 @@ export default async function CandidateDetailPage({ params }: PageProps) {
           { label: "Correo", value: safeDetailLine(candidate.email) },
           { label: "Teléfono", value: safeDetailLine(candidate.phone) },
         ]}
+      />
+
+      <CandidateZuperioCvPreviewSection
+        candidateId={id}
+        cvPrintData={cvPrintData}
       />
 
       <CandidateStructuredSkillsSection

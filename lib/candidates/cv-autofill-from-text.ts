@@ -24,6 +24,15 @@ const SECTION_HEADERS: { key: keyof SectionAcc; pattern: RegExp }[] = [
   { key: "certs", pattern: /^(certifications|certificaciones|certificates|licenses)\s*:?\s*$/i },
   { key: "education", pattern: /^(education|educación|formación|academic\s*background)\s*:?\s*$/i },
   { key: "experience", pattern: /^(experience|experiencia|work\s*history|employment)\s*:?\s*$/i },
+  {
+    key: "softSkills",
+    pattern:
+      /^(soft\s*skills|habilidades\s*blandas|competencias\s*blandas|people\s*skills|power\s*skills)\s*:?\s*$/i,
+  },
+  {
+    key: "industries",
+    pattern: /^(industries|industrias|sectores|vertical(es)?|domains?)\s*:?\s*$/i,
+  },
 ];
 
 type SectionAcc = {
@@ -32,6 +41,8 @@ type SectionAcc = {
   certs: string[];
   education: string[];
   experience: string[];
+  softSkills: string[];
+  industries: string[];
 };
 
 function parseSections(lines: string[]): SectionAcc {
@@ -41,6 +52,8 @@ function parseSections(lines: string[]): SectionAcc {
     certs: [],
     education: [],
     experience: [],
+    softSkills: [],
+    industries: [],
   };
   let current: keyof SectionAcc | null = null;
 
@@ -206,6 +219,20 @@ export function parseCvPlainTextForAutofill(raw: string): CvAutofillSuggestions 
 
   if (sections.education.length > 0) {
     out.cvEducationText = sections.education.slice(0, 15).join("\n").slice(0, 4000);
+  }
+
+  if (sections.softSkills.length > 0) {
+    out.cvSoftSkillsText = sections.softSkills
+      .slice(0, 40)
+      .join("\n")
+      .slice(0, 6000);
+  }
+
+  if (sections.industries.length > 0) {
+    out.cvIndustriesText = sections.industries
+      .slice(0, 24)
+      .join(", ")
+      .slice(0, 6000);
   }
 
   if (sections.experience.length > 0) {
