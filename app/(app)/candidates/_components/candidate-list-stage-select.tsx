@@ -21,16 +21,19 @@ const selectClass = cn(
 export function CandidateListStageSelect({
   candidateId,
   value,
+  className,
 }: {
   candidateId: string;
   value: CandidateRecruitmentStage;
+  /** e.g. full width inside pipeline cards */
+  className?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   return (
     <select
-      className={selectClass}
+      className={cn(selectClass, className)}
       value={value}
       disabled={pending}
       aria-label="Etapa del proceso"
