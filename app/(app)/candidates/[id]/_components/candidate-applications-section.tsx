@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { JobBoardSourceBadge } from "@/components/job-board-source-badge";
 import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types";
 
 function isRenderableApplication(a: unknown): a is CandidateApplicationRowUi {
@@ -65,6 +66,7 @@ export function CandidateApplicationsSection({
                 <TableHead>Empresa</TableHead>
                 <TableHead className="w-[160px]">Etapa</TableHead>
                 <TableHead className="w-[100px]">Estado</TableHead>
+                <TableHead className="w-[140px]">Origen</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -91,6 +93,13 @@ export function CandidateApplicationsSection({
                   </TableCell>
                   <TableCell>
                     <ApplicationStatusBadge status={a.status} />
+                  </TableCell>
+                  <TableCell>
+                    {a.jobBoardProvider ? (
+                      <JobBoardSourceBadge provider={a.jobBoardProvider} />
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

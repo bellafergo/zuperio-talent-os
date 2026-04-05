@@ -1,3 +1,5 @@
+import type { JobBoardProvider } from "@/generated/prisma/enums";
+
 export type VacancyApplicationStageUi =
   | "Nueva"
   | "Pre-filtro"
@@ -22,6 +24,7 @@ export type VacancyPipelineRowUi = {
   sourceLabel: string;
   source: string | null;
   notes: string | null;
+  jobBoardProvider: JobBoardProvider | null;
 };
 
 export type CandidateApplicationRowUi = {
@@ -32,6 +35,7 @@ export type CandidateApplicationRowUi = {
   companyName: string;
   stage: VacancyApplicationStageUi;
   status: VacancyApplicationStatusUi;
+  jobBoardProvider: JobBoardProvider | null;
 };
 
 export type ApplicationMatrixRowUi = {
@@ -44,4 +48,5 @@ export type ApplicationMatrixRowUi = {
   stage: VacancyApplicationStageUi;
   status: VacancyApplicationStatusUi;
   sourceLabel: string;
+  jobBoardProvider: JobBoardProvider | null;
 };

@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { JobBoardSourceBadge } from "@/components/job-board-source-badge";
 import type { ApplicationMatrixRowUi } from "@/lib/vacancy-applications/types";
 
 export function ApplicationsDataTable({ rows }: { rows: ApplicationMatrixRowUi[] }) {
@@ -61,7 +62,14 @@ export function ApplicationsDataTable({ rows }: { rows: ApplicationMatrixRowUi[]
             <TableCell>
               <ApplicationStatusBadge status={r.status} />
             </TableCell>
-            <TableCell className="text-muted-foreground">{r.sourceLabel}</TableCell>
+            <TableCell className="text-muted-foreground">
+              <div className="flex flex-col gap-1">
+                {r.jobBoardProvider ? (
+                  <JobBoardSourceBadge provider={r.jobBoardProvider} />
+                ) : null}
+                <span>{r.sourceLabel}</span>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

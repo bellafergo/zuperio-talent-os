@@ -1,4 +1,5 @@
 import type {
+  JobBoardProvider,
   VacancyApplicationStage as PrismaStage,
   VacancyApplicationStatus as PrismaStatus,
 } from "@/generated/prisma/enums";
@@ -74,6 +75,7 @@ export type ApplicationWithCandidate = {
   source: string | null;
   notes: string | null;
   candidate: CandidateMini;
+  externalSource: { provider: JobBoardProvider } | null;
 };
 
 export type ApplicationWithVacancy = {
@@ -81,6 +83,7 @@ export type ApplicationWithVacancy = {
   stage: PrismaStage;
   status: PrismaStatus;
   vacancy: VacancyMini;
+  externalSource: { provider: JobBoardProvider } | null;
 };
 
 export type ApplicationMatrixPrismaRow = {
@@ -90,6 +93,7 @@ export type ApplicationMatrixPrismaRow = {
   source: string | null;
   candidate: CandidateMini;
   vacancy: VacancyMini;
+  externalSource: { provider: JobBoardProvider } | null;
 };
 
 function candidateName(c: CandidateMini): string {
@@ -109,6 +113,7 @@ export function mapToVacancyPipelineRowUi(row: ApplicationWithCandidate): Vacanc
     sourceLabel: sourceLabel(row.source),
     source: row.source?.trim() || null,
     notes: row.notes?.trim() || null,
+    jobBoardProvider: row.externalSource?.provider ?? null,
   };
 }
 
@@ -123,6 +128,7 @@ export function mapToCandidateApplicationRowUi(
     companyName: row.vacancy.company.name,
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
+    jobBoardProvider: row.externalSource?.provider ?? null,
   };
 }
 
@@ -137,5 +143,6 @@ export function mapToApplicationMatrixRowUi(row: ApplicationMatrixPrismaRow): Ap
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
     sourceLabel: sourceLabel(row.source),
+    jobBoardProvider: row.externalSource?.provider ?? null,
   };
 }

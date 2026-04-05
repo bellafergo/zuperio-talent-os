@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { JobBoardSourceBadge } from "@/components/job-board-source-badge";
 import type { VacancyPipelineRowUi } from "@/lib/vacancy-applications/types";
 
 import { VacancyApplicationEditDialog } from "./vacancy-application-edit-dialog";
@@ -71,7 +72,12 @@ export function VacancyRecruitmentPipelineSection({
                     <ApplicationStatusBadge status={a.status} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {a.sourceLabel}
+                    <div className="flex flex-col gap-1">
+                      {a.jobBoardProvider ? (
+                        <JobBoardSourceBadge provider={a.jobBoardProvider} />
+                      ) : null}
+                      <span>{a.sourceLabel}</span>
+                    </div>
                   </TableCell>
                   {canManage ? (
                     <TableCell className="text-right">

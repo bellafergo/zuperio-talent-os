@@ -144,6 +144,36 @@ enum VacancyApplicationStatus {
   CLOSED
 }
 
+/// External job board / portal identifier (expand as integrations go live).
+enum JobBoardProvider {
+  OCC
+  COMPUTRABAJO
+  LINKEDIN
+  MANUAL
+  OTHER
+}
+
+enum ExternalVacancyPublicationStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  SYNCING
+  PAUSED
+  FAILED
+  REMOVED
+}
+
+/// Lifecycle of an application received from outside Zuperio before/during internal pipeline link.
+enum ExternalApplicationStatus {
+  RECEIVED
+  PENDING_MAPPING
+  VACANCY_MAPPED
+  CANDIDATE_LINKED
+  PROMOTED_TO_PIPELINE
+  FAILED
+  DISCARDED
+}
+
 enum UserRole {
   SALES
   RECRUITER
@@ -306,6 +336,8 @@ model Vacancy {
   applications       VacancyApplication[]
   proposals          Proposal[]
   pipelineCandidates Candidate[]             @relation("CandidatePipelineVacancy")
+  externalPublications ExternalVacancyPublication[]
+  externalApplications ExternalApplication[] @relation("ExternalApplicationTargetVacancy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -366,6 +398,7 @@ model Candidate {
   structuredSkills  CandidateSkill[]
   applications      VacancyApplication[]
   proposals         Proposal[]
+  externalApplications ExternalApplication[] @relation("ExternalApplicationTargetCandidate")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -389,6 +422,9 @@ model VacancyApplication {
   source String?
   notes  String?
 
+  /// When this pipeline row originated from a job-board ingest, links back to the external row.
+  externalSource ExternalApplication?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -397,6 +433,62 @@ model VacancyApplication {
   @@index([stage])
   @@index([status])
   /// DB-level: partial unique (vacancyId, candidateId) WHERE status = ACTIVE — see migration.
+}
+
+/// Tracks publishing a Zuperio vacancy to an external board (no live API required in v1).
+model ExternalVacancyPublication {
+  id                 String                           @id @default(cuid())
+  vacancyId          String
+  vacancy            Vacancy                          @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  provider           JobBoardProvider
+  externalVacancyRef String?
+  status             ExternalVacancyPublicationStatus @default(PENDING)
+  publishedAt        DateTime?
+  lastSyncAt         DateTime?
+  metadata           Json?
+  lastError          String?                          @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vacancyId])
+  @@index([provider])
+  @@index([status])
+}
+
+/// Inbox row for an application received from outside Zuperio; optional link to internal pipeline.
+model ExternalApplication {
+  id                    String                  @id @default(cuid())
+  provider              JobBoardProvider
+  externalApplicationId String
+  externalVacancyRef    String?
+  firstName             String
+  lastName              String
+  email                 String?
+  phone                 String?
+  sourcePayload         Json?
+
+  vacancyId String?
+  vacancy   Vacancy?   @relation("ExternalApplicationTargetVacancy", fields: [vacancyId], references: [id], onDelete: SetNull)
+  candidateId String?
+  candidate   Candidate? @relation("ExternalApplicationTargetCandidate", fields: [candidateId], references: [id], onDelete: SetNull)
+
+  vacancyApplicationId String?             @unique
+  vacancyApplication   VacancyApplication? @relation(fields: [vacancyApplicationId], references: [id], onDelete: SetNull)
+
+  receivedAt      DateTime                @default(now())
+  status          ExternalApplicationStatus @default(RECEIVED)
+  processingNotes String?                 @db.Text
+  lastError       String?                 @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, externalApplicationId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@index([status])
+  @@index([receivedAt])
 }
 
 /// Normalized skill catalog for structured profiles and requisitions.

@@ -37,6 +37,10 @@ function sortVacancyPipelineRows<
   });
 }
 
+const externalSourceSelect = {
+  select: { provider: true },
+} as const;
+
 const candidateSelect = {
   id: true,
   firstName: true,
@@ -66,6 +70,7 @@ export async function listApplicationsForVacancyUi(
         source: true,
         notes: true,
         candidate: { select: candidateSelect },
+        externalSource: externalSourceSelect,
       },
     }),
   );
@@ -81,7 +86,10 @@ export async function listApplicationsForCandidateUi(
     where: { candidateId },
     orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
     // ACTIVE sorts before CLOSED; then most recently updated first.
-    include: { vacancy: { select: vacancyInclude } },
+    include: {
+      vacancy: { select: vacancyInclude },
+      externalSource: externalSourceSelect,
+    },
   });
   return rows.map((row) =>
     mapToCandidateApplicationRowUi(row as unknown as ApplicationWithVacancy),
@@ -94,6 +102,7 @@ export async function listAllApplicationsForUi(): Promise<ApplicationMatrixRowUi
     include: {
       candidate: { select: candidateSelect },
       vacancy: { select: vacancyInclude },
+      externalSource: externalSourceSelect,
     },
   });
   return rows.map((row) =>

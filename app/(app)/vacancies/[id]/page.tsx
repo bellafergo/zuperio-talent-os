@@ -11,6 +11,7 @@ import { canManageApplications } from "@/lib/auth/application-access";
 import { canManageVacancies } from "@/lib/auth/vacancy-access";
 import { listMatchesForVacancyUi } from "@/lib/matching/queries";
 import { listSkillsForVacancyForm, listVacancyRequirementsForUi } from "@/lib/skills/queries";
+import { listExternalPublicationsForVacancySafe } from "@/lib/job-board/queries-safe";
 import { listApplicationsForVacancyUi } from "@/lib/vacancy-applications/queries";
 import { formatTargetRate } from "@/lib/vacancies/mappers";
 import { listCandidatesForVacancy } from "@/lib/vacancies/candidates-in-process-queries";
@@ -21,6 +22,7 @@ import {
   listOpportunitiesForVacancyForm,
 } from "@/lib/vacancies/queries";
 
+import { VacancyExternalPublicationsSection } from "./_components/vacancy-external-publications-section";
 import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
 import { VacancyCandidatesInProcessSection } from "./_components/vacancy-candidates-in-process-section";
 import { VacancyInterviewPrepSection } from "./_components/vacancy-interview-prep-section";
@@ -47,6 +49,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
     candidateMatches,
     requirements,
     applications,
+    externalPublications,
     candidatesInProcess,
     editData,
     companies,
@@ -57,6 +60,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
     listMatchesForVacancyUi(id),
     listVacancyRequirementsForUi(id),
     listApplicationsForVacancyUi(id),
+    listExternalPublicationsForVacancySafe(id),
     listCandidatesForVacancy(id),
     canManage ? getVacancyEditData(id) : Promise.resolve(null),
     canManage ? listCompaniesForVacancyForm() : Promise.resolve([]),
@@ -124,6 +128,8 @@ export default async function VacancyDetailPage({ params }: PageProps) {
       />
 
       <VacancyWorkModalitySection workModality={vacancy.workModality} />
+
+      <VacancyExternalPublicationsSection rows={externalPublications} />
 
       <VacancyRequirementsSection requirements={requirements} />
 
