@@ -103,6 +103,7 @@ export type ProposalWithRelations = {
     id: string;
     firstName: string;
     lastName: string;
+    role: string;
     candidateCvExportedAt: Date | null;
   } | null;
   type: PrismaProposalType;
@@ -183,6 +184,7 @@ export function mapProposalToListRowUi(row: ProposalWithRelations): ProposalList
     vacancyTitle: row.vacancy?.title?.trim() || "—",
     candidateId: row.candidateId,
     candidateName: candidateName(row),
+    candidateRole: row.candidate?.role?.trim() || "—",
     status: prismaStatusToUi[row.status],
     statusValue: row.status,
     type: prismaTypeToUi[row.type],

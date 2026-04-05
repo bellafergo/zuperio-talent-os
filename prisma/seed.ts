@@ -7,6 +7,7 @@ import { PrismaClient } from "../generated/prisma/client";
 import { syncContactPrimaryFields } from "../lib/contacts/sync-primary-methods";
 import { syncAllCandidateVacancyMatches } from "../lib/matching/service";
 
+import { inferSkillTypeFromCategory } from "../lib/skills/skill-type";
 import {
   SEED_CANDIDATE_SKILLS,
   SEED_SKILLS,
@@ -229,16 +230,19 @@ async function main() {
   }
 
   for (const s of SEED_SKILLS) {
+    const skillType = inferSkillTypeFromCategory(s.category);
     await prisma.skill.upsert({
       where: { id: s.id },
       create: {
         id: s.id,
         name: s.name,
         category: s.category,
+        skillType,
       },
       update: {
         name: s.name,
         category: s.category,
+        skillType,
       },
     });
   }

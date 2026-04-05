@@ -15,19 +15,27 @@ const SOFT_SKILL_CATEGORY_RE =
 
 function partitionStructuredSkills(skills: CvSkillRow[]): {
   technicalRows: CvSkillRow[];
+  methodologyRows: CvSkillRow[];
   softSkillNames: string[];
 } {
   const soft: string[] = [];
   const technicalRows: CvSkillRow[] = [];
+  const methodologyRows: CvSkillRow[] = [];
   for (const s of skills) {
-    if (SOFT_SKILL_CATEGORY_RE.test(s.category)) {
-      const n = s.name.trim();
-      if (n && !soft.includes(n)) soft.push(n);
-    } else {
-      technicalRows.push(s);
+    if (s.skillType === "METHODOLOGY") {
+      methodologyRows.push(s);
+      continue;
+    }
+    if (s.skillType === "TECHNOLOGY" || s.skillType === undefined) {
+      if (SOFT_SKILL_CATEGORY_RE.test(s.category)) {
+        const n = s.name.trim();
+        if (n && !soft.includes(n)) soft.push(n);
+      } else {
+        technicalRows.push(s);
+      }
     }
   }
-  return { technicalRows, softSkillNames: soft };
+  return { technicalRows, methodologyRows, softSkillNames: soft };
 }
 
 function groupSkillsByCategory(
@@ -178,14 +186,18 @@ export function CandidateCvConsultingDocument({
   data,
   variant = "pdf",
 }: CandidateCvConsultingDocumentProps) {
-  const { technicalRows, softSkillNames: softFromCategories } =
-    partitionStructuredSkills(data.structuredSkills);
+  const {
+    technicalRows,
+    methodologyRows,
+    softSkillNames: softFromCategories,
+  } = partitionStructuredSkills(data.structuredSkills);
   const dedicatedSoft = data.softSkillsFromCvText
     .map((s) => s.trim())
     .filter(Boolean);
   const softSkillNames =
     dedicatedSoft.length > 0 ? dedicatedSoft : softFromCategories;
   const skillGroups = groupSkillsByCategory(technicalRows);
+  const methodologyGroups = groupSkillsByCategory(methodologyRows);
   const executive = buildExecutiveParagraph(data, technicalRows);
   const today = formatTodayEsMx();
   const refCode = `ZCV-${data.id.slice(0, 8).toUpperCase()}`;
@@ -317,6 +329,42 @@ export function CandidateCvConsultingDocument({
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : null}
+
+            {methodologyGroups.length > 0 ? (
+              <div className="cpdf-cv-side-block">
+                <p className="cpdf-sec-label">Metodologías y prácticas</p>
+                {methodologyGroups.map((g, gi) => (
+                  <div key={`meth-${gi}-${g.category}`} className="cpdf-cv-skill-group">
+                    <p className="cpdf-cv-skill-cat">{g.category}</p>
+                    {g.items.map((s, si) => (
+                      <div
+                        key={`meth-sk-${gi}-${si}-${s.name}`}
+                        className="cpdf-cv-skill-row"
+                      >
+                        <div className="cpdf-cv-skill-name">
+                          <span>{s.name}</span>
+                          <span className="cpdf-cv-skill-meta">
+                            {s.level
+                              ? s.yearsExperience != null
+                                ? `${s.level} · ${s.yearsExperience}a`
+                                : s.level
+                              : s.yearsExperience != null
+                                ? `${s.yearsExperience}a`
+                                : ""}
+                          </span>
+                        </div>
+                        <div className="cpdf-cv-skill-track">
+                          <div
+                            className="cpdf-cv-skill-fill"
+                            style={{ width: `${skillBarPercent(s)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : null}
 

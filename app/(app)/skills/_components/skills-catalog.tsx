@@ -35,7 +35,8 @@ export function SkillsCatalog({ groups }: { groups: SkillCatalogGroupUi[] }) {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
-              <TableHead className="w-[240px]">Categoría</TableHead>
+              <TableHead className="w-[120px]">Tipo</TableHead>
+              <TableHead className="w-[220px]">Categoría</TableHead>
               <TableHead className="w-[110px] text-right">Candidatos</TableHead>
               <TableHead className="w-[110px] text-right">Vacantes</TableHead>
             </TableRow>
@@ -44,6 +45,9 @@ export function SkillsCatalog({ groups }: { groups: SkillCatalogGroupUi[] }) {
             {rows.map((s) => (
               <TableRow key={s.id}>
                 <TableCell className="font-medium">{s.name}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {s.skillTypeLabel}
+                </TableCell>
                 <TableCell className="text-muted-foreground">{s.category}</TableCell>
                 <TableCell className="text-right tabular-nums text-muted-foreground">
                   {s.candidateCount > 0 ? s.candidateCount : "—"}

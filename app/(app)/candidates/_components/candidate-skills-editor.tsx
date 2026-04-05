@@ -75,7 +75,14 @@ export function CandidateSkillsEditor({
       .slice(0, 24);
   }, [skills, searchTrim, selectedById]);
 
-  const grouped = React.useMemo(() => groupSkills(skills), [skills]);
+  const groupedTechnology = React.useMemo(
+    () => groupSkills(skills.filter((s) => s.skillType !== "METHODOLOGY")),
+    [skills],
+  );
+  const groupedMethodology = React.useMemo(
+    () => groupSkills(skills.filter((s) => s.skillType === "METHODOLOGY")),
+    [skills],
+  );
 
   const toggleSkill = (skillId: string) => {
     const next = new Map(selectedById);
@@ -304,85 +311,166 @@ export function CandidateSkillsEditor({
           ) : (
             <ChevronRightIcon className="size-4 shrink-0 opacity-70" aria-hidden />
           )}
-          Catálogo completo (por categoría)
+          Catálogo completo (tecnologías y metodologías)
         </button>
         {catalogOpen ? (
-          <div className="max-h-[min(50vh,420px)] space-y-4 overflow-y-auto border-t border-border p-3">
-            {grouped.map(([category, list]) => (
-              <div key={category} className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {category}
-                </p>
-                <div className="grid gap-2 md:grid-cols-2">
-                  {list.map((skill) => {
-                    const selected = selectedById.get(skill.id);
-                    return (
-                      <div
-                        key={skill.id}
-                        className={cn(
-                          "rounded-lg border px-3 py-2",
-                          selected
-                            ? "border-primary/30 bg-primary/5"
-                            : "border-border bg-muted/20",
-                        )}
-                      >
-                        <label className="flex cursor-pointer items-center gap-2">
-                          <input
-                            type="checkbox"
-                            className={checkboxClass}
-                            checked={Boolean(selected)}
-                            onChange={() => toggleSkill(skill.id)}
-                          />
-                          <span className="text-sm font-medium text-foreground">{skill.name}</span>
-                        </label>
+          <div className="max-h-[min(50vh,420px)] space-y-6 overflow-y-auto border-t border-border p-3">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-foreground">Tecnologías</p>
+              {groupedTechnology.map(([category, list]) => (
+                <div key={`t-${category}`} className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {category}
+                  </p>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {list.map((skill) => {
+                      const selected = selectedById.get(skill.id);
+                      return (
+                        <div
+                          key={skill.id}
+                          className={cn(
+                            "rounded-lg border px-3 py-2",
+                            selected
+                              ? "border-primary/30 bg-primary/5"
+                              : "border-border bg-muted/20",
+                          )}
+                        >
+                          <label className="flex cursor-pointer items-center gap-2">
+                            <input
+                              type="checkbox"
+                              className={checkboxClass}
+                              checked={Boolean(selected)}
+                              onChange={() => toggleSkill(skill.id)}
+                            />
+                            <span className="text-sm font-medium text-foreground">{skill.name}</span>
+                          </label>
 
-                        {selected ? (
-                          <div className="mt-2 grid grid-cols-2 gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">Años</span>
-                              <Input
-                                type="number"
-                                inputMode="numeric"
-                                min={0}
-                                max={50}
-                                step={1}
-                                value={selected.yearsExperience ?? ""}
-                                onChange={(e) => {
-                                  const raw = e.target.value;
-                                  if (!raw.trim()) {
-                                    patchSkill(skill.id, { yearsExperience: null });
-                                    return;
+                          {selected ? (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Años</span>
+                                <Input
+                                  type="number"
+                                  inputMode="numeric"
+                                  min={0}
+                                  max={50}
+                                  step={1}
+                                  value={selected.yearsExperience ?? ""}
+                                  onChange={(e) => {
+                                    const raw = e.target.value;
+                                    if (!raw.trim()) {
+                                      patchSkill(skill.id, { yearsExperience: null });
+                                      return;
+                                    }
+                                    const n = Number(raw);
+                                    if (!Number.isFinite(n)) return;
+                                    patchSkill(skill.id, {
+                                      yearsExperience: Math.floor(n),
+                                    });
+                                  }}
+                                  className="h-7"
+                                />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Nivel</span>
+                                <Input
+                                  value={selected.level ?? ""}
+                                  onChange={(e) =>
+                                    patchSkill(skill.id, {
+                                      level: e.target.value.trim() ? e.target.value : null,
+                                    })
                                   }
-                                  const n = Number(raw);
-                                  if (!Number.isFinite(n)) return;
-                                  patchSkill(skill.id, {
-                                    yearsExperience: Math.floor(n),
-                                  });
-                                }}
-                                className="h-7"
-                              />
+                                  placeholder="ej. Senior"
+                                  className="h-7"
+                                />
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">Nivel</span>
-                              <Input
-                                value={selected.level ?? ""}
-                                onChange={(e) =>
-                                  patchSkill(skill.id, {
-                                    level: e.target.value.trim() ? e.target.value : null,
-                                  })
-                                }
-                                placeholder="ej. Senior"
-                                className="h-7"
-                              />
-                            </div>
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-foreground">Metodologías</p>
+              {groupedMethodology.map(([category, list]) => (
+                <div key={`m-${category}`} className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {category}
+                  </p>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {list.map((skill) => {
+                      const selected = selectedById.get(skill.id);
+                      return (
+                        <div
+                          key={skill.id}
+                          className={cn(
+                            "rounded-lg border px-3 py-2",
+                            selected
+                              ? "border-primary/30 bg-primary/5"
+                              : "border-border bg-muted/20",
+                          )}
+                        >
+                          <label className="flex cursor-pointer items-center gap-2">
+                            <input
+                              type="checkbox"
+                              className={checkboxClass}
+                              checked={Boolean(selected)}
+                              onChange={() => toggleSkill(skill.id)}
+                            />
+                            <span className="text-sm font-medium text-foreground">{skill.name}</span>
+                          </label>
+
+                          {selected ? (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Años</span>
+                                <Input
+                                  type="number"
+                                  inputMode="numeric"
+                                  min={0}
+                                  max={50}
+                                  step={1}
+                                  value={selected.yearsExperience ?? ""}
+                                  onChange={(e) => {
+                                    const raw = e.target.value;
+                                    if (!raw.trim()) {
+                                      patchSkill(skill.id, { yearsExperience: null });
+                                      return;
+                                    }
+                                    const n = Number(raw);
+                                    if (!Number.isFinite(n)) return;
+                                    patchSkill(skill.id, {
+                                      yearsExperience: Math.floor(n),
+                                    });
+                                  }}
+                                  className="h-7"
+                                />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Nivel</span>
+                                <Input
+                                  value={selected.level ?? ""}
+                                  onChange={(e) =>
+                                    patchSkill(skill.id, {
+                                      level: e.target.value.trim() ? e.target.value : null,
+                                    })
+                                  }
+                                  placeholder="ej. Senior"
+                                  className="h-7"
+                                />
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : null}
       </div>

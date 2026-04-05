@@ -181,17 +181,33 @@ export default async function ProposalDetailPage({ params }: PageProps) {
         ? oppTitle
         : "el perfil acordado";
 
+  const safeCvData = isSafeCandidateCvPrintData(cvPrintData) ? cvPrintData : null;
+
   const templateData: ProposalEmailTemplateData = {
     recipientName: contact?.displayName?.trim() || "Cliente",
     candidateName:
       candName && candName !== "—" ? candName : "el candidato",
-    roleLabel: emailRoleLabel,
+    // Use candidate.role directly from the proposal query — not from CV text parsing
+    candidateRole:
+      proposal.candidateRole !== "—" ? proposal.candidateRole : emailRoleLabel,
+    seniority: safeCvData?.seniorityLabel?.trim() || "—",
+    availability: safeCvData?.availabilityLabel?.trim() || "—",
+    workModality: safeCvData?.workModality?.trim() || null,
+    vacancyTitle: emailRoleLabel,
     companyName: proposal.companyName,
     finalMonthlyRate: proposal.finalMonthlyRateLabel,
     finalMonthlyRateWithVAT: proposal.finalMonthlyRateWithVATLabel,
+    proposalFormat: formatLabel !== "—" ? formatLabel : "tiempo completo",
     validityDays: proposal.validityDays,
     senderName: preparedByDisplay,
     currency: proposal.currency,
+    skillBreakdown:
+      comparisonMatrix?.skillMatchActive && comparisonMatrix.skillBreakdown
+        ? {
+            met: comparisonMatrix.skillBreakdown.met,
+            missing: comparisonMatrix.skillBreakdown.missing,
+          }
+        : null,
   };
 
   const defaultSubject = `Propuesta de recurso ${emailRoleLabel} · Zuperio`;

@@ -7,6 +7,7 @@ import { canManageSkills } from "@/lib/auth/skill-access";
 import { prisma } from "@/lib/prisma";
 
 import { SKILL_CATEGORIES } from "./constants";
+import { inferSkillTypeFromCategory } from "./skill-type";
 
 export type SkillActionState =
   | { ok: true }
@@ -46,7 +47,13 @@ export async function createSkill(
       return { ok: false, fieldErrors: { name: "Ya existe un skill con ese nombre en el catálogo." } };
     }
 
-    await prisma.skill.create({ data: { name, category } });
+    await prisma.skill.create({
+      data: {
+        name,
+        category,
+        skillType: inferSkillTypeFromCategory(category),
+      },
+    });
 
     revalidatePath("/skills");
     return { ok: true };

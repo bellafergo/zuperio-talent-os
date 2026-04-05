@@ -6,6 +6,11 @@ import { auth } from "@/auth";
 import { canSendProposalClientEmail } from "@/lib/auth/proposal-access";
 import { prisma } from "@/lib/prisma";
 import { generateCandidateCvPdfPackage } from "@/lib/candidates/generate-candidate-cv-pdf";
+import {
+  getCandidateCvPrintData,
+  isSafeCandidateCvPrintData,
+} from "@/lib/candidates/get-candidate-cv-print-data";
+import { getComparisonMatrixForPair } from "@/lib/matching/queries";
 import { sendProposalPackageEmail } from "@/lib/email/send-proposal-package-email";
 import { buildProposalEmailHtml } from "@/lib/email/templates/proposal-email";
 import { generateProposalPdfPackage } from "@/lib/proposals/generate-proposal-pdf";
@@ -128,38 +133,85 @@ export async function POST(
   const candidateName =
     proposal.candidateName !== "—" ? proposal.candidateName : "el candidato";
 
+  // candidate.role comes directly from the proposal query — no CV parsing needed
+  const candidateRole =
+    proposal.candidateRole !== "—" ? proposal.candidateRole : roleLabel;
+
+  // Fetch CV data for seniority/availability/modality (non-critical)
+  let seniority = "—";
+  let availability = "—";
+  let workModality: string | null = null;
+  if (proposal.candidateId) {
+    try {
+      const cvData = await getCandidateCvPrintData(proposal.candidateId);
+      if (isSafeCandidateCvPrintData(cvData)) {
+        seniority = cvData.seniorityLabel?.trim() || "—";
+        availability = cvData.availabilityLabel?.trim() || "—";
+        workModality = cvData.workModality?.trim() || null;
+      }
+    } catch {
+      /* non-critical */
+    }
+  }
+
+  // Fetch skills breakdown for the email table (non-critical)
+  let skillBreakdown: { met: { skillId: string; skillName: string }[]; missing: { skillId: string; skillName: string }[] } | null = null;
+  if (proposal.candidateId && proposal.vacancyId) {
+    try {
+      const matrix = await getComparisonMatrixForPair(proposal.candidateId, proposal.vacancyId);
+      if (matrix?.skillMatchActive && matrix.skillBreakdown) {
+        skillBreakdown = {
+          met: matrix.skillBreakdown.met,
+          missing: matrix.skillBreakdown.missing,
+        };
+      }
+    } catch {
+      /* non-critical */
+    }
+  }
+
+  const formatLabel =
+    typeof proposal.format === "string" && proposal.format.trim()
+      ? proposal.format.trim()
+      : "tiempo completo";
+
+  const templateDataForHtml = {
+    recipientName,
+    candidateName,
+    candidateRole,
+    seniority,
+    availability,
+    workModality,
+    vacancyTitle: roleLabel,
+    companyName: proposal.companyName,
+    finalMonthlyRate: proposal.finalMonthlyRateLabel,
+    finalMonthlyRateWithVAT: proposal.finalMonthlyRateWithVATLabel,
+    proposalFormat: formatLabel,
+    validityDays: proposal.validityDays,
+    senderName,
+    currency: proposal.currency,
+    skillBreakdown,
+  };
+
   // Build HTML using client-provided bodyText (falls back to generated default if empty)
   const effectiveBodyText = bodyText.trim()
     ? bodyText
     : [
         `Estimado/a ${recipientName},`,
         "",
-        `Le compartimos nuestra propuesta para ${candidateName}, orientada a ${roleLabel} con ${proposal.companyName}.`,
+        `Con gusto le presento a ${candidateName}, ${candidateRole} con nivel ${seniority}, quien consideramos es un match sólido para la vacante de ${roleLabel} en ${proposal.companyName}.`,
         "",
-        `Vigencia de esta propuesta: ${proposal.validityDays} días desde la fecha de emisión.`,
+        "A continuación el resumen de la propuesta:",
         "",
-        "Adjunto encontrará la propuesta económica detallada y el CV del candidato en formato Zuperio.",
+        "Adjunto encontrará el CV en formato Zuperio y la propuesta económica detallada para su revisión.",
         "",
-        "Quedamos atentos para una sesión de revisión cuando le sea conveniente.",
+        "Quedamos atentos para agendar una sesión de presentación del perfil o resolver cualquier duda.",
         "",
-        "Saludos cordiales,",
+        "Atentamente,",
         senderName,
       ].join("\n");
 
-  const html = buildProposalEmailHtml(
-    {
-      recipientName,
-      candidateName,
-      roleLabel,
-      companyName: proposal.companyName,
-      finalMonthlyRate: proposal.finalMonthlyRateLabel,
-      finalMonthlyRateWithVAT: proposal.finalMonthlyRateWithVATLabel,
-      validityDays: proposal.validityDays,
-      senderName,
-      currency: proposal.currency,
-    },
-    effectiveBodyText,
-  );
+  const html = buildProposalEmailHtml(templateDataForHtml, effectiveBodyText);
 
   // Process extra file attachments (non-blocking)
   type ExtraAttachment = { filename: string; content: Buffer };

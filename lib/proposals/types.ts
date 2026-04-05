@@ -27,6 +27,8 @@ export type ProposalListRowUi = {
   vacancyTitle: string;
   candidateId: string | null;
   candidateName: string;
+  /** Structured role field from candidate.role — not parsed from CV text. */
+  candidateRole: string;
   status: ProposalStatusUi;
   statusValue: ProposalStatusValue;
   type: ProposalTypeUi;

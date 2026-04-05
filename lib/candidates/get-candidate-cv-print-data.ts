@@ -22,6 +22,8 @@ export type CandidateCvSkillRow = {
   category: string;
   yearsExperience: number | null;
   level: string | null;
+  /** When absent (legacy payloads), CV template falls back to category heuristics. */
+  skillType?: "TECHNOLOGY" | "METHODOLOGY";
 };
 
 export type CandidateCvPrintData = {
@@ -109,11 +111,17 @@ function resolveWorkExperienceParagraphs(
 function isCvSkillRow(x: unknown): x is CandidateCvSkillRow {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
+  const st = o.skillType;
+  const skillTypeOk =
+    st === undefined ||
+    st === "TECHNOLOGY" ||
+    st === "METHODOLOGY";
   return (
     typeof o.name === "string" &&
     typeof o.category === "string" &&
     (o.yearsExperience === null || typeof o.yearsExperience === "number") &&
-    (o.level === null || typeof o.level === "string")
+    (o.level === null || typeof o.level === "string") &&
+    skillTypeOk
   );
 }
 
@@ -213,7 +221,7 @@ export async function getCandidateCvPrintData(
           select: {
             yearsExperience: true,
             level: true,
-            skill: { select: { name: true, category: true } },
+            skill: { select: { name: true, category: true, skillType: true } },
           },
           /** Scalar order only — relation sort can make Prisma omit joins and return empty skills. */
           orderBy: { id: "asc" },
@@ -248,6 +256,7 @@ export async function getCandidateCvPrintData(
           category,
           yearsExperience: years,
           level,
+          skillType: cs.skill?.skillType,
         };
       })
       .filter((s) => s.name.length > 0);

@@ -1,3 +1,4 @@
+import type { SkillType } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 
 import {
@@ -7,11 +8,13 @@ import {
   type VacancyRequirementWithSkill,
 } from "./mappers";
 import type { CandidateStructuredSkillUi, SkillCatalogGroupUi, SkillCatalogRowUi, VacancyRequirementUi } from "./types";
+import { skillTypeShortLabel } from "./skill-type";
 
 const skillSelect = {
   id: true,
   name: true,
   category: true,
+  skillType: true,
 } as const;
 
 export async function listCandidateStructuredSkillsForUi(
@@ -20,7 +23,11 @@ export async function listCandidateStructuredSkillsForUi(
   const rows = await prisma.candidateSkill.findMany({
     where: { candidateId },
     include: { skill: { select: skillSelect } },
-    orderBy: [{ skill: { category: "asc" } }, { skill: { name: "asc" } }],
+    orderBy: [
+      { skill: { skillType: "asc" } },
+      { skill: { category: "asc" } },
+      { skill: { name: "asc" } },
+    ],
   });
   return rows.map((row) =>
     mapCandidateSkillToUi(row as unknown as CandidateSkillWithSkill),
@@ -35,6 +42,7 @@ export async function listVacancyRequirementsForUi(
     include: { skill: { select: skillSelect } },
     orderBy: [
       { required: "desc" },
+      { skill: { skillType: "asc" } },
       { skill: { category: "asc" } },
       { skill: { name: "asc" } },
     ],
@@ -44,13 +52,18 @@ export async function listVacancyRequirementsForUi(
   );
 }
 
-export type SkillOption = { id: string; name: string; category: string | null };
+export type SkillOption = {
+  id: string;
+  name: string;
+  category: string | null;
+  skillType: SkillType;
+};
 
 /** Flat skills list for vacancy requirement forms. */
 export async function listSkillsForVacancyForm(): Promise<SkillOption[]> {
   return prisma.skill.findMany({
-    orderBy: [{ category: "asc" }, { name: "asc" }],
-    select: { id: true, name: true, category: true },
+    orderBy: [{ skillType: "asc" }, { category: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, category: true, skillType: true },
   });
 }
 
@@ -59,11 +72,12 @@ export async function listSkillsCatalogGroupedForUi(): Promise<
   SkillCatalogGroupUi[]
 > {
   const rows = await prisma.skill.findMany({
-    orderBy: [{ category: "asc" }, { name: "asc" }],
+    orderBy: [{ skillType: "asc" }, { category: "asc" }, { name: "asc" }],
     select: {
       id: true,
       name: true,
       category: true,
+      skillType: true,
       _count: { select: { candidateLinks: true, vacancyNeeds: true } },
     },
   });
@@ -77,6 +91,8 @@ export async function listSkillsCatalogGroupedForUi(): Promise<
       id: s.id,
       name: s.name,
       category: label,
+      skillType: s.skillType,
+      skillTypeLabel: skillTypeShortLabel(s.skillType),
       candidateCount: s._count.candidateLinks,
       vacancyCount: s._count.vacancyNeeds,
     });

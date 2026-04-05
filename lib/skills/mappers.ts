@@ -1,3 +1,5 @@
+import type { SkillType } from "@/generated/prisma/enums";
+
 import type {
   CandidateStructuredSkillUi,
   VacancyRequirementUi,
@@ -7,14 +9,24 @@ export type CandidateSkillWithSkill = {
   id: string;
   yearsExperience: number | null;
   level: string | null;
-  skill: { id: string; name: string; category: string | null };
+  skill: {
+    id: string;
+    name: string;
+    category: string | null;
+    skillType: SkillType;
+  };
 };
 
 export type VacancyRequirementWithSkill = {
   id: string;
   required: boolean;
   minimumYears: number | null;
-  skill: { id: string; name: string; category: string | null };
+  skill: {
+    id: string;
+    name: string;
+    category: string | null;
+    skillType: SkillType;
+  };
 };
 
 function yearsLabel(y: number | null): string {
@@ -37,6 +49,7 @@ export function mapCandidateSkillToUi(
     skillId: row.skill.id,
     name: row.skill.name,
     category: row.skill.category,
+    skillType: row.skill.skillType,
     yearsExperience: row.yearsExperience,
     yearsLabel: yearsLabel(row.yearsExperience),
     level: row.level?.trim() || null,
@@ -51,6 +64,7 @@ export function mapVacancyRequirementToUi(
     skillId: row.skill.id,
     name: row.skill.name,
     category: row.skill.category,
+    skillType: row.skill.skillType,
     required: row.required,
     minimumYears: row.minimumYears,
     minimumYearsLabel: minimumYearsLabel(row.minimumYears),

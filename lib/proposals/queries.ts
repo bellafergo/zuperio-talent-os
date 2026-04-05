@@ -27,6 +27,7 @@ const proposalSelect = {
       id: true,
       firstName: true,
       lastName: true,
+      role: true,
       candidateCvExportedAt: true,
     },
   },

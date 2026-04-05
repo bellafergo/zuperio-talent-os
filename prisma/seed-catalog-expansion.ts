@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { normalizeSkillNameForCatalog } from "../lib/skills/normalize-skill-name";
+import { inferSkillTypeFromCategory } from "../lib/skills/skill-type";
 import type { PrismaClient } from "../generated/prisma/client";
 
 import catalog from "./catalog-expansion.json";
@@ -58,12 +59,14 @@ export async function runCatalogExpansion(prisma: PrismaClient): Promise<{
     }
 
     const category = mapExpansionRow(row.name, row.userCategory);
+    const skillType = inferSkillTypeFromCategory(category);
     const id = stableExpansionId(key);
     await prisma.skill.create({
       data: {
         id,
         name: row.name,
         category,
+        skillType,
       },
     });
     added++;

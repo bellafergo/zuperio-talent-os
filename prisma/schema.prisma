@@ -180,6 +180,12 @@ enum UserRole {
   DIRECTOR
 }
 
+/// Stack / tooling vs frameworks of working (methodologies, practices).
+enum SkillType {
+  TECHNOLOGY
+  METHODOLOGY
+}
+
 // --- Models -----------------------------------------------------------------
 // Auth/session fields can be added later; this is an internal-directory shape.
 
@@ -493,9 +499,10 @@ model ExternalApplication {
 
 /// Normalized skill catalog for structured profiles and requisitions.
 model Skill {
-  id       String  @id @default(cuid())
-  name     String  @unique
-  category String?
+  id        String    @id @default(cuid())
+  name      String    @unique
+  category  String?
+  skillType SkillType @default(TECHNOLOGY)
 
   candidateLinks CandidateSkill[]
   vacancyNeeds   VacancyRequirement[]
@@ -504,6 +511,7 @@ model Skill {
   updatedAt DateTime @updatedAt
 
   @@index([category])
+  @@index([skillType])
 }
 
 model CandidateSkill {
