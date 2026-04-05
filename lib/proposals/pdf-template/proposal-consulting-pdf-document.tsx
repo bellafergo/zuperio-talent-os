@@ -19,10 +19,32 @@ const STANDARD_CONDITIONS_ES = [
   "Vigencia según este documento; modificaciones económicas por acuerdo escrito.",
 ];
 
+export type ProposalPdfContact = {
+  name: string;
+  title: string | null;
+};
+
+export type ProposalPdfOwner = {
+  name: string;
+  /** Prisma UserRole value: SALES | RECRUITER | DIRECTOR */
+  role: string;
+  email: string;
+};
+
+const USER_ROLE_LABEL: Record<string, string> = {
+  SALES: "Key Account Manager",
+  RECRUITER: "Recruiter",
+  DIRECTOR: "Director",
+};
+
 export type ProposalConsultingPdfDocumentProps = {
   proposal: ProposalDetailUi;
   preparedByDisplay: string;
   comparisonMatrix?: ComparisonMatrixBundle | null;
+  /** Primary active contact for the client company. */
+  primaryContact?: ProposalPdfContact | null;
+  /** Opportunity or company owner (KAM). Null → falls back to preparedByDisplay. */
+  accountOwner?: ProposalPdfOwner | null;
   /** `screen` — vista previa en la app (misma escala base que PDF vía CSS). */
   variant?: "pdf" | "screen";
 };
@@ -88,6 +110,8 @@ export function ProposalConsultingPdfDocument({
   proposal,
   preparedByDisplay,
   comparisonMatrix = null,
+  primaryContact = null,
+  accountOwner = null,
   variant = "pdf",
 }: ProposalConsultingPdfDocumentProps) {
   const currency = proposal.currency?.trim() || "MXN";
@@ -154,29 +178,54 @@ export function ProposalConsultingPdfDocument({
         <div className="cpdf-party-grid">
           <div className="cpdf-party">
             <p className="cpdf-party-label">Dirigido a</p>
-            <p className="cpdf-party-name">{companyDisplay}</p>
-            <p className="cpdf-party-lines">
-              {!isPlaceholderDash(proposal.opportunityTitle)
-                ? `Oportunidad: ${safeTrim(proposal.opportunityTitle)}`
-                : "Contacto y detalle de cuenta en Zuperio"}
-              {!isPlaceholderDash(proposal.vacancyTitle) ? (
-                <>
-                  <br />
-                  Vacante: {safeTrim(proposal.vacancyTitle)}
-                </>
-              ) : null}
-            </p>
+            {primaryContact ? (
+              <>
+                <p className="cpdf-party-name">{primaryContact.name}</p>
+                <p className="cpdf-party-lines">
+                  {primaryContact.title ? (
+                    <>
+                      {primaryContact.title}
+                      <br />
+                    </>
+                  ) : null}
+                  {companyDisplay}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="cpdf-party-name">{companyDisplay}</p>
+                <p className="cpdf-party-lines">Contacto por definir</p>
+              </>
+            )}
           </div>
           <div className="cpdf-party">
             <p className="cpdf-party-label">Elabora</p>
-            <p className="cpdf-party-name">{preparedByDisplay}</p>
-            <p className="cpdf-party-lines">
-              Zuperio · Gestión comercial
-              <br />
-              <a className="cpdf-party-email" href="mailto:contacto@zuperio.com.mx">
-                contacto@zuperio.com.mx
-              </a>
-            </p>
+            {accountOwner ? (
+              <>
+                <p className="cpdf-party-name">{accountOwner.name}</p>
+                <p className="cpdf-party-lines">
+                  Zuperio · {USER_ROLE_LABEL[accountOwner.role] ?? "Gestión comercial"}
+                  <br />
+                  <a
+                    className="cpdf-party-email"
+                    href={`mailto:${accountOwner.email}`}
+                  >
+                    {accountOwner.email}
+                  </a>
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="cpdf-party-name">{preparedByDisplay}</p>
+                <p className="cpdf-party-lines">
+                  Zuperio · Gestión comercial
+                  <br />
+                  <a className="cpdf-party-email" href="mailto:contacto@zuperio.com.mx">
+                    contacto@zuperio.com.mx
+                  </a>
+                </p>
+              </>
+            )}
           </div>
         </div>
 
@@ -325,14 +374,6 @@ export function ProposalConsultingPdfDocument({
                   </td>
                 </tr>
                 <tr>
-                  <td className="cpdf-kv-key">Esquema de precios</td>
-                  <td className="cpdf-kv-val">{p.scheme}</td>
-                </tr>
-                <tr>
-                  <td className="cpdf-kv-key">Formato de documento</td>
-                  <td className="cpdf-kv-val">{proposal.format}</td>
-                </tr>
-                <tr>
                   <td className="cpdf-kv-key">IVA</td>
                   <td className="cpdf-kv-val">
                     {p.vatPercent != null
@@ -380,30 +421,14 @@ export function ProposalConsultingPdfDocument({
 
             <section className="cpdf-accept cpdf-accept--in-wrap">
               <p className="cpdf-accept-label">Aceptación</p>
-              <p className="cpdf-accept-intro">
-                Al firmar, el cliente confirma la aceptación de esta propuesta,
-                sin perjuicio del contrato definitivo.
-              </p>
-              <div className="cpdf-sign-grid">
-                <div className="cpdf-sign-card">
-                  <div className="cpdf-sign-bar">{companyDisplay}</div>
-                  <div className="cpdf-sign-body">
-                    <div className="cpdf-sign-inkline" />
-                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
-                    <p className="cpdf-sign-role-slot">Cargo</p>
-                  </div>
-                </div>
-                <div className="cpdf-sign-card">
-                  <div className="cpdf-sign-bar">Zuperio</div>
-                  <div className="cpdf-sign-body">
-                    <div className="cpdf-sign-inkline" />
-                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
-                    <p className="cpdf-sign-role-slot">Cargo</p>
-                    <p className="cpdf-sign-fecha">
-                      Fecha de aceptación: ___________
-                    </p>
-                  </div>
-                </div>
+              <div className="cpdf-accept-email-box">
+                <p className="cpdf-accept-email-text">
+                  Para aceptar esta propuesta, responda este correo con su
+                  confirmación o comuníquese con su ejecutivo de cuenta en
+                  Zuperio. La aceptación por escrito (correo electrónico) tiene
+                  la misma validez que la firma de este documento como acuerdo
+                  de intención de servicio.
+                </p>
               </div>
             </section>
           </div>
@@ -431,30 +456,14 @@ export function ProposalConsultingPdfDocument({
 
             <section className="cpdf-accept">
               <p className="cpdf-accept-label">Aceptación</p>
-              <p className="cpdf-accept-intro">
-                Al firmar, el cliente confirma la aceptación de esta propuesta,
-                sin perjuicio del contrato definitivo.
-              </p>
-              <div className="cpdf-sign-grid">
-                <div className="cpdf-sign-card">
-                  <div className="cpdf-sign-bar">{companyDisplay}</div>
-                  <div className="cpdf-sign-body">
-                    <div className="cpdf-sign-inkline" />
-                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
-                    <p className="cpdf-sign-role-slot">Cargo</p>
-                  </div>
-                </div>
-                <div className="cpdf-sign-card">
-                  <div className="cpdf-sign-bar">Zuperio</div>
-                  <div className="cpdf-sign-body">
-                    <div className="cpdf-sign-inkline" />
-                    <p className="cpdf-sign-name-slot">Nombre y firma</p>
-                    <p className="cpdf-sign-role-slot">Cargo</p>
-                    <p className="cpdf-sign-fecha">
-                      Fecha de aceptación: ___________
-                    </p>
-                  </div>
-                </div>
+              <div className="cpdf-accept-email-box">
+                <p className="cpdf-accept-email-text">
+                  Para aceptar esta propuesta, responda este correo con su
+                  confirmación o comuníquese con su ejecutivo de cuenta en
+                  Zuperio. La aceptación por escrito (correo electrónico) tiene
+                  la misma validez que la firma de este documento como acuerdo
+                  de intención de servicio.
+                </p>
               </div>
             </section>
           </>

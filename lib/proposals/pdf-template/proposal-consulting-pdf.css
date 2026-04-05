@@ -732,6 +732,20 @@ a.cpdf-party-email,
   color: var(--cpdf-muted);
 }
 
+.cpdf-accept-email-box {
+  background-color: #F8F9FA;
+  border: 1px dashed #bdbdbd;
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+}
+
+.cpdf-accept-email-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--cpdf-muted);
+}
+
 .cpdf-sign-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
