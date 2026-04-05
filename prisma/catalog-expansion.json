@@ -1,0 +1,1690 @@
+[
+  {
+    "name": "Python",
+    "userCategory": "Lenguaje IA / Automatización"
+  },
+  {
+    "name": "R",
+    "userCategory": "Lenguaje IA / Analítica"
+  },
+  {
+    "name": "SQL",
+    "userCategory": "Data / IA"
+  },
+  {
+    "name": "Machine Learning",
+    "userCategory": "IA Core"
+  },
+  {
+    "name": "Deep Learning",
+    "userCategory": "IA Avanzada"
+  },
+  {
+    "name": "NLP (Natural Language Processing)",
+    "userCategory": "IA Especializada"
+  },
+  {
+    "name": "Computer Vision",
+    "userCategory": "IA Especializada"
+  },
+  {
+    "name": "Generative AI",
+    "userCategory": "IA Avanzada"
+  },
+  {
+    "name": "Prompt Engineering",
+    "userCategory": "IA Generativa"
+  },
+  {
+    "name": "LLM Integration (OpenAI, Claude, Gemini)",
+    "userCategory": "IA Generativa"
+  },
+  {
+    "name": "LangChain",
+    "userCategory": "Framework IA"
+  },
+  {
+    "name": "LlamaIndex",
+    "userCategory": "Framework IA"
+  },
+  {
+    "name": "Vector Databases (Pinecone, Weaviate, FAISS)",
+    "userCategory": "Infraestructura IA"
+  },
+  {
+    "name": "RAG (Retrieval Augmented Generation)",
+    "userCategory": "Arquitectura IA"
+  },
+  {
+    "name": "AI Agents / Autonomous Agents",
+    "userCategory": "Arquitectura IA"
+  },
+  {
+    "name": "Model Fine-tuning",
+    "userCategory": "IA Avanzada"
+  },
+  {
+    "name": "MLOps",
+    "userCategory": "Operación IA"
+  },
+  {
+    "name": "TensorFlow",
+    "userCategory": "Framework IA"
+  },
+  {
+    "name": "PyTorch",
+    "userCategory": "Framework IA"
+  },
+  {
+    "name": "Scikit-learn",
+    "userCategory": "Framework IA"
+  },
+  {
+    "name": "Data Preprocessing",
+    "userCategory": "Data / IA"
+  },
+  {
+    "name": "Feature Engineering",
+    "userCategory": "Data / IA"
+  },
+  {
+    "name": "Model Deployment (APIs, Docker)",
+    "userCategory": "Ingeniería IA"
+  },
+  {
+    "name": "FastAPI",
+    "userCategory": "Backend IA"
+  },
+  {
+    "name": "Flask",
+    "userCategory": "Backend IA"
+  },
+  {
+    "name": "Docker",
+    "userCategory": "Infraestructura IA"
+  },
+  {
+    "name": "Kubernetes",
+    "userCategory": "Infraestructura IA"
+  },
+  {
+    "name": "Vertex AI",
+    "userCategory": "Cloud AI"
+  },
+  {
+    "name": "Azure Machine Learning",
+    "userCategory": "Cloud AI"
+  },
+  {
+    "name": "AWS SageMaker",
+    "userCategory": "Cloud AI"
+  },
+  {
+    "name": "Google Cloud AI APIs",
+    "userCategory": "Cloud AI"
+  },
+  {
+    "name": "Azure Cognitive Services",
+    "userCategory": "Cloud AI"
+  },
+  {
+    "name": "OpenAI API",
+    "userCategory": "IA Generativa"
+  },
+  {
+    "name": "Claude API",
+    "userCategory": "IA Generativa"
+  },
+  {
+    "name": "Gemini API",
+    "userCategory": "IA Generativa"
+  },
+  {
+    "name": "UiPath",
+    "userCategory": "RPA"
+  },
+  {
+    "name": "Automation Anywhere",
+    "userCategory": "RPA"
+  },
+  {
+    "name": "Blue Prism",
+    "userCategory": "RPA"
+  },
+  {
+    "name": "Power Automate",
+    "userCategory": "Automatización"
+  },
+  {
+    "name": "Zapier",
+    "userCategory": "Automatización"
+  },
+  {
+    "name": "Make (Integromat)",
+    "userCategory": "Automatización"
+  },
+  {
+    "name": "BPMN",
+    "userCategory": "Modelado de procesos"
+  },
+  {
+    "name": "Process Mining",
+    "userCategory": "Optimización procesos"
+  },
+  {
+    "name": "Celonis",
+    "userCategory": "Process Mining"
+  },
+  {
+    "name": "ABBYY FlexiCapture",
+    "userCategory": "OCR / Document AI"
+  },
+  {
+    "name": "Tesseract OCR",
+    "userCategory": "OCR"
+  },
+  {
+    "name": "Speech-to-Text",
+    "userCategory": "IA Voz"
+  },
+  {
+    "name": "Text-to-Speech",
+    "userCategory": "IA Voz"
+  },
+  {
+    "name": "Conversational AI",
+    "userCategory": "IA Aplicada"
+  },
+  {
+    "name": "Chatbot Development",
+    "userCategory": "IA Aplicada"
+  },
+  {
+    "name": "AI Governance",
+    "userCategory": "Gobierno IA"
+  },
+  {
+    "name": "AI Ethics",
+    "userCategory": "Gobierno IA"
+  },
+  {
+    "name": "Data Privacy (IA)",
+    "userCategory": "Gobierno IA"
+  },
+  {
+    "name": "Project Management",
+    "userCategory": "Gestión de proyectos"
+  },
+  {
+    "name": "Program Management",
+    "userCategory": "Gestión avanzada"
+  },
+  {
+    "name": "Portfolio Management",
+    "userCategory": "Gestión estratégica"
+  },
+  {
+    "name": "Agile Methodologies",
+    "userCategory": "Metodologías ágiles"
+  },
+  {
+    "name": "Scrum",
+    "userCategory": "Metodología ágil"
+  },
+  {
+    "name": "Kanban",
+    "userCategory": "Metodología ágil"
+  },
+  {
+    "name": "SAFe",
+    "userCategory": "Escalamiento ágil"
+  },
+  {
+    "name": "Lean",
+    "userCategory": "Mejora continua"
+  },
+  {
+    "name": "Waterfall",
+    "userCategory": "Metodología tradicional"
+  },
+  {
+    "name": "Hybrid Methodologies",
+    "userCategory": "Metodología híbrida"
+  },
+  {
+    "name": "PMI Framework (PMBOK)",
+    "userCategory": "Framework PM"
+  },
+  {
+    "name": "Prince2",
+    "userCategory": "Framework PM"
+  },
+  {
+    "name": "OKRs",
+    "userCategory": "Gestión de objetivos"
+  },
+  {
+    "name": "KPIs",
+    "userCategory": "Medición desempeño"
+  },
+  {
+    "name": "Roadmapping",
+    "userCategory": "Planeación estratégica"
+  },
+  {
+    "name": "Stakeholder Management",
+    "userCategory": "Gestión stakeholders"
+  },
+  {
+    "name": "Risk Management",
+    "userCategory": "Gestión de riesgos"
+  },
+  {
+    "name": "Issue Management",
+    "userCategory": "Gestión de incidencias"
+  },
+  {
+    "name": "Change Management",
+    "userCategory": "Gestión del cambio"
+  },
+  {
+    "name": "Resource Management",
+    "userCategory": "Gestión de recursos"
+  },
+  {
+    "name": "Capacity Planning",
+    "userCategory": "Planeación de capacidad"
+  },
+  {
+    "name": "Budget Management",
+    "userCategory": "Gestión financiera"
+  },
+  {
+    "name": "Cost Estimation",
+    "userCategory": "Estimación"
+  },
+  {
+    "name": "Forecasting",
+    "userCategory": "Planeación financiera"
+  },
+  {
+    "name": "Governance Models",
+    "userCategory": "Gobierno de proyectos"
+  },
+  {
+    "name": "PMO Setup",
+    "userCategory": "Implementación PMO"
+  },
+  {
+    "name": "PMO Governance",
+    "userCategory": "Gobierno PMO"
+  },
+  {
+    "name": "PMO Maturity Models",
+    "userCategory": "Madurez organizacional"
+  },
+  {
+    "name": "Business Process Management (BPM)",
+    "userCategory": "Gestión de procesos"
+  },
+  {
+    "name": "Process Mapping",
+    "userCategory": "Modelado"
+  },
+  {
+    "name": "Process Design",
+    "userCategory": "Diseño de procesos"
+  },
+  {
+    "name": "Process Optimization",
+    "userCategory": "Optimización"
+  },
+  {
+    "name": "Process Reengineering (BPR)",
+    "userCategory": "Reingeniería"
+  },
+  {
+    "name": "Process Automation",
+    "userCategory": "Automatización"
+  },
+  {
+    "name": "Process Governance",
+    "userCategory": "Gobierno de procesos"
+  },
+  {
+    "name": "SAP Signavio",
+    "userCategory": "BPM Suite"
+  },
+  {
+    "name": "Bizagi",
+    "userCategory": "BPM Suite"
+  },
+  {
+    "name": "AuraQuantic",
+    "userCategory": "BPM Suite"
+  },
+  {
+    "name": "Appian",
+    "userCategory": "Low-code BPM"
+  },
+  {
+    "name": "Pega",
+    "userCategory": "BPM / Case Management"
+  },
+  {
+    "name": "Workflow Design",
+    "userCategory": "Diseño de flujos"
+  },
+  {
+    "name": "Business Analysis",
+    "userCategory": "Análisis de negocio"
+  },
+  {
+    "name": "Requirements Gathering",
+    "userCategory": "Levantamiento"
+  },
+  {
+    "name": "User Stories",
+    "userCategory": "Agile"
+  },
+  {
+    "name": "Use Cases",
+    "userCategory": "Análisis funcional"
+  },
+  {
+    "name": "Functional Specifications",
+    "userCategory": "Documentación"
+  },
+  {
+    "name": "UAT (User Acceptance Testing)",
+    "userCategory": "Validación negocio"
+  },
+  {
+    "name": "Continuous Improvement",
+    "userCategory": "Mejora continua"
+  },
+  {
+    "name": "Six Sigma",
+    "userCategory": "Mejora continua"
+  },
+  {
+    "name": "Lean Six Sigma",
+    "userCategory": "Mejora continua"
+  },
+  {
+    "name": "Value Stream Mapping",
+    "userCategory": "Lean"
+  },
+  {
+    "name": "Decision Modeling (DMN)",
+    "userCategory": "Modelado decisiones"
+  },
+  {
+    "name": "Change Impact Analysis",
+    "userCategory": "Gestión cambio"
+  },
+  {
+    "name": "Organizational Design",
+    "userCategory": "Diseño organizacional"
+  },
+  {
+    "name": "Service Design",
+    "userCategory": "Diseño servicios"
+  },
+  {
+    "name": "Operating Model Design",
+    "userCategory": "Modelo operativo"
+  },
+  {
+    "name": "Digital Transformation",
+    "userCategory": "Transformación digital"
+  },
+  {
+    "name": "Jira",
+    "userCategory": "Herramienta PM"
+  },
+  {
+    "name": "Confluence",
+    "userCategory": "Documentación"
+  },
+  {
+    "name": "MS Project",
+    "userCategory": "Herramienta PM"
+  },
+  {
+    "name": "Smartsheet",
+    "userCategory": "Herramienta PM"
+  },
+  {
+    "name": "Monday.com",
+    "userCategory": "Herramienta PM"
+  },
+  {
+    "name": "ClickUp",
+    "userCategory": "Herramienta PM"
+  },
+  {
+    "name": "Asana",
+    "userCategory": "Herramienta PM"
+  },
+  {
+    "name": "Trello",
+    "userCategory": "Herramienta PM"
+  },
+  {
+    "name": "Notion",
+    "userCategory": "Documentación"
+  },
+  {
+    "name": "Power BI (para PMO)",
+    "userCategory": "Analítica PM"
+  },
+  {
+    "name": "Excel Avanzado",
+    "userCategory": "Analítica PM"
+  },
+  {
+    "name": "IT Service Management (ITSM)",
+    "userCategory": "Gestión de servicios"
+  },
+  {
+    "name": "ITIL Framework",
+    "userCategory": "Framework ITSM"
+  },
+  {
+    "name": "ITIL v4",
+    "userCategory": "Framework ITSM"
+  },
+  {
+    "name": "Service Design (ITIL)",
+    "userCategory": "ITSM"
+  },
+  {
+    "name": "Service Transition",
+    "userCategory": "ITSM"
+  },
+  {
+    "name": "Service Operation",
+    "userCategory": "ITSM"
+  },
+  {
+    "name": "Continual Service Improvement (CSI)",
+    "userCategory": "ITSM"
+  },
+  {
+    "name": "Incident Management",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Problem Management",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Change Management (ITIL)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Release Management",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Request Fulfillment",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Service Level Management (SLAs/SLIs/SLOs)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Availability Management",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Capacity Management",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "IT Operations Management (ITOM)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Event Management",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Monitoring & Alerting",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "Observability",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "APM (Application Performance Monitoring)",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "Logging & Tracing",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "Root Cause Analysis (RCA)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Runbooks / SOPs",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Knowledge Management",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Service Desk",
+    "userCategory": "Soporte"
+  },
+  {
+    "name": "Help Desk",
+    "userCategory": "Soporte"
+  },
+  {
+    "name": "NOC (Network Operations Center)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "SOC (Security Operations Center)",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Endpoint Management",
+    "userCategory": "Infraestructura"
+  },
+  {
+    "name": "Asset Management (ITAM)",
+    "userCategory": "Gestión activos"
+  },
+  {
+    "name": "Configuration Management (CMDB)",
+    "userCategory": "Configuración"
+  },
+  {
+    "name": "Service Catalog",
+    "userCategory": "ITSM"
+  },
+  {
+    "name": "DevOps",
+    "userCategory": "Cultura / Operación"
+  },
+  {
+    "name": "SRE (Site Reliability Engineering)",
+    "userCategory": "Operación avanzada"
+  },
+  {
+    "name": "CI/CD",
+    "userCategory": "DevOps"
+  },
+  {
+    "name": "Infrastructure as Code (IaC)",
+    "userCategory": "DevOps"
+  },
+  {
+    "name": "Terraform",
+    "userCategory": "IaC"
+  },
+  {
+    "name": "Ansible",
+    "userCategory": "Automatización"
+  },
+  {
+    "name": "Cloud Operations (AWS, Azure, GCP)",
+    "userCategory": "Cloud"
+  },
+  {
+    "name": "Azure Monitor",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "AWS CloudWatch",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "Google Cloud Operations Suite",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "Prometheus",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "Grafana",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "ELK Stack (Elasticsearch, Logstash, Kibana)",
+    "userCategory": "Logging"
+  },
+  {
+    "name": "Splunk",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "Dynatrace",
+    "userCategory": "APM"
+  },
+  {
+    "name": "New Relic",
+    "userCategory": "APM"
+  },
+  {
+    "name": "Datadog",
+    "userCategory": "Observabilidad"
+  },
+  {
+    "name": "ServiceNow",
+    "userCategory": "Plataforma ITSM"
+  },
+  {
+    "name": "BMC Helix",
+    "userCategory": "Plataforma ITSM"
+  },
+  {
+    "name": "Ivanti",
+    "userCategory": "Plataforma ITSM"
+  },
+  {
+    "name": "Freshservice",
+    "userCategory": "Plataforma ITSM"
+  },
+  {
+    "name": "Zendesk",
+    "userCategory": "Soporte"
+  },
+  {
+    "name": "Jira Service Management",
+    "userCategory": "Plataforma ITSM"
+  },
+  {
+    "name": "ManageEngine",
+    "userCategory": "Plataforma ITSM"
+  },
+  {
+    "name": "Cherwell",
+    "userCategory": "Plataforma ITSM"
+  },
+  {
+    "name": "SolarWinds",
+    "userCategory": "Monitoreo"
+  },
+  {
+    "name": "PagerDuty",
+    "userCategory": "Alerting"
+  },
+  {
+    "name": "Opsgenie",
+    "userCategory": "Alerting"
+  },
+  {
+    "name": "Incident Response",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Disaster Recovery (DRP)",
+    "userCategory": "Continuidad"
+  },
+  {
+    "name": "Business Continuity (BCP)",
+    "userCategory": "Continuidad"
+  },
+  {
+    "name": "Backup & Restore",
+    "userCategory": "Continuidad"
+  },
+  {
+    "name": "Security Operations",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Vulnerability Management",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Patch Management",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Identity & Access Management (IAM)",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Compliance (ISO 27001, SOC2)",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "Audit & Governance",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "FinOps",
+    "userCategory": "Cloud financiero"
+  },
+  {
+    "name": "Cost Optimization (Cloud)",
+    "userCategory": "Cloud"
+  },
+  {
+    "name": "Vendor Management",
+    "userCategory": "Gestión proveedores"
+  },
+  {
+    "name": "SLA Reporting",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Dashboarding (Power BI / Grafana)",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "JavaScript",
+    "userCategory": "Lenguaje Frontend"
+  },
+  {
+    "name": "TypeScript",
+    "userCategory": "Lenguaje Frontend"
+  },
+  {
+    "name": "HTML",
+    "userCategory": "Frontend"
+  },
+  {
+    "name": "CSS",
+    "userCategory": "Frontend"
+  },
+  {
+    "name": "React",
+    "userCategory": "Framework Frontend"
+  },
+  {
+    "name": "Angular",
+    "userCategory": "Framework Frontend"
+  },
+  {
+    "name": "Vue.js",
+    "userCategory": "Framework Frontend"
+  },
+  {
+    "name": "Next.js",
+    "userCategory": "Framework Fullstack"
+  },
+  {
+    "name": "Nuxt.js",
+    "userCategory": "Framework Fullstack"
+  },
+  {
+    "name": "Tailwind CSS",
+    "userCategory": "UI Styling"
+  },
+  {
+    "name": "Bootstrap",
+    "userCategory": "UI Framework"
+  },
+  {
+    "name": "Node.js",
+    "userCategory": "Backend"
+  },
+  {
+    "name": "Express.js",
+    "userCategory": "Backend Framework"
+  },
+  {
+    "name": "NestJS",
+    "userCategory": "Backend Framework"
+  },
+  {
+    "name": "Java",
+    "userCategory": "Backend"
+  },
+  {
+    "name": "Spring Boot",
+    "userCategory": "Backend Framework"
+  },
+  {
+    "name": "C#",
+    "userCategory": "Backend"
+  },
+  {
+    "name": "ASP.NET Core",
+    "userCategory": "Backend Framework"
+  },
+  {
+    "name": "Django",
+    "userCategory": "Backend Framework"
+  },
+  {
+    "name": "Go",
+    "userCategory": "Backend"
+  },
+  {
+    "name": "Ruby",
+    "userCategory": "Backend"
+  },
+  {
+    "name": "PHP",
+    "userCategory": "Backend"
+  },
+  {
+    "name": "Laravel",
+    "userCategory": "Backend Framework"
+  },
+  {
+    "name": "REST APIs",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "GraphQL",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "Microservices",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "Serverless",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "WebSockets",
+    "userCategory": "Comunicación"
+  },
+  {
+    "name": "gRPC",
+    "userCategory": "Comunicación"
+  },
+  {
+    "name": "MySQL",
+    "userCategory": "Base de datos"
+  },
+  {
+    "name": "PostgreSQL",
+    "userCategory": "Base de datos"
+  },
+  {
+    "name": "MongoDB",
+    "userCategory": "Base de datos"
+  },
+  {
+    "name": "Firebase",
+    "userCategory": "Backend as a Service"
+  },
+  {
+    "name": "Redis",
+    "userCategory": "Cache"
+  },
+  {
+    "name": "Prisma",
+    "userCategory": "ORM"
+  },
+  {
+    "name": "Sequelize",
+    "userCategory": "ORM"
+  },
+  {
+    "name": "Git",
+    "userCategory": "Control de versiones"
+  },
+  {
+    "name": "GitHub",
+    "userCategory": "Repositorios"
+  },
+  {
+    "name": "GitLab",
+    "userCategory": "Repositorios / CI"
+  },
+  {
+    "name": "Bitbucket",
+    "userCategory": "Repositorios"
+  },
+  {
+    "name": "AWS",
+    "userCategory": "Cloud"
+  },
+  {
+    "name": "Azure",
+    "userCategory": "Cloud"
+  },
+  {
+    "name": "Google Cloud Platform",
+    "userCategory": "Cloud"
+  },
+  {
+    "name": "Vercel",
+    "userCategory": "Hosting Frontend"
+  },
+  {
+    "name": "Netlify",
+    "userCategory": "Hosting Frontend"
+  },
+  {
+    "name": "Linux",
+    "userCategory": "Infraestructura"
+  },
+  {
+    "name": "Bash Scripting",
+    "userCategory": "Automatización"
+  },
+  {
+    "name": "Unit Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Integration Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "End-to-End Testing (E2E)",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Test Automation",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Manual Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Test Case Design",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Test Strategy",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Regression Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Smoke Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Performance Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Load Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Security Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "API Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Playwright",
+    "userCategory": "Automatización QA"
+  },
+  {
+    "name": "Cypress",
+    "userCategory": "Automatización QA"
+  },
+  {
+    "name": "Selenium",
+    "userCategory": "Automatización QA"
+  },
+  {
+    "name": "Appium",
+    "userCategory": "Automatización QA Mobile"
+  },
+  {
+    "name": "Cucumber",
+    "userCategory": "BDD Testing"
+  },
+  {
+    "name": "Jest",
+    "userCategory": "Testing Framework"
+  },
+  {
+    "name": "Mocha",
+    "userCategory": "Testing Framework"
+  },
+  {
+    "name": "JUnit",
+    "userCategory": "Testing Framework"
+  },
+  {
+    "name": "NUnit",
+    "userCategory": "Testing Framework"
+  },
+  {
+    "name": "TestNG",
+    "userCategory": "Testing Framework"
+  },
+  {
+    "name": "Allure Report",
+    "userCategory": "Reportes QA"
+  },
+  {
+    "name": "QMetry",
+    "userCategory": "Gestión QA"
+  },
+  {
+    "name": "TestRail",
+    "userCategory": "Gestión QA"
+  },
+  {
+    "name": "Jira (QA)",
+    "userCategory": "Gestión QA"
+  },
+  {
+    "name": "Postman",
+    "userCategory": "Testing API"
+  },
+  {
+    "name": "Swagger / OpenAPI",
+    "userCategory": "Documentación API"
+  },
+  {
+    "name": "SonarQube",
+    "userCategory": "Calidad de código"
+  },
+  {
+    "name": "Static Code Analysis",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Code Review",
+    "userCategory": "QA"
+  },
+  {
+    "name": "DevSecOps",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "OWASP",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Secure Coding",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Accessibility Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Cross-browser Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Mobile Testing",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Test Data Management",
+    "userCategory": "QA"
+  },
+  {
+    "name": "CI Testing Pipelines",
+    "userCategory": "QA / DevOps"
+  },
+  {
+    "name": "Data Analysis",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "Data Visualization",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "Business Intelligence (BI)",
+    "userCategory": "BI"
+  },
+  {
+    "name": "Data Modeling",
+    "userCategory": "Modelado"
+  },
+  {
+    "name": "Dimensional Modeling",
+    "userCategory": "Modelado"
+  },
+  {
+    "name": "Data Warehousing",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "Data Lakes",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "Data Lakehouse",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "ETL",
+    "userCategory": "Ingeniería de datos"
+  },
+  {
+    "name": "ELT",
+    "userCategory": "Ingeniería de datos"
+  },
+  {
+    "name": "Data Pipelines",
+    "userCategory": "Ingeniería de datos"
+  },
+  {
+    "name": "Data Integration",
+    "userCategory": "Ingeniería de datos"
+  },
+  {
+    "name": "Data Transformation",
+    "userCategory": "Ingeniería de datos"
+  },
+  {
+    "name": "Data Cleaning",
+    "userCategory": "Data"
+  },
+  {
+    "name": "Data Quality",
+    "userCategory": "Data"
+  },
+  {
+    "name": "Data Governance",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "Master Data Management (MDM)",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "Metadata Management",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "Data Catalog",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "Data Lineage",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "Big Data",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "Apache Spark",
+    "userCategory": "Big Data"
+  },
+  {
+    "name": "Hadoop",
+    "userCategory": "Big Data"
+  },
+  {
+    "name": "Databricks",
+    "userCategory": "Plataforma Data"
+  },
+  {
+    "name": "Snowflake",
+    "userCategory": "Data Warehouse"
+  },
+  {
+    "name": "Amazon Redshift",
+    "userCategory": "Data Warehouse"
+  },
+  {
+    "name": "Google BigQuery",
+    "userCategory": "Data Warehouse"
+  },
+  {
+    "name": "Azure Synapse",
+    "userCategory": "Data Warehouse"
+  },
+  {
+    "name": "Power BI",
+    "userCategory": "Visualización"
+  },
+  {
+    "name": "Tableau",
+    "userCategory": "Visualización"
+  },
+  {
+    "name": "Looker",
+    "userCategory": "Visualización"
+  },
+  {
+    "name": "Qlik Sense",
+    "userCategory": "Visualización"
+  },
+  {
+    "name": "Metabase",
+    "userCategory": "Visualización"
+  },
+  {
+    "name": "Apache Superset",
+    "userCategory": "Visualización"
+  },
+  {
+    "name": "DAX",
+    "userCategory": "Power BI"
+  },
+  {
+    "name": "Power Query",
+    "userCategory": "Transformación"
+  },
+  {
+    "name": "Data Storytelling",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "KPI Design",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "Dashboard Design",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "Self-Service BI",
+    "userCategory": "BI"
+  },
+  {
+    "name": "Data Engineering",
+    "userCategory": "Ingeniería"
+  },
+  {
+    "name": "Data Architect",
+    "userCategory": "Arquitectura"
+  },
+  {
+    "name": "Data Analyst",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "Data Scientist",
+    "userCategory": "Ciencia de datos"
+  },
+  {
+    "name": "Statistical Analysis",
+    "userCategory": "Ciencia de datos"
+  },
+  {
+    "name": "Predictive Analytics",
+    "userCategory": "Analítica avanzada"
+  },
+  {
+    "name": "Prescriptive Analytics",
+    "userCategory": "Analítica avanzada"
+  },
+  {
+    "name": "Time Series Analysis",
+    "userCategory": "Analítica avanzada"
+  },
+  {
+    "name": "A/B Testing",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "Machine Learning (para analytics)",
+    "userCategory": "Analítica avanzada"
+  },
+  {
+    "name": "MLOps (Data)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Airflow",
+    "userCategory": "Orquestación"
+  },
+  {
+    "name": "dbt",
+    "userCategory": "Transformación"
+  },
+  {
+    "name": "Fivetran",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "Stitch",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "Kafka",
+    "userCategory": "Streaming"
+  },
+  {
+    "name": "Real-time Analytics",
+    "userCategory": "Analítica"
+  },
+  {
+    "name": "Streaming Data",
+    "userCategory": "Ingeniería"
+  },
+  {
+    "name": "Data APIs",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "REST APIs (Data)",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "Cloud Data (AWS, Azure, GCP)",
+    "userCategory": "Cloud"
+  },
+  {
+    "name": "IAM (Data Security)",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Data Privacy (GDPR, etc.)",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "FinOps (Data Cost Optimization)",
+    "userCategory": "Cloud"
+  },
+  {
+    "name": "Enterprise Resource Planning (ERP)",
+    "userCategory": "Core ERP"
+  },
+  {
+    "name": "ERP Implementation",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "ERP Configuration",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "ERP Customization",
+    "userCategory": "Desarrollo ERP"
+  },
+  {
+    "name": "ERP Integration",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "ERP Migration",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "ERP Rollout",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "SAP",
+    "userCategory": "Plataforma ERP"
+  },
+  {
+    "name": "SAP S/4HANA",
+    "userCategory": "Plataforma ERP"
+  },
+  {
+    "name": "SAP ECC",
+    "userCategory": "Plataforma ERP"
+  },
+  {
+    "name": "SAP FICO",
+    "userCategory": "Módulo Finanzas"
+  },
+  {
+    "name": "SAP MM",
+    "userCategory": "Módulo Supply Chain"
+  },
+  {
+    "name": "SAP SD",
+    "userCategory": "Módulo Ventas"
+  },
+  {
+    "name": "SAP PP",
+    "userCategory": "Módulo Producción"
+  },
+  {
+    "name": "SAP HCM",
+    "userCategory": "Módulo RH"
+  },
+  {
+    "name": "SAP ABAP",
+    "userCategory": "Desarrollo ERP"
+  },
+  {
+    "name": "SAP BTP",
+    "userCategory": "Plataforma Cloud"
+  },
+  {
+    "name": "SAP Ariba",
+    "userCategory": "Compras"
+  },
+  {
+    "name": "SAP SuccessFactors",
+    "userCategory": "RH"
+  },
+  {
+    "name": "SAP Analytics Cloud",
+    "userCategory": "BI ERP"
+  },
+  {
+    "name": "Oracle ERP",
+    "userCategory": "Plataforma ERP"
+  },
+  {
+    "name": "Oracle EBS",
+    "userCategory": "Plataforma ERP"
+  },
+  {
+    "name": "Oracle Fusion Cloud",
+    "userCategory": "Plataforma ERP"
+  },
+  {
+    "name": "Oracle Financials",
+    "userCategory": "Finanzas"
+  },
+  {
+    "name": "Oracle SCM",
+    "userCategory": "Supply Chain"
+  },
+  {
+    "name": "Oracle HCM",
+    "userCategory": "RH"
+  },
+  {
+    "name": "Oracle PL/SQL",
+    "userCategory": "Desarrollo ERP"
+  },
+  {
+    "name": "Microsoft Dynamics 365",
+    "userCategory": "Plataforma ERP"
+  },
+  {
+    "name": "Dynamics Finance & Operations",
+    "userCategory": "Finanzas"
+  },
+  {
+    "name": "Dynamics Business Central",
+    "userCategory": "ERP Mid-market"
+  },
+  {
+    "name": "Dynamics CRM",
+    "userCategory": "CRM"
+  },
+  {
+    "name": "Power Platform (Power Apps, Power Automate)",
+    "userCategory": "Low-code ERP"
+  },
+  {
+    "name": "Odoo",
+    "userCategory": "ERP Open Source"
+  },
+  {
+    "name": "NetSuite",
+    "userCategory": "ERP Cloud"
+  },
+  {
+    "name": "Infor",
+    "userCategory": "ERP"
+  },
+  {
+    "name": "Epicor",
+    "userCategory": "ERP"
+  },
+  {
+    "name": "Sage",
+    "userCategory": "ERP"
+  },
+  {
+    "name": "Workday",
+    "userCategory": "ERP / HCM"
+  },
+  {
+    "name": "ERP Functional Consultant",
+    "userCategory": "Funcional"
+  },
+  {
+    "name": "ERP Technical Consultant",
+    "userCategory": "Técnico"
+  },
+  {
+    "name": "Finance Processes (AP, AR, GL)",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Procurement Processes",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Inventory Management",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Order Management",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Manufacturing Processes",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Supply Chain Management (SCM)",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Human Capital Management (HCM)",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Payroll",
+    "userCategory": "Negocio"
+  },
+  {
+    "name": "Financial Reporting",
+    "userCategory": "Finanzas"
+  },
+  {
+    "name": "Taxation",
+    "userCategory": "Finanzas"
+  },
+  {
+    "name": "Budgeting & Forecasting",
+    "userCategory": "Finanzas"
+  },
+  {
+    "name": "Business Process Mapping (ERP)",
+    "userCategory": "Procesos"
+  },
+  {
+    "name": "Fit-Gap Analysis",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "Data Migration (ERP)",
+    "userCategory": "Data"
+  },
+  {
+    "name": "Master Data (ERP)",
+    "userCategory": "Data"
+  },
+  {
+    "name": "Data Cleansing (ERP)",
+    "userCategory": "Data"
+  },
+  {
+    "name": "Integration Middleware",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "APIs (ERP Integration)",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "EDI",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "SAP PI/PO",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "MuleSoft",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "Boomi",
+    "userCategory": "Integración"
+  },
+  {
+    "name": "Testing ERP",
+    "userCategory": "QA"
+  },
+  {
+    "name": "UAT (ERP)",
+    "userCategory": "QA"
+  },
+  {
+    "name": "Change Management (ERP)",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "Training & Adoption",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "Go-live Support",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "Hypercare",
+    "userCategory": "Implementación"
+  },
+  {
+    "name": "ERP Support (AMS)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Incident Management (ERP)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "SLA Management (ERP)",
+    "userCategory": "Operación"
+  },
+  {
+    "name": "Security & Roles (ERP)",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Segregation of Duties (SoD)",
+    "userCategory": "Seguridad"
+  },
+  {
+    "name": "Compliance (ERP)",
+    "userCategory": "Gobierno"
+  },
+  {
+    "name": "Audit (ERP)",
+    "userCategory": "Gobierno"
+  }
+]

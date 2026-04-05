@@ -13,6 +13,8 @@ import {
   SEED_VACANCY_REQUIREMENTS,
 } from "./seed-skills";
 
+import { runCatalogExpansion } from "./seed-catalog-expansion";
+
 import { SEED_VACANCY_APPLICATIONS } from "./seed-applications";
 
 import {
@@ -241,6 +243,8 @@ async function main() {
     });
   }
 
+  const catalogExpansion = await runCatalogExpansion(prisma);
+
   for (const c of SEED_CANDIDATES) {
     await prisma.candidate.upsert({
       where: { id: c.id },
@@ -368,12 +372,15 @@ async function main() {
 
   const matchCount = await syncAllCandidateVacancyMatches();
   console.info(`Synced ${matchCount} candidate–vacancy match rows (score > 0).`);
+  console.info(
+    `Catalog expansion: +${catalogExpansion.added} skills (skipped ${catalogExpansion.skippedDuplicate} duplicate keys in expansion JSON order, ${catalogExpansion.skippedExisting} already in catalog).`,
+  );
 }
 
 main()
   .then(() => {
     console.info(
-      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates, ${SEED_SKILLS.length} skills, ${SEED_CANDIDATE_SKILLS.length} candidate skills, ${SEED_VACANCY_REQUIREMENTS.length} vacancy requirements, ${SEED_PLACEMENTS.length} placements, ${SEED_VACANCY_APPLICATIONS.length} vacancy applications.`,
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates, ${SEED_SKILLS.length} base skills (+ catalog expansion), ${SEED_CANDIDATE_SKILLS.length} candidate skills, ${SEED_VACANCY_REQUIREMENTS.length} vacancy requirements, ${SEED_PLACEMENTS.length} placements, ${SEED_VACANCY_APPLICATIONS.length} vacancy applications.`,
     );
   })
   .catch((e) => {

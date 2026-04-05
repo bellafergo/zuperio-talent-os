@@ -1,0 +1,75 @@
+IT Service Management (ITSM) — Gestión de servicios
+ITIL Framework — Framework ITSM
+ITIL v4 — Framework ITSM
+Service Design (ITIL) — ITSM
+Service Transition — ITSM
+Service Operation — ITSM
+Continual Service Improvement (CSI) — ITSM
+Incident Management — Operación
+Problem Management — Operación
+Change Management (ITIL) — Operación
+Release Management — Operación
+Request Fulfillment — Operación
+Service Level Management (SLAs/SLIs/SLOs) — Operación
+Availability Management — Operación
+Capacity Management — Operación
+IT Operations Management (ITOM) — Operación
+Event Management — Operación
+Monitoring & Alerting — Observabilidad
+Observability — Observabilidad
+APM (Application Performance Monitoring) — Observabilidad
+Logging & Tracing — Observabilidad
+Root Cause Analysis (RCA) — Operación
+Runbooks / SOPs — Operación
+Knowledge Management — Operación
+Service Desk — Soporte
+Help Desk — Soporte
+NOC (Network Operations Center) — Operación
+SOC (Security Operations Center) — Seguridad
+Endpoint Management — Infraestructura
+Asset Management (ITAM) — Gestión activos
+Configuration Management (CMDB) — Configuración
+Service Catalog — ITSM
+DevOps — Cultura / Operación
+SRE (Site Reliability Engineering) — Operación avanzada
+CI/CD — DevOps
+Infrastructure as Code (IaC) — DevOps
+Terraform — IaC
+Ansible — Automatización
+Cloud Operations (AWS, Azure, GCP) — Cloud
+Azure Monitor — Observabilidad
+AWS CloudWatch — Observabilidad
+Google Cloud Operations Suite — Observabilidad
+Prometheus — Observabilidad
+Grafana — Observabilidad
+ELK Stack (Elasticsearch, Logstash, Kibana) — Logging
+Splunk — Observabilidad
+Dynatrace — APM
+New Relic — APM
+Datadog — Observabilidad
+ServiceNow — Plataforma ITSM
+BMC Helix — Plataforma ITSM
+Ivanti — Plataforma ITSM
+Freshservice — Plataforma ITSM
+Zendesk — Soporte
+Jira Service Management — Plataforma ITSM
+ManageEngine — Plataforma ITSM
+Cherwell — Plataforma ITSM
+SolarWinds — Monitoreo
+PagerDuty — Alerting
+Opsgenie — Alerting
+Incident Response — Operación
+Disaster Recovery (DRP) — Continuidad
+Business Continuity (BCP) — Continuidad
+Backup & Restore — Continuidad
+Security Operations — Seguridad
+Vulnerability Management — Seguridad
+Patch Management — Seguridad
+Identity & Access Management (IAM) — Seguridad
+Compliance (ISO 27001, SOC2) — Gobierno
+Audit & Governance — Gobierno
+FinOps — Cloud financiero
+Cost Optimization (Cloud) — Cloud
+Vendor Management — Gestión proveedores
+SLA Reporting — Operación
+Dashboarding (Power BI / Grafana) — Analítica

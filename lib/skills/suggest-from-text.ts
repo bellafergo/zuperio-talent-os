@@ -1,7 +1,10 @@
 import type { SkillOption } from "@/lib/skills/queries";
 
+import { normalizeSkillNameForCatalog } from "@/lib/skills/normalize-skill-name";
+
 /**
  * Heuristic token match against the catalog — suggestions only; user must confirm adds.
+ * Uses the same normalization as catalog dedupe (accents, case, punctuation, C#/Node.js).
  */
 export function suggestSkillsFromText(
   sourceText: string,
@@ -15,11 +18,13 @@ export function suggestSkillsFromText(
   const normalized = text.replace(/[·•]/g, ",");
   const tokens = normalized
     .split(/[,;|\n/]+/g)
-    .map((t) => t.trim())
+    .map((t) => normalizeSkillNameForCatalog(t.trim()))
     .filter((t) => t.length >= 2);
 
-  const norm = (s: string) => s.toLowerCase().trim();
-  const entries = catalog.map((s) => ({ s, n: norm(s.name) }));
+  const entries = catalog.map((s) => ({
+    s,
+    n: normalizeSkillNameForCatalog(s.name),
+  }));
 
   const seen = new Set<string>();
   const out: SkillOption[] = [];
@@ -31,8 +36,7 @@ export function suggestSkillsFromText(
     if (out.length >= limit) return;
   }
 
-  for (const rawTok of tokens) {
-    const tok = norm(rawTok);
+  for (const tok of tokens) {
     if (tok.length < 2) continue;
     for (const { s, n } of entries) {
       if (!n) continue;
@@ -43,7 +47,7 @@ export function suggestSkillsFromText(
     }
   }
 
-  const blob = norm(text);
+  const blob = normalizeSkillNameForCatalog(text);
   for (const { s, n } of entries) {
     if (n.length < 3) continue;
     if (blob.includes(n)) {

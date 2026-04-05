@@ -1,0 +1,75 @@
+Enterprise Resource Planning (ERP) — Core ERP
+ERP Implementation — Implementación
+ERP Configuration — Implementación
+ERP Customization — Desarrollo ERP
+ERP Integration — Integración
+ERP Migration — Implementación
+ERP Rollout — Implementación
+SAP — Plataforma ERP
+SAP S/4HANA — Plataforma ERP
+SAP ECC — Plataforma ERP
+SAP FICO — Módulo Finanzas
+SAP MM — Módulo Supply Chain
+SAP SD — Módulo Ventas
+SAP PP — Módulo Producción
+SAP HCM — Módulo RH
+SAP ABAP — Desarrollo ERP
+SAP BTP — Plataforma Cloud
+SAP Ariba — Compras
+SAP SuccessFactors — RH
+SAP Analytics Cloud — BI ERP
+Oracle ERP — Plataforma ERP
+Oracle EBS — Plataforma ERP
+Oracle Fusion Cloud — Plataforma ERP
+Oracle Financials — Finanzas
+Oracle SCM — Supply Chain
+Oracle HCM — RH
+Oracle PL/SQL — Desarrollo ERP
+Microsoft Dynamics 365 — Plataforma ERP
+Dynamics Finance & Operations — Finanzas
+Dynamics Business Central — ERP Mid-market
+Dynamics CRM — CRM
+Power Platform (Power Apps, Power Automate) — Low-code ERP
+Odoo — ERP Open Source
+NetSuite — ERP Cloud
+Infor — ERP
+Epicor — ERP
+Sage — ERP
+Workday — ERP / HCM
+ERP Functional Consultant — Funcional
+ERP Technical Consultant — Técnico
+Finance Processes (AP, AR, GL) — Negocio
+Procurement Processes — Negocio
+Inventory Management — Negocio
+Order Management — Negocio
+Manufacturing Processes — Negocio
+Supply Chain Management (SCM) — Negocio
+Human Capital Management (HCM) — Negocio
+Payroll — Negocio
+Financial Reporting — Finanzas
+Taxation — Finanzas
+Budgeting & Forecasting — Finanzas
+Business Process Mapping (ERP) — Procesos
+Fit-Gap Analysis — Implementación
+Data Migration (ERP) — Data
+Master Data (ERP) — Data
+Data Cleansing (ERP) — Data
+Integration Middleware — Integración
+APIs (ERP Integration) — Integración
+EDI — Integración
+SAP PI/PO — Integración
+MuleSoft — Integración
+Boomi — Integración
+Testing ERP — QA
+UAT (ERP) — QA
+Change Management (ERP) — Implementación
+Training & Adoption — Implementación
+Go-live Support — Implementación
+Hypercare — Implementación
+ERP Support (AMS) — Operación
+Incident Management (ERP) — Operación
+SLA Management (ERP) — Operación
+Security & Roles (ERP) — Seguridad
+Segregation of Duties (SoD) — Seguridad
+Compliance (ERP) — Gobierno
+Audit (ERP) — Gobierno
