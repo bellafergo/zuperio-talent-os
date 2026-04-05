@@ -7,7 +7,7 @@ import type { CompanyOption, VacancyListRow, VacancyRequirementDraft } from "./t
 const vacancyInclude = {
   company: { select: { id: true, name: true } },
   opportunity: { select: { id: true, title: true } },
-  contact: { select: { id: true, firstName: true, lastName: true } },
+  contact: { select: { id: true, firstName: true, lastName: true, title: true } },
 } as const;
 
 export async function listVacanciesForUi(): Promise<VacancyListRow[]> {

@@ -78,7 +78,7 @@ export type VacancyWithRelations = {
   company: { id: string; name: string };
   opportunity: { id: string; title: string } | null;
   contactId: string | null;
-  contact: { id: string; firstName: string; lastName: string | null } | null;
+  contact: { id: string; firstName: string; lastName: string | null; title: string | null } | null;
 };
 
 export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
@@ -89,6 +89,7 @@ export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
   const contactName = row.contact
     ? `${row.contact.firstName} ${row.contact.lastName ?? ""}`.trim()
     : null;
+  const contactTitle = row.contact?.title?.trim() || null;
 
   return {
     id: row.id,
@@ -99,6 +100,7 @@ export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
     opportunityTitle: row.opportunity?.title ?? null,
     contactId: row.contactId ?? null,
     contactName,
+    contactTitle,
     seniority: prismaSeniorityToUi[row.seniority],
     status: prismaStatusToUi[row.status],
     seniorityValue: row.seniority,

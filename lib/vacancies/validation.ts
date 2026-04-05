@@ -101,7 +101,10 @@ export function parseVacancyForm(formData: FormData): VacancyFormValidationResul
   const companyId = companyRes.ok ? companyRes.value : "";
 
   const opportunityId = parseOptionalTrimmed(formData, "opportunityId");
-  const contactId = parseOptionalTrimmed(formData, "contactId");
+
+  const contactRes = parseRequiredTrimmed(formData, "contactId");
+  if (!contactRes.ok) fieldErrors.contactId = "El contacto líder es obligatorio.";
+  const contactId = contactRes.ok ? contactRes.value : null;
 
   const seniorityRaw = parseOptionalTrimmed(formData, "seniority") ?? "";
   if (!seniorityRaw || !SENIORITY_SET.has(seniorityRaw)) {

@@ -93,6 +93,9 @@ export function VacancyRecordFormFields({
   const [selectedCompanyId, setSelectedCompanyId] = React.useState(
     defaults?.companyId ?? "",
   );
+  const [selectedContactId, setSelectedContactId] = React.useState(
+    defaults?.contactId ?? "",
+  );
 
   const [titleForSuggest, setTitleForSuggest] = React.useState(defaults?.title ?? "");
   const [summaryForSuggest, setSummaryForSuggest] = React.useState(
@@ -102,7 +105,13 @@ export function VacancyRecordFormFields({
     setTitleForSuggest(defaults?.title ?? "");
     setSummaryForSuggest(defaults?.roleSummaryLine ?? "");
     setSelectedCompanyId(defaults?.companyId ?? "");
-  }, [defaults?.title, defaults?.roleSummaryLine, defaults?.companyId, vacancyId]);
+    setSelectedContactId(defaults?.contactId ?? "");
+  }, [defaults?.title, defaults?.roleSummaryLine, defaults?.companyId, defaults?.contactId, vacancyId]);
+
+  function handleCompanyChange(companyId: string) {
+    setSelectedCompanyId(companyId);
+    setSelectedContactId("");
+  }
 
   const filteredOpportunities = selectedCompanyId
     ? opportunities.filter((o) => o.companyId === selectedCompanyId)
@@ -172,7 +181,7 @@ export function VacancyRecordFormFields({
           required
           className={selectClass}
           value={selectedCompanyId}
-          onChange={(e) => setSelectedCompanyId(e.target.value)}
+          onChange={(e) => handleCompanyChange(e.target.value)}
           aria-invalid={Boolean(fieldErrors?.companyId)}
         >
           <option value="" disabled>
@@ -224,16 +233,23 @@ export function VacancyRecordFormFields({
           htmlFor={vacancyId ? `edit-contact-${vacancyId}` : "new-contact"}
           className="text-sm font-medium"
         >
-          Contacto <span className="text-muted-foreground font-normal">(opcional)</span>
+          Contacto líder <span className="text-destructive">*</span>
         </label>
         <select
           id={vacancyId ? `edit-contact-${vacancyId}` : "new-contact"}
           name="contactId"
+          required
+          disabled={!selectedCompanyId}
           className={selectClass}
-          defaultValue={defaults?.contactId ?? ""}
+          value={selectedContactId}
+          onChange={(e) => setSelectedContactId(e.target.value)}
           aria-invalid={Boolean(fieldErrors?.contactId)}
         >
-          <option value="">Sin contacto asignado</option>
+          <option value="" disabled>
+            {selectedCompanyId
+              ? "Selecciona un contacto…"
+              : "Selecciona primero una empresa"}
+          </option>
           {filteredContacts.map((c) => (
             <option key={c.id} value={c.id}>
               {c.displayName}

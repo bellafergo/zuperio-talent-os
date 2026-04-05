@@ -6,7 +6,6 @@ import type { ProposalDetailUi } from "@/lib/proposals/types";
 import type { ComparisonMatrixBundle } from "@/lib/matching/queries";
 import {
   formatProposalCurrencyAmount,
-  formatProposalPercent,
 } from "@/lib/proposals/presentation";
 
 import "./proposal-consulting-pdf.css";
@@ -371,14 +370,6 @@ export function ProposalConsultingPdfDocument({
                   <td className="cpdf-kv-key">Vigencia de la propuesta</td>
                   <td className="cpdf-kv-val">
                     {proposal.validityDays} días desde emisión
-                  </td>
-                </tr>
-                <tr>
-                  <td className="cpdf-kv-key">IVA</td>
-                  <td className="cpdf-kv-val">
-                    {p.vatPercent != null
-                      ? formatProposalPercent(p.vatPercent)
-                      : "—"}
                   </td>
                 </tr>
               </tbody>

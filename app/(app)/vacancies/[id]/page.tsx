@@ -119,8 +119,12 @@ export default async function VacancyDetailPage({ params }: PageProps) {
             href: vacancy.opportunityId ? `/opportunities/${vacancy.opportunityId}` : undefined,
           },
           {
-            label: "Contacto",
-            value: vacancy.contactName ?? "—",
+            label: "Contacto líder",
+            value: vacancy.contactName
+              ? vacancy.contactTitle
+                ? `${vacancy.contactName} · ${vacancy.contactTitle}`
+                : vacancy.contactName
+              : "—",
             href: vacancy.contactId ? `/contacts/${vacancy.contactId}` : undefined,
           },
           { label: "Senioridad", value: vacancy.seniority },
