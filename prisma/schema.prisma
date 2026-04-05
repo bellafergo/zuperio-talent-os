@@ -261,7 +261,8 @@ model Contact {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  methods ContactMethod[]
+  methods   ContactMethod[]
+  vacancies Vacancy[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -335,6 +336,9 @@ model Vacancy {
 
   opportunityId String?
   opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   candidateMatches   CandidateVacancyMatch[]
   placements         Placement[]

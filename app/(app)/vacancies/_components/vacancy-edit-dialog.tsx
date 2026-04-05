@@ -17,6 +17,7 @@ import {
 import type { SkillOption } from "@/lib/skills/queries";
 import { updateVacancy, type VacancyActionState } from "@/lib/vacancies/actions";
 import type {
+  ContactOptionForVacancyForm,
   OpportunityOptionForVacancyForm,
   VacancyEditData,
 } from "@/lib/vacancies/queries";
@@ -28,11 +29,13 @@ export function VacancyEditDialog({
   vacancy,
   companies,
   opportunities,
+  contacts,
   skills,
 }: {
   vacancy: VacancyEditData;
   companies: CompanyOption[];
   opportunities: OpportunityOptionForVacancyForm[];
+  contacts: ContactOptionForVacancyForm[];
   skills: SkillOption[];
 }) {
   const router = useRouter();
@@ -77,39 +80,43 @@ export function VacancyEditDialog({
           }
         }}
       >
-        <DialogContent className="sm:max-w-2xl" showCloseButton>
-          <DialogHeader>
+        <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]" showCloseButton>
+          <DialogHeader className="shrink-0">
             <DialogTitle>Edit vacancy</DialogTitle>
             <DialogDescription>
               Update core fields and structured requirements.
             </DialogDescription>
           </DialogHeader>
-          <form key={formKey} onSubmit={onSubmit} className="space-y-4">
-            <VacancyRecordFormFields
-              companies={companies}
-              opportunities={opportunities}
-              skills={skills}
-              vacancyId={vacancy.id}
-              defaults={{
-                title: vacancy.title,
-                companyId: vacancy.companyId,
-                opportunityId: vacancy.opportunityId,
-                seniorityValue: vacancy.seniorityValue,
-                statusValue: vacancy.statusValue,
-                targetRateAmount: vacancy.targetRateAmount,
-                currency: vacancy.currency,
-                roleSummaryLine: vacancy.roleSummaryLine,
-                workModality: vacancy.workModality,
-                requirements: vacancy.requirements,
-              }}
-              fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
-            />
-            {state?.ok === false && state.message ? (
-              <p className="text-sm text-destructive" role="alert">
-                {state.message}
-              </p>
-            ) : null}
-            <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
+          <form key={formKey} onSubmit={onSubmit} className="flex flex-col min-h-0 flex-1">
+            <div className="flex-1 overflow-y-auto px-1 space-y-4 pb-2">
+              <VacancyRecordFormFields
+                companies={companies}
+                opportunities={opportunities}
+                contacts={contacts}
+                skills={skills}
+                vacancyId={vacancy.id}
+                defaults={{
+                  title: vacancy.title,
+                  companyId: vacancy.companyId,
+                  opportunityId: vacancy.opportunityId,
+                  contactId: vacancy.contactId,
+                  seniorityValue: vacancy.seniorityValue,
+                  statusValue: vacancy.statusValue,
+                  targetRateAmount: vacancy.targetRateAmount,
+                  currency: vacancy.currency,
+                  roleSummaryLine: vacancy.roleSummaryLine,
+                  workModality: vacancy.workModality,
+                  requirements: vacancy.requirements,
+                }}
+                fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
+              />
+              {state?.ok === false && state.message ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {state.message}
+                </p>
+              ) : null}
+            </div>
+            <DialogFooter className="shrink-0 border-t pt-4 sm:justify-end gap-2 sm:gap-2">
               <DialogClose asChild>
                 <Button type="button" variant="secondary" disabled={pending}>
                   Cancel

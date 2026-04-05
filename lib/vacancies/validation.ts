@@ -14,6 +14,7 @@ export type VacancyFormParsed = {
   title: string;
   companyId: string;
   opportunityId: string | null;
+  contactId: string | null;
   seniority: VacancySeniority;
   status: VacancyStatus;
   targetRate: number | null;
@@ -100,6 +101,7 @@ export function parseVacancyForm(formData: FormData): VacancyFormValidationResul
   const companyId = companyRes.ok ? companyRes.value : "";
 
   const opportunityId = parseOptionalTrimmed(formData, "opportunityId");
+  const contactId = parseOptionalTrimmed(formData, "contactId");
 
   const seniorityRaw = parseOptionalTrimmed(formData, "seniority") ?? "";
   if (!seniorityRaw || !SENIORITY_SET.has(seniorityRaw)) {
@@ -160,6 +162,7 @@ export function parseVacancyForm(formData: FormData): VacancyFormValidationResul
       title,
       companyId,
       opportunityId,
+      contactId,
       seniority: seniorityRaw as VacancySeniority,
       status: statusRaw as VacancyStatus,
       targetRate,

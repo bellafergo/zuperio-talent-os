@@ -27,6 +27,8 @@ export type VacancyListRow = {
   companyName: string;
   opportunityId: string | null;
   opportunityTitle: string | null;
+  contactId: string | null;
+  contactName: string | null;
   seniority: VacancySeniorityUi;
   status: VacancyStatusUi;
   /** Prisma enum values for form defaults. */

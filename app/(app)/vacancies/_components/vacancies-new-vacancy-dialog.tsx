@@ -20,7 +20,10 @@ import {
   createVacancy,
   type VacancyActionState,
 } from "@/lib/vacancies/actions";
-import type { OpportunityOptionForVacancyForm } from "@/lib/vacancies/queries";
+import type {
+  ContactOptionForVacancyForm,
+  OpportunityOptionForVacancyForm,
+} from "@/lib/vacancies/queries";
 import type { CompanyOption } from "@/lib/vacancies/types";
 
 import { VacancyRecordFormFields } from "./vacancy-record-form-fields";
@@ -28,10 +31,12 @@ import { VacancyRecordFormFields } from "./vacancy-record-form-fields";
 export function VacanciesNewVacancyDialog({
   companies,
   opportunities,
+  contacts,
   skills,
 }: {
   companies: CompanyOption[];
   opportunities: OpportunityOptionForVacancyForm[];
+  contacts: ContactOptionForVacancyForm[];
   skills: SkillOption[];
 }) {
   const router = useRouter();
@@ -72,27 +77,30 @@ export function VacanciesNewVacancyDialog({
           New Vacancy
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl" showCloseButton>
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]" showCloseButton>
+        <DialogHeader className="shrink-0">
           <DialogTitle>New vacancy</DialogTitle>
           <DialogDescription>
             Create a role linked to an opportunity. Requirements are stored as
             structured skill rows.
           </DialogDescription>
         </DialogHeader>
-        <form key={formKey} onSubmit={onSubmit} className="space-y-4">
-          <VacancyRecordFormFields
-            companies={companies}
-            opportunities={opportunities}
-            skills={skills}
-            fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
-          />
-          {state?.ok === false && state.message ? (
-            <p className="text-sm text-destructive" role="alert">
-              {state.message}
-            </p>
-          ) : null}
-          <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
+        <form key={formKey} onSubmit={onSubmit} className="flex flex-col min-h-0 flex-1">
+          <div className="flex-1 overflow-y-auto px-1 space-y-4 pb-2">
+            <VacancyRecordFormFields
+              companies={companies}
+              opportunities={opportunities}
+              contacts={contacts}
+              skills={skills}
+              fieldErrors={state?.ok === false ? state.fieldErrors : undefined}
+            />
+            {state?.ok === false && state.message ? (
+              <p className="text-sm text-destructive" role="alert">
+                {state.message}
+              </p>
+            ) : null}
+          </div>
+          <DialogFooter className="shrink-0 border-t pt-4 sm:justify-end gap-2 sm:gap-2">
             <DialogClose asChild>
               <Button type="button" variant="secondary" disabled={pending}>
                 Cancel

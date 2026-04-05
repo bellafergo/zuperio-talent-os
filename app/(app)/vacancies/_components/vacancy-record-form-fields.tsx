@@ -10,6 +10,7 @@ import {
 } from "@/generated/prisma/enums";
 import { CANDIDATE_WORK_MODALITY_OPTIONS } from "@/lib/candidates/constants";
 import type { SkillOption } from "@/lib/skills/queries";
+import type { ContactOptionForVacancyForm } from "@/lib/vacancies/queries";
 import type {
   CompanyOption,
   VacancyListRow,
@@ -58,6 +59,7 @@ type Defaults = {
   title: string;
   companyId: string;
   opportunityId: string | null;
+  contactId: string | null;
   seniorityValue: VacancyListRow["seniorityValue"];
   statusValue: VacancyListRow["statusValue"];
   targetRateAmount: number | null;
@@ -70,6 +72,7 @@ type Defaults = {
 export function VacancyRecordFormFields({
   companies,
   opportunities,
+  contacts,
   skills,
   defaults,
   vacancyId,
@@ -77,6 +80,7 @@ export function VacancyRecordFormFields({
 }: {
   companies: CompanyOption[];
   opportunities: OpportunityOptionForForm[];
+  contacts: ContactOptionForVacancyForm[];
   skills: SkillOption[];
   defaults?: Defaults;
   vacancyId?: string;
@@ -86,6 +90,10 @@ export function VacancyRecordFormFields({
     defaults?.requirements ?? [],
   );
 
+  const [selectedCompanyId, setSelectedCompanyId] = React.useState(
+    defaults?.companyId ?? "",
+  );
+
   const [titleForSuggest, setTitleForSuggest] = React.useState(defaults?.title ?? "");
   const [summaryForSuggest, setSummaryForSuggest] = React.useState(
     defaults?.roleSummaryLine ?? "",
@@ -93,7 +101,16 @@ export function VacancyRecordFormFields({
   React.useEffect(() => {
     setTitleForSuggest(defaults?.title ?? "");
     setSummaryForSuggest(defaults?.roleSummaryLine ?? "");
-  }, [defaults?.title, defaults?.roleSummaryLine, vacancyId]);
+    setSelectedCompanyId(defaults?.companyId ?? "");
+  }, [defaults?.title, defaults?.roleSummaryLine, defaults?.companyId, vacancyId]);
+
+  const filteredOpportunities = selectedCompanyId
+    ? opportunities.filter((o) => o.companyId === selectedCompanyId)
+    : opportunities;
+
+  const filteredContacts = selectedCompanyId
+    ? contacts.filter((c) => c.companyId === selectedCompanyId)
+    : contacts;
 
   const statusOrder = Object.values(VacancyStatusConst) as VacancyStatus[];
   const seniorityOrder = Object.values(VacancySeniorityConst) as VacancySeniority[];
@@ -154,7 +171,8 @@ export function VacancyRecordFormFields({
           name="companyId"
           required
           className={selectClass}
-          defaultValue={defaults?.companyId ?? ""}
+          value={selectedCompanyId}
+          onChange={(e) => setSelectedCompanyId(e.target.value)}
           aria-invalid={Boolean(fieldErrors?.companyId)}
         >
           <option value="" disabled>
@@ -188,7 +206,7 @@ export function VacancyRecordFormFields({
           aria-invalid={Boolean(fieldErrors?.opportunityId)}
         >
           <option value="">Ninguna</option>
-          {opportunities.map((o) => (
+          {filteredOpportunities.map((o) => (
             <option key={o.id} value={o.id}>
               {o.companyName} — {o.title}
             </option>
@@ -197,6 +215,34 @@ export function VacancyRecordFormFields({
         {fieldErrors?.opportunityId ? (
           <p className="text-sm text-destructive" role="alert">
             {fieldErrors.opportunityId}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor={vacancyId ? `edit-contact-${vacancyId}` : "new-contact"}
+          className="text-sm font-medium"
+        >
+          Contacto <span className="text-muted-foreground font-normal">(opcional)</span>
+        </label>
+        <select
+          id={vacancyId ? `edit-contact-${vacancyId}` : "new-contact"}
+          name="contactId"
+          className={selectClass}
+          defaultValue={defaults?.contactId ?? ""}
+          aria-invalid={Boolean(fieldErrors?.contactId)}
+        >
+          <option value="">Sin contacto asignado</option>
+          {filteredContacts.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.displayName}
+            </option>
+          ))}
+        </select>
+        {fieldErrors?.contactId ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.contactId}
           </p>
         ) : null}
       </div>

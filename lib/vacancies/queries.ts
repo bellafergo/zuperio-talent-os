@@ -7,6 +7,7 @@ import type { CompanyOption, VacancyListRow, VacancyRequirementDraft } from "./t
 const vacancyInclude = {
   company: { select: { id: true, name: true } },
   opportunity: { select: { id: true, title: true } },
+  contact: { select: { id: true, firstName: true, lastName: true } },
 } as const;
 
 export async function listVacanciesForUi(): Promise<VacancyListRow[]> {
@@ -34,6 +35,12 @@ export type OpportunityOptionForVacancyForm = {
   title: string;
   companyId: string;
   companyName: string;
+};
+
+export type ContactOptionForVacancyForm = {
+  id: string;
+  displayName: string;
+  companyId: string;
 };
 
 export async function listVacanciesForCompanyUi(companyId: string): Promise<VacancyListRow[]> {
@@ -72,11 +79,32 @@ export async function listOpportunitiesForVacancyForm(): Promise<
   );
 }
 
+export async function listContactsForVacancyForm(): Promise<
+  ContactOptionForVacancyForm[]
+> {
+  const rows = await prisma.contact.findMany({
+    where: { status: "ACTIVE" },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      companyId: true,
+    },
+    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+  });
+  return rows.map((c) => ({
+    id: c.id,
+    displayName: `${c.firstName} ${c.lastName ?? ""}`.trim(),
+    companyId: c.companyId,
+  }));
+}
+
 export type VacancyEditData = {
   id: string;
   title: string;
   companyId: string;
   opportunityId: string | null;
+  contactId: string | null;
   seniorityValue: VacancyListRow["seniorityValue"];
   statusValue: VacancyListRow["statusValue"];
   targetRateAmount: number | null;
@@ -96,6 +124,7 @@ export async function getVacancyEditData(
       title: true,
       companyId: true,
       opportunityId: true,
+      contactId: true,
       seniority: true,
       status: true,
       targetRate: true,
@@ -127,6 +156,7 @@ export async function getVacancyEditData(
     title: row.title,
     companyId: row.companyId,
     opportunityId: row.opportunityId,
+    contactId: row.contactId,
     seniorityValue: row.seniority as VacancyEditData["seniorityValue"],
     statusValue: row.status as VacancyEditData["statusValue"],
     targetRateAmount: normalizedAmount,

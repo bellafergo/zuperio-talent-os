@@ -45,6 +45,7 @@ async function ensureCanManage(): Promise<
 async function validateCompanyAndOpportunity(
   companyId: string,
   opportunityId: string | null,
+  contactId: string | null,
 ): Promise<VacancyActionState | null> {
   const company = await prisma.company.findUnique({
     where: { id: companyId },
@@ -70,6 +71,19 @@ async function validateCompanyAndOpportunity(
     }
   }
 
+  if (contactId) {
+    const contact = await prisma.contact.findUnique({
+      where: { id: contactId },
+      select: { id: true },
+    });
+    if (!contact) {
+      return {
+        ok: false,
+        fieldErrors: { contactId: "El contacto seleccionado no existe." },
+      };
+    }
+  }
+
   return null;
 }
 
@@ -85,7 +99,7 @@ export async function createVacancy(
 
   const { data } = parsed;
 
-  const validationError = await validateCompanyAndOpportunity(data.companyId, data.opportunityId);
+  const validationError = await validateCompanyAndOpportunity(data.companyId, data.opportunityId, data.contactId);
   if (validationError) return validationError;
 
   if (data.requirements.length > 0) {
@@ -109,6 +123,7 @@ export async function createVacancy(
           title: data.title,
           companyId: data.companyId,
           opportunityId: data.opportunityId,
+          contactId: data.contactId,
           seniority: data.seniority,
           status: data.status,
           targetRate: data.targetRate,
@@ -165,7 +180,7 @@ export async function updateVacancy(
 
   const { data } = parsed;
 
-  const validationError = await validateCompanyAndOpportunity(data.companyId, data.opportunityId);
+  const validationError = await validateCompanyAndOpportunity(data.companyId, data.opportunityId, data.contactId);
   if (validationError) return validationError;
 
   if (data.requirements.length > 0) {
@@ -190,6 +205,7 @@ export async function updateVacancy(
           title: data.title,
           companyId: data.companyId,
           opportunityId: data.opportunityId,
+          contactId: data.contactId,
           seniority: data.seniority,
           status: data.status,
           targetRate: data.targetRate,

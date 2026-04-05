@@ -19,6 +19,7 @@ import {
   getVacancyByIdForUi,
   getVacancyEditData,
   listCompaniesForVacancyForm,
+  listContactsForVacancyForm,
   listOpportunitiesForVacancyForm,
 } from "@/lib/vacancies/queries";
 
@@ -54,6 +55,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
     editData,
     companies,
     opportunities,
+    contacts,
     skills,
   ] = await Promise.all([
     getVacancyByIdForUi(id),
@@ -65,6 +67,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
     canManage ? getVacancyEditData(id) : Promise.resolve(null),
     canManage ? listCompaniesForVacancyForm() : Promise.resolve([]),
     canManage ? listOpportunitiesForVacancyForm() : Promise.resolve([]),
+    canManage ? listContactsForVacancyForm() : Promise.resolve([]),
     canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
   ]);
 
@@ -96,6 +99,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
               vacancy={editData}
               companies={companies}
               opportunities={opportunities}
+              contacts={contacts}
               skills={skills}
             />
           ) : null
@@ -113,6 +117,11 @@ export default async function VacancyDetailPage({ params }: PageProps) {
             label: "Oportunidad",
             value: vacancy.opportunityTitle ?? "—",
             href: vacancy.opportunityId ? `/opportunities/${vacancy.opportunityId}` : undefined,
+          },
+          {
+            label: "Contacto",
+            value: vacancy.contactName ?? "—",
+            href: vacancy.contactId ? `/contacts/${vacancy.contactId}` : undefined,
           },
           { label: "Senioridad", value: vacancy.seniority },
           { label: "Tarifa objetivo", value: rateDisplay },
