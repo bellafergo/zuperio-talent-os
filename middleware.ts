@@ -59,6 +59,9 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:ico|png|svg|webp)$).*)",
+    // Keep _next/data matched (auth on client navigations). Exclude static, image
+    // optimizer, webpack HMR, and Next dev/overlay internals — otherwise those
+    // requests can hit the auth gate and break dev assets or tooling.
+    "/((?!api/auth|_next/static|_next/image|_next/webpack|__nextjs|favicon.ico|.*\\.(?:ico|png|svg|webp|jpg|jpeg|gif|woff2?)$).*)",
   ],
 };
