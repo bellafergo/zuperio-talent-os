@@ -1,14 +1,20 @@
--- CreateEnum
-CREATE TYPE "JobBoardProvider" AS ENUM ('OCC', 'COMPUTRABAJO', 'LINKEDIN', 'MANUAL', 'OTHER');
+-- CreateEnum (DO/EXCEPTION: idempotent for databases where type was partially created)
+DO $$ BEGIN
+  CREATE TYPE "JobBoardProvider" AS ENUM ('OCC', 'COMPUTRABAJO', 'LINKEDIN', 'MANUAL', 'OTHER');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- CreateEnum
-CREATE TYPE "ExternalVacancyPublicationStatus" AS ENUM ('DRAFT', 'PENDING', 'PUBLISHED', 'SYNCING', 'PAUSED', 'FAILED', 'REMOVED');
+DO $$ BEGIN
+  CREATE TYPE "ExternalVacancyPublicationStatus" AS ENUM ('DRAFT', 'PENDING', 'PUBLISHED', 'SYNCING', 'PAUSED', 'FAILED', 'REMOVED');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- CreateEnum
-CREATE TYPE "ExternalApplicationStatus" AS ENUM ('RECEIVED', 'PENDING_MAPPING', 'VACANCY_MAPPED', 'CANDIDATE_LINKED', 'PROMOTED_TO_PIPELINE', 'FAILED', 'DISCARDED');
+DO $$ BEGIN
+  CREATE TYPE "ExternalApplicationStatus" AS ENUM ('RECEIVED', 'PENDING_MAPPING', 'VACANCY_MAPPED', 'CANDIDATE_LINKED', 'PROMOTED_TO_PIPELINE', 'FAILED', 'DISCARDED');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- DropIndex
-DROP INDEX "User_isDeleted_idx";
+-- DropIndex (IF EXISTS: index is created by a later migration; safe no-op on clean databases)
+DROP INDEX IF EXISTS "User_isDeleted_idx";
 
 -- CreateTable
 CREATE TABLE "ExternalVacancyPublication" (
