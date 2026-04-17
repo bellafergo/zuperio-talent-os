@@ -16,6 +16,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  /** Leads ingest uses `x-api-key` + `LEADS_API_KEY` in the route handler, not session JWT. */
+  if (pathname.startsWith("/api/leads")) {
+    return NextResponse.next();
+  }
+
   const secret = process.env.AUTH_SECRET;
   if (!secret) {
     if (pathname === "/login") return NextResponse.next();

@@ -227,6 +227,8 @@ model User {
 model Company {
   id        String        @id @default(cuid())
   name      String
+  /// Canonical company site URL (used for dedupe by registrable domain in API ingest).
+  website   String?
   industry  String?
   location  String?
   status    CompanyStatus @default(PROSPECT)
@@ -261,8 +263,9 @@ model Contact {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  methods   ContactMethod[]
-  vacancies Vacancy[]
+  methods        ContactMethod[]
+  vacancies      Vacancy[]
+  opportunities  Opportunity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -298,9 +301,14 @@ model Opportunity {
   /// Monetary value in major currency units (MXN/USD); refine precision later if needed.
   value Decimal?           @db.Decimal(14, 2)
   currency String?         @default("MXN")
+  /// Free-text origin (e.g. job board, partner, `API` for programmatic leads).
+  source String?
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   ownerId String?
   owner   User?   @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: SetNull)
@@ -314,6 +322,7 @@ model Opportunity {
   @@index([companyId])
   @@index([stage])
   @@index([ownerId])
+  @@index([contactId])
 }
 
 model Vacancy {
