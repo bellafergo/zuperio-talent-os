@@ -33,6 +33,13 @@ enum ContactStatus {
   INACTIVE
 }
 
+enum ContactMethodType {
+  PHONE
+  EMAIL
+  WHATSAPP
+  LINKEDIN
+}
+
 enum VacancySeniority {
   INTERN
   JUNIOR
@@ -59,6 +66,24 @@ enum CandidateAvailabilityStatus {
   NOT_AVAILABLE
 }
 
+/// Recruiting context for candidate intake (vacancy targeting vs pool).
+enum CandidatePipelineIntent {
+  OPEN_VACANCY
+  NO_VACANCY
+  TALENT_POOL
+}
+
+/// Lightweight recruiting process stage (no workflow engine).
+enum CandidateRecruitmentStage {
+  NUEVO
+  CONTACTADO
+  ENTREVISTA
+  PERFIL_ENVIADO
+  NEGOCIACION
+  COLOCADO
+  DESCARTADO
+}
+
 enum MatchRecommendation {
   STRONG_MATCH
   PARTIAL_MATCH
@@ -78,6 +103,30 @@ enum WeeklyLogStatus {
   RETURNED
 }
 
+enum ProposalType {
+  STAFF_AUG
+}
+
+enum ProposalFormat {
+  SIMPLE
+  DETAILED
+}
+
+enum PricingScheme {
+  MIXED
+  FULL_IMSS
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  /// Reserved for future open/click tracking; set manually if needed in v1.
+  VIEWED
+  IN_NEGOTIATION
+  WON
+  LOST
+}
+
 enum VacancyApplicationStage {
   NEW
   PRE_SCREEN
@@ -95,10 +144,46 @@ enum VacancyApplicationStatus {
   CLOSED
 }
 
+/// External job board / portal identifier (expand as integrations go live).
+enum JobBoardProvider {
+  OCC
+  COMPUTRABAJO
+  LINKEDIN
+  MANUAL
+  OTHER
+}
+
+enum ExternalVacancyPublicationStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  SYNCING
+  PAUSED
+  FAILED
+  REMOVED
+}
+
+/// Lifecycle of an application received from outside Zuperio before/during internal pipeline link.
+enum ExternalApplicationStatus {
+  RECEIVED
+  PENDING_MAPPING
+  VACANCY_MAPPED
+  CANDIDATE_LINKED
+  PROMOTED_TO_PIPELINE
+  FAILED
+  DISCARDED
+}
+
 enum UserRole {
   SALES
   RECRUITER
   DIRECTOR
+}
+
+/// Stack / tooling vs frameworks of working (methodologies, practices).
+enum SkillType {
+  TECHNOLOGY
+  METHODOLOGY
 }
 
 // --- Models -----------------------------------------------------------------
@@ -111,17 +196,39 @@ model User {
   role      UserRole @default(RECRUITER)
   /// Bcrypt hash for credentials sign-in (null = cannot use password login).
   passwordHash String?
+  /// Internal admin can deactivate; inactive users cannot sign in.
+  isActive  Boolean  @default(true)
+  /// Soft / administrative removal after two-step director approval (row retained for audit).
+  isDeleted Boolean  @default(false)
+
+  deletionRequestedAt   DateTime?
+  deletionRequestedById String?
+  deletionRequester     User?    @relation("UserDeletionRequest", fields: [deletionRequestedById], references: [id], onDelete: SetNull)
+  deletionApprovedAt    DateTime?
+  deletionApprovedById  String?
+  deletionApprover      User?    @relation("UserDeletionApprove", fields: [deletionApprovedById], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   companiesAsOwner    Company[]     @relation("CompanyOwner")
   opportunitiesAsOwner Opportunity[] @relation("OpportunityOwner")
+
+  proposalsCreated Proposal[] @relation("ProposalCreatedBy")
+
+  contactMethodsCreated ContactMethod[] @relation("ContactMethodCreatedBy")
+
+  /// Users for whom this director initiated removal (audit inverse).
+  usersDeletionRequested User[] @relation("UserDeletionRequest")
+  /// Users whose removal this director approved (audit inverse).
+  usersDeletionApproved  User[] @relation("UserDeletionApprove")
 }
 
 model Company {
   id        String        @id @default(cuid())
   name      String
+  /// Canonical company site URL (used for dedupe by registrable domain in API ingest).
+  website   String?
   industry  String?
   location  String?
   status    CompanyStatus @default(PROSPECT)
@@ -131,7 +238,9 @@ model Company {
 
   contacts      Contact[]
   opportunities Opportunity[]
+  vacancies     Vacancy[]
   placements    Placement[]
+  proposals     Proposal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,13 +253,19 @@ model Contact {
   id        String        @id @default(cuid())
   firstName String
   lastName  String?
+  /// Cached primary email (mirrors primary active ContactMethod of type EMAIL).
   email     String?
+  /// Cached primary phone / WhatsApp (mirrors primary active PHONE or WHATSAPP method).
   phone     String?
   title     String?
   status    ContactStatus @default(ACTIVE)
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  methods        ContactMethod[]
+  vacancies      Vacancy[]
+  opportunities  Opportunity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -159,21 +274,47 @@ model Contact {
   @@index([email])
 }
 
+/// Historical and alternate contact channels; primaries sync to Contact.email / Contact.phone.
+model ContactMethod {
+  id        String            @id @default(cuid())
+  contactId String
+  contact   Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type      ContactMethodType
+  value     String
+  label     String?
+  isPrimary Boolean           @default(false)
+  isActive  Boolean           @default(true)
+  notes     String?
+
+  createdAt   DateTime @default(now())
+  createdById String?
+  createdBy   User?    @relation("ContactMethodCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([contactId, type])
+}
+
 model Opportunity {
   id    String             @id @default(cuid())
   title String
   stage OpportunityStage   @default(PROSPECTING)
-  /// Monetary value in major currency units (e.g. euros); refine precision later if needed.
+  /// Monetary value in major currency units (MXN/USD); refine precision later if needed.
   value Decimal?           @db.Decimal(14, 2)
-  currency String?         @default("EUR")
+  currency String?         @default("MXN")
+  /// Free-text origin (e.g. job board, partner, `API` for programmatic leads).
+  source String?
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   ownerId String?
   owner   User?   @relation("OpportunityOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
   vacancies Vacancy[]
+  proposals Proposal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -181,6 +322,7 @@ model Opportunity {
   @@index([companyId])
   @@index([stage])
   @@index([ownerId])
+  @@index([contactId])
 }
 
 model Vacancy {
@@ -190,23 +332,36 @@ model Vacancy {
   status    VacancyStatus    @default(OPEN)
   /// Target bill rate (e.g. per hour) in major currency units.
   targetRate Decimal?        @db.Decimal(14, 2)
-  currency   String?         @default("EUR")
+  currency   String?         @default("MXN")
   /// Legacy free-text skills (temporary; matching v1 still uses this until migrated).
   skills       String?
   /// Short role scope for matching and future JD text.
   roleSummary  String?
+  /// Work modality (e.g. "Híbrido", "Home office", "Presencial"). Free text, same pattern as Candidate.workModality.
+  workModality String?
 
-  opportunityId String
-  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   candidateMatches   CandidateVacancyMatch[]
   placements         Placement[]
   skillRequirements  VacancyRequirement[]
   applications       VacancyApplication[]
+  proposals          Proposal[]
+  pipelineCandidates Candidate[]             @relation("CandidatePipelineVacancy")
+  externalPublications ExternalVacancyPublication[]
+  externalApplications ExternalApplication[] @relation("ExternalApplicationTargetVacancy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([companyId])
   @@index([opportunityId])
   @@index([status])
   @@index([seniority])
@@ -224,13 +379,45 @@ model Candidate {
   /// Legacy free-text skills (temporary; prefer CandidateSkill for new work).
   skills               String
   availabilityStatus   CandidateAvailabilityStatus @default(AVAILABLE)
+  /// When status is AVAILABLE, earliest date the candidate is free (date-only, UTC).
+  availabilityStartDate DateTime?
   currentCompany       String?
   notes                String?
+
+  pipelineIntent    CandidatePipelineIntent @default(NO_VACANCY)
+  pipelineVacancyId String?
+  pipelineVacancy   Vacancy?                @relation("CandidatePipelineVacancy", fields: [pipelineVacancyId], references: [id], onDelete: SetNull)
+
+  recruitmentStage CandidateRecruitmentStage @default(NUEVO)
+
+  /// Last successful server-side Zuperio CV PDF export.
+  candidateCvExportedAt DateTime?
+
+  /// Original CV file uploaded by recruiter/director.
+  cvFileName   String?   /// Original filename as uploaded by the user.
+  cvFileKey    String?   /// Storage key (UUID-based filename on disk).
+  cvUploadedAt DateTime? /// When the file was last uploaded.
+
+  /// Optional fields for richer consulting-style CV PDF (multiline / comma where noted).
+  locationCity          String?
+  workModality          String?
+  cvLanguagesText       String? @db.Text
+  cvCertificationsText  String? @db.Text
+  cvIndustriesText      String? @db.Text
+  cvEducationText       String? @db.Text
+  /// Habilidades blandas para el CV PDF (una por línea). Si está vacío, se infieren por categoría de skills estructuradas.
+  cvSoftSkillsText      String? @db.Text
+  /// Experiencia laboral tomada del CV (texto). Fuente principal de la sección "Experiencia laboral" del CV Zuperio.
+  cvWorkExperienceText  String? @db.Text
+  /// Texto plano completo extraído del CV (respaldo para experiencia y depuración heurística).
+  cvRawText             String? @db.Text
 
   vacancyMatches  CandidateVacancyMatch[]
   placements        Placement[]
   structuredSkills  CandidateSkill[]
   applications      VacancyApplication[]
+  proposals         Proposal[]
+  externalApplications ExternalApplication[] @relation("ExternalApplicationTargetCandidate")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -238,6 +425,7 @@ model Candidate {
   @@index([seniority])
   @@index([availabilityStatus])
   @@index([email])
+  @@index([pipelineVacancyId])
 }
 
 /// Recruitment pipeline for a candidate on a vacancy (separate from match scores and placements).
@@ -253,6 +441,9 @@ model VacancyApplication {
   source String?
   notes  String?
 
+  /// When this pipeline row originated from a job-board ingest, links back to the external row.
+  externalSource ExternalApplication?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -263,11 +454,68 @@ model VacancyApplication {
   /// DB-level: partial unique (vacancyId, candidateId) WHERE status = ACTIVE — see migration.
 }
 
+/// Tracks publishing a Zuperio vacancy to an external board (no live API required in v1).
+model ExternalVacancyPublication {
+  id                 String                           @id @default(cuid())
+  vacancyId          String
+  vacancy            Vacancy                          @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  provider           JobBoardProvider
+  externalVacancyRef String?
+  status             ExternalVacancyPublicationStatus @default(PENDING)
+  publishedAt        DateTime?
+  lastSyncAt         DateTime?
+  metadata           Json?
+  lastError          String?                          @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vacancyId])
+  @@index([provider])
+  @@index([status])
+}
+
+/// Inbox row for an application received from outside Zuperio; optional link to internal pipeline.
+model ExternalApplication {
+  id                    String                  @id @default(cuid())
+  provider              JobBoardProvider
+  externalApplicationId String
+  externalVacancyRef    String?
+  firstName             String
+  lastName              String
+  email                 String?
+  phone                 String?
+  sourcePayload         Json?
+
+  vacancyId String?
+  vacancy   Vacancy?   @relation("ExternalApplicationTargetVacancy", fields: [vacancyId], references: [id], onDelete: SetNull)
+  candidateId String?
+  candidate   Candidate? @relation("ExternalApplicationTargetCandidate", fields: [candidateId], references: [id], onDelete: SetNull)
+
+  vacancyApplicationId String?             @unique
+  vacancyApplication   VacancyApplication? @relation(fields: [vacancyApplicationId], references: [id], onDelete: SetNull)
+
+  receivedAt      DateTime                @default(now())
+  status          ExternalApplicationStatus @default(RECEIVED)
+  processingNotes String?                 @db.Text
+  lastError       String?                 @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, externalApplicationId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@index([status])
+  @@index([receivedAt])
+}
+
 /// Normalized skill catalog for structured profiles and requisitions.
 model Skill {
-  id       String  @id @default(cuid())
-  name     String  @unique
-  category String?
+  id        String    @id @default(cuid())
+  name      String    @unique
+  category  String?
+  skillType SkillType @default(TECHNOLOGY)
 
   candidateLinks CandidateSkill[]
   vacancyNeeds   VacancyRequirement[]
@@ -276,6 +524,7 @@ model Skill {
   updatedAt DateTime @updatedAt
 
   @@index([category])
+  @@index([skillType])
 }
 
 model CandidateSkill {
@@ -356,6 +605,10 @@ model WeeklyLog {
   hoursTotal    Decimal? @db.Decimal(6, 2)
   status        WeeklyLogStatus @default(DRAFT)
 
+  /// Manual reminder tracking (future automation can build on this).
+  reminderLastSentAt DateTime?
+  reminderCount      Int @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -363,6 +616,113 @@ model WeeklyLog {
   @@index([weekStart])
   @@index([status])
   @@unique([placementId, weekStart])
+}
+
+model Proposal {
+  id String @id @default(cuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  vacancyId String?
+  vacancy   Vacancy? @relation(fields: [vacancyId], references: [id], onDelete: SetNull)
+
+  candidateId String?
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+
+  type        ProposalType
+  format      ProposalFormat @default(SIMPLE)
+  status      ProposalStatus @default(DRAFT)
+  currency    String @default("MXN")
+  validityDays Int @default(14)
+
+  executiveSummary String?
+  profileSummary   String?
+  scopeNotes       String?
+  commercialNotes  String?
+
+  /// Last successful server-side PDF export (economic proposal); drives email-draft attachment state.
+  proposalPdfExportedAt DateTime?
+
+  /// First time the proposal was emailed to the client (set on send; not overwritten on resend).
+  sentAt             DateTime?
+  lastFollowUpAt     DateTime?
+  followUpCount      Int       @default(0)
+  /// When the proposal was marked WON or LOST (commercial closure). Null for legacy rows or open pipeline.
+  commercialClosedAt DateTime?
+
+  createdById String?
+  createdBy   User? @relation("ProposalCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  pricing ProposalPricing?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([opportunityId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@index([status])
+  @@index([type])
+  @@index([format])
+  @@index([createdById])
+  @@index([commercialClosedAt])
+}
+
+model ProposalPricing {
+  id String @id @default(cuid())
+
+  proposalId String @unique
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  scheme PricingScheme @default(MIXED)
+
+  monthlyHours       Int
+  estimatedDurationMonths Int @default(6)
+
+  // Inputs (manual-first)
+  candidateNetSalary Decimal? @db.Decimal(14, 2)
+  marginPercent      Decimal? @db.Decimal(6, 2)
+  employerLoadPercent Decimal? @db.Decimal(6, 2)
+  bonuses            Decimal? @db.Decimal(14, 2)
+  benefits           Decimal? @db.Decimal(14, 2)
+  operatingExpenses  Decimal? @db.Decimal(14, 2)
+  discountPercent    Decimal? @db.Decimal(6, 2)
+  /** FULL_IMSS: gross = net × factor. Null → use `pricingConfig.defaultFullImssGrossFactor` on compute. */
+  fullImssGrossFactor Decimal? @db.Decimal(8, 4)
+  /** VAT % on final client rate. Null → use `pricingConfig.defaultVatPercent`. */
+  vatPercent         Decimal? @db.Decimal(6, 2)
+
+  // Outputs (deterministic)
+  grossSalary            Decimal? @db.Decimal(14, 2)
+  employerCost           Decimal? @db.Decimal(14, 2)
+  /** Monthly bonuses loaded into cost stack (same basis as `bonuses` input today). */
+  totalBonuses           Decimal? @db.Decimal(14, 2)
+  totalBenefits          Decimal? @db.Decimal(14, 2)
+  totalEmployerLoad      Decimal? @db.Decimal(14, 2)
+  totalOperatingExpenses Decimal? @db.Decimal(14, 2)
+  subtotal               Decimal? @db.Decimal(14, 2)
+  /** Client rate before discount: subtotal / (1 − margin). */
+  baseMonthlyRateBeforeDiscount Decimal? @db.Decimal(14, 2)
+  grossMarginAmount      Decimal? @db.Decimal(14, 2)
+  grossMarginPercent     Decimal? @db.Decimal(6, 2)
+  finalMonthlyRate       Decimal? @db.Decimal(14, 2)
+  finalMonthlyRateWithVAT Decimal? @db.Decimal(14, 2)
+
+  // Legacy fields (kept for backwards compatibility; not used by new calculator)
+  internalCost           Decimal? @db.Decimal(14, 2)
+  clientRate             Decimal? @db.Decimal(14, 2)
+  clientMonthlyAmount    Decimal? @db.Decimal(14, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([proposalId])
+  @@index([scheme])
 }
 
 /// Deterministic match row (structured skills v1); recomputed via sync.

@@ -39,11 +39,11 @@ export function CompaniesDataTable({ companies }: { companies: Company[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Company</TableHead>
-          <TableHead>Industry</TableHead>
-          <TableHead>Location</TableHead>
-          <TableHead>Owner</TableHead>
-          <TableHead className="w-[120px]">Status</TableHead>
+          <TableHead>Empresa</TableHead>
+          <TableHead>Industria</TableHead>
+          <TableHead>Ubicación</TableHead>
+          <TableHead>Responsable</TableHead>
+          <TableHead className="w-[120px]">Estado</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -55,7 +55,7 @@ export function CompaniesDataTable({ companies }: { companies: Company[] }) {
             className="cursor-pointer hover:bg-muted/50"
             onClick={() => goToCompany(row.id)}
             onKeyDown={(e) => onRowKeyDown(e, row.id)}
-            aria-label={`View ${row.name} details`}
+            aria-label={`Ver detalle de ${row.name}`}
           >
             <TableCell className="font-medium">{row.name}</TableCell>
             <TableCell className="text-muted-foreground">{row.industry}</TableCell>

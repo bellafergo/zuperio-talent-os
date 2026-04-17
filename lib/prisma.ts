@@ -1,3 +1,9 @@
+/**
+ * Uses the generated client at `generated/prisma` (see `schema.prisma` generator `output`).
+ * That folder is gitignored — it must match the current schema or Prisma throws
+ * PrismaClientValidationError (e.g. unknown `select` fields). `npm run dev` / `build` run
+ * `prisma generate` first; after pulling schema changes run `npx prisma generate` if needed.
+ */
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 

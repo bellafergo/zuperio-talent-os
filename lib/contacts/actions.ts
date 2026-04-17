@@ -6,26 +6,27 @@ import { auth } from "@/auth";
 import { canManageContacts } from "@/lib/auth/contact-access";
 import { prisma } from "@/lib/prisma";
 
-import { parseContactForm } from "./validation";
+import { parseContactForm, parseContactIdentityForm } from "./validation";
+import { syncContactPrimaryFields } from "./sync-primary-methods";
 
 export type ContactActionState =
   | { ok: true; contactId?: string }
   | { ok: false; message?: string; fieldErrors?: Record<string, string> };
 
 async function ensureCanManage(): Promise<
-  { ok: true } | { ok: false; state: ContactActionState }
+  { ok: true; userId: string } | { ok: false; state: ContactActionState }
 > {
   const session = await auth();
-  if (!session?.user) {
-    return { ok: false, state: { ok: false, message: "You must be signed in." } };
+  if (!session?.user?.id) {
+    return { ok: false, state: { ok: false, message: "Debes iniciar sesión." } };
   }
   if (!canManageContacts(session.user.role)) {
     return {
       ok: false,
-      state: { ok: false, message: "You do not have permission to change contacts." },
+      state: { ok: false, message: "No tienes permiso para modificar contactos." },
     };
   }
-  return { ok: true };
+  return { ok: true, userId: session.user.id };
 }
 
 export async function createContact(
@@ -44,29 +45,68 @@ export async function createContact(
     select: { id: true },
   });
   if (!company) {
-    return { ok: false, fieldErrors: { companyId: "Selected company was not found." } };
+    return { ok: false, fieldErrors: { companyId: "No se encontró la empresa." } };
   }
 
+  const actor = await prisma.user.findUnique({
+    where: { id: gate.userId },
+    select: { id: true },
+  });
+  /** Avoid FK violations if the session user id is stale or missing from DB. */
+  const createdById = actor?.id ?? null;
+
   try {
-    const created = await prisma.contact.create({
-      data: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        title: data.title,
-        companyId: data.companyId,
-        status: data.status,
-      },
-      select: { id: true },
+    const createdId = await prisma.$transaction(async (tx) => {
+      const created = await tx.contact.create({
+        data: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          title: data.title,
+          companyId: data.companyId,
+          status: data.status,
+        },
+        select: { id: true },
+      });
+
+      if (data.email) {
+        await tx.contactMethod.create({
+          data: {
+            contactId: created.id,
+            type: "EMAIL",
+            value: data.email,
+            isPrimary: true,
+            isActive: true,
+            createdById,
+          },
+        });
+      }
+      if (data.phone) {
+        await tx.contactMethod.create({
+          data: {
+            contactId: created.id,
+            type: "PHONE",
+            value: data.phone,
+            isPrimary: true,
+            isActive: true,
+            createdById,
+          },
+        });
+      }
+
+      return created.id;
     });
 
+    await syncContactPrimaryFields(createdId);
+
     revalidatePath("/contacts");
-    revalidatePath(`/contacts/${created.id}`);
+    revalidatePath(`/contacts/${createdId}`);
     revalidatePath(`/companies/${data.companyId}`);
-    return { ok: true, contactId: created.id };
-  } catch {
-    return { ok: false, message: "Could not create the contact. Try again." };
+    return { ok: true, contactId: createdId };
+  } catch (err) {
+    console.error("[createContact] failed", err);
+    return { ok: false, message: "No se pudo crear el contacto. Intenta de nuevo." };
   }
 }
 
@@ -87,7 +127,7 @@ export async function updateContact(
   });
   if (!existing) return { ok: false, message: "Contact was not found." };
 
-  const parsed = parseContactForm(formData);
+  const parsed = parseContactIdentityForm(formData);
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
   const { data } = parsed;
 
@@ -96,7 +136,7 @@ export async function updateContact(
     select: { id: true },
   });
   if (!company) {
-    return { ok: false, fieldErrors: { companyId: "Selected company was not found." } };
+    return { ok: false, fieldErrors: { companyId: "No se encontró la empresa." } };
   }
 
   try {
@@ -105,8 +145,6 @@ export async function updateContact(
       data: {
         firstName: data.firstName,
         lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
         title: data.title,
         companyId: data.companyId,
         status: data.status,
@@ -121,7 +159,7 @@ export async function updateContact(
     }
     return { ok: true, contactId };
   } catch {
-    return { ok: false, message: "Could not update the contact. Try again." };
+    return { ok: false, message: "No se pudo actualizar el contacto. Intenta de nuevo." };
   }
 }
 

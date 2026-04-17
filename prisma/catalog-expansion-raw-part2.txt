@@ -1,0 +1,68 @@
+Project Management — Gestión de proyectos
+Program Management — Gestión avanzada
+Portfolio Management — Gestión estratégica
+Agile Methodologies — Metodologías ágiles
+Scrum — Metodología ágil
+Kanban — Metodología ágil
+SAFe — Escalamiento ágil
+Lean — Mejora continua
+Waterfall — Metodología tradicional
+Hybrid Methodologies — Metodología híbrida
+PMI Framework (PMBOK) — Framework PM
+Prince2 — Framework PM
+OKRs — Gestión de objetivos
+KPIs — Medición desempeño
+Roadmapping — Planeación estratégica
+Stakeholder Management — Gestión stakeholders
+Risk Management — Gestión de riesgos
+Issue Management — Gestión de incidencias
+Change Management — Gestión del cambio
+Resource Management — Gestión de recursos
+Capacity Planning — Planeación de capacidad
+Budget Management — Gestión financiera
+Cost Estimation — Estimación
+Forecasting — Planeación financiera
+Governance Models — Gobierno de proyectos
+PMO Setup — Implementación PMO
+PMO Governance — Gobierno PMO
+PMO Maturity Models — Madurez organizacional
+Business Process Management (BPM) — Gestión de procesos
+Process Mapping — Modelado
+Process Design — Diseño de procesos
+Process Optimization — Optimización
+Process Reengineering (BPR) — Reingeniería
+Process Automation — Automatización
+Process Governance — Gobierno de procesos
+SAP Signavio — BPM Suite
+Bizagi — BPM Suite
+AuraQuantic — BPM Suite
+Appian — Low-code BPM
+Pega — BPM / Case Management
+Workflow Design — Diseño de flujos
+Business Analysis — Análisis de negocio
+Requirements Gathering — Levantamiento
+User Stories — Agile
+Use Cases — Análisis funcional
+Functional Specifications — Documentación
+UAT (User Acceptance Testing) — Validación negocio
+Continuous Improvement — Mejora continua
+Six Sigma — Mejora continua
+Lean Six Sigma — Mejora continua
+Value Stream Mapping — Lean
+Decision Modeling (DMN) — Modelado decisiones
+Change Impact Analysis — Gestión cambio
+Organizational Design — Diseño organizacional
+Service Design — Diseño servicios
+Operating Model Design — Modelo operativo
+Digital Transformation — Transformación digital
+Jira — Herramienta PM
+Confluence — Documentación
+MS Project — Herramienta PM
+Smartsheet — Herramienta PM
+Monday.com — Herramienta PM
+ClickUp — Herramienta PM
+Asana — Herramienta PM
+Trello — Herramienta PM
+Notion — Documentación
+Power BI (para PMO) — Analítica PM
+Excel Avanzado — Analítica PM

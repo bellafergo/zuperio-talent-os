@@ -18,38 +18,63 @@ import {
 } from "@/components/ui/table";
 import type { CandidateMatchRowUi } from "@/lib/matching/types";
 
+const MATCH_REC_UI = new Set<string>(["Match alto", "Match medio", "Match bajo"]);
+
+function isRenderableMatchRow(m: unknown): m is CandidateMatchRowUi {
+  if (!m || typeof m !== "object") return false;
+  const o = m as Record<string, unknown>;
+  return (
+    typeof o.matchId === "string" &&
+    o.matchId.length > 0 &&
+    typeof o.vacancyId === "string" &&
+    o.vacancyId.length > 0 &&
+    typeof o.vacancyTitle === "string" &&
+    typeof o.companyName === "string" &&
+    typeof o.score === "number" &&
+    Number.isFinite(o.score) &&
+    MATCH_REC_UI.has(String(o.recommendation))
+  );
+}
+
 export function CandidateVacancyMatchesSection({
   matches,
 }: {
   matches: CandidateMatchRowUi[];
 }) {
+  const rows = Array.isArray(matches)
+    ? matches.filter(isRenderableMatchRow)
+    : [];
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Matching vacancies</CardTitle>
+        <CardTitle className="text-base font-medium">Vacantes con match</CardTitle>
         <CardDescription>
-          Ranked by structured skill coverage, seniority, availability, and role
-          overlap (same engine as vacancy view).
+          Puntaje = porcentaje de skills requeridos de la vacante que el candidato
+          tiene en su perfil estructurado (determinista, sin IA). Alto ≥90%,
+          medio ≥70%, bajo &lt;70%.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {matches.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No scored vacancy matches yet.
+            Sin matches aún. Asegúrate de que la vacante tenga skills{" "}
+            <span className="font-medium">requeridos</span> y el candidato skills
+            estructurados; luego sincroniza matching.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[200px]">Vacancy</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead className="w-[64px] text-right">Score</TableHead>
-                <TableHead className="w-[120px]">Match</TableHead>
-                <TableHead className="min-w-[220px]">Explanation</TableHead>
+                <TableHead className="max-w-[200px]">Vacante</TableHead>
+                <TableHead>Empresa</TableHead>
+                <TableHead className="w-[88px] text-right">Match</TableHead>
+                <TableHead className="w-[120px]">Nivel</TableHead>
+                <TableHead className="w-[100px]">Detalle</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {matches.map((m) => (
+              {rows.map((m) => (
                 <TableRow key={m.matchId}>
                   <TableCell className="font-medium">
                     <Link
@@ -62,21 +87,23 @@ export function CandidateVacancyMatchesSection({
                   <TableCell className="text-muted-foreground">
                     {m.companyName}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {m.score}
+                  <TableCell className="text-right">
+                    <span className="tabular-nums text-base font-semibold text-foreground">
+                      {m.score}%
+                    </span>
                   </TableCell>
                   <TableCell>
                     <MatchRecommendationBadge
                       recommendation={m.recommendation}
                     />
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    <span
-                      className="line-clamp-2 text-sm leading-relaxed"
-                      title={m.explanation}
+                  <TableCell>
+                    <Link
+                      href={`/matching/compare/${m.matchId}`}
+                      className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
                     >
-                      {m.explanation}
-                    </span>
+                      Ver detalle
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}

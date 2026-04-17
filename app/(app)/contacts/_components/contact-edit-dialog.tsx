@@ -56,7 +56,7 @@ export function ContactEditDialog({
         onClick={() => setOpen(true)}
       >
         <PencilIcon className="size-3.5" aria-hidden />
-        Edit
+        Editar
       </Button>
       <Dialog
         open={open}
@@ -70,13 +70,14 @@ export function ContactEditDialog({
       >
         <DialogContent className="sm:max-w-2xl" showCloseButton>
           <DialogHeader>
-            <DialogTitle>Edit contact</DialogTitle>
+            <DialogTitle>Editar contacto</DialogTitle>
             <DialogDescription>
-              Update person details. Changes apply immediately after you save.
+              Identidad y cuenta. Correo y teléfono no se sobrescriben aquí.
             </DialogDescription>
           </DialogHeader>
           <form key={formKey} onSubmit={onSubmit} className="space-y-4">
             <ContactRecordFormFields
+              variant="edit"
               companies={companies}
               contactId={contact.id}
               defaults={{
@@ -100,11 +101,11 @@ export function ContactEditDialog({
             <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
               <DialogClose asChild>
                 <Button type="button" variant="secondary" disabled={pending}>
-                  Cancel
+                  Cancelar
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={pending}>
-                {pending ? "Saving…" : "Save changes"}
+                {pending ? "Guardando…" : "Guardar"}
               </Button>
             </DialogFooter>
           </form>

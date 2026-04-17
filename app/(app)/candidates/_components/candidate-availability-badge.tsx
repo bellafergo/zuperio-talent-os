@@ -5,20 +5,25 @@ const variantByStatus: Record<
   CandidateAvailabilityUi,
   "default" | "secondary" | "outline" | "destructive"
 > = {
-  Available: "default",
-  "In process": "secondary",
-  Assigned: "outline",
-  "Not available": "destructive",
+  Disponible: "default",
+  "En proceso": "secondary",
+  Asignado: "outline",
+  "No disponible": "destructive",
 };
 
 export function CandidateAvailabilityBadge({
   status,
+  label,
 }: {
   status: CandidateAvailabilityUi;
+  /** When set, shown instead of the coarse filter bucket (e.g. “Disponible inmediata”). */
+  label?: string;
 }) {
+  const variant = variantByStatus[status] ?? "outline";
+  const text = label ?? status;
   return (
-    <Badge variant={variantByStatus[status]} className="whitespace-nowrap">
-      {status}
+    <Badge variant={variant} className="whitespace-nowrap">
+      {text}
     </Badge>
   );
 }

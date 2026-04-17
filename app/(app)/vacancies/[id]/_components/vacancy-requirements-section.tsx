@@ -1,11 +1,5 @@
+import { SectionCard } from "@/components/layout/section-card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { VacancyRequirementUi } from "@/lib/skills/types";
 
 function RequirementChip({ req }: { req: VacancyRequirementUi }) {
@@ -36,57 +30,71 @@ function RequirementChip({ req }: { req: VacancyRequirementUi }) {
   );
 }
 
+function RequirementBlock({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: VacancyRequirementUi[];
+}) {
+  const required = rows.filter((r) => r.required);
+  const optional = rows.filter((r) => !r.required);
+  if (rows.length === 0) return null;
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold text-foreground">{title}</p>
+      {required.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Required
+          </p>
+          <div className="flex flex-col gap-2">
+            {required.map((r) => (
+              <RequirementChip key={r.id} req={r} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {optional.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Nice to have
+          </p>
+          <div className="flex flex-col gap-2">
+            {optional.map((r) => (
+              <RequirementChip key={r.id} req={r} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function VacancyRequirementsSection({
   requirements,
 }: {
   requirements: VacancyRequirementUi[];
 }) {
-  const required = requirements.filter((r) => r.required);
-  const optional = requirements.filter((r) => !r.required);
+  const tech = requirements.filter((r) => r.skillType !== "METHODOLOGY");
+  const meth = requirements.filter((r) => r.skillType === "METHODOLOGY");
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Requirements</CardTitle>
-        <CardDescription>
-          Structured skills from the catalog. Required vs nice-to-have informs
-          future matching; legacy requisition text remains in the summary fields.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 pt-4">
-        {requirements.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No structured requirements yet.
-          </p>
-        ) : (
-          <>
-            {required.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Required
-                </p>
-                <div className="flex flex-col gap-2">
-                  {required.map((r) => (
-                    <RequirementChip key={r.id} req={r} />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {optional.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Nice to have
-                </p>
-                <div className="flex flex-col gap-2">
-                  {optional.map((r) => (
-                    <RequirementChip key={r.id} req={r} />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </>
-        )}
-      </CardContent>
-    </Card>
+    <SectionCard
+      title="Requirements"
+      description="Structured skills from the catalog. Tecnologías vs metodologías; required vs nice-to-have informs matching; legacy requisition text remains in the summary fields."
+      contentClassName="space-y-6 pt-4"
+    >
+      {requirements.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No structured requirements yet.
+        </p>
+      ) : (
+        <div className="space-y-8">
+          <RequirementBlock title="Tecnologías" rows={tech} />
+          <RequirementBlock title="Metodologías" rows={meth} />
+        </div>
+      )}
+    </SectionCard>
   );
 }

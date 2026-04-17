@@ -37,6 +37,25 @@ export async function getOpportunityByIdForUi(
     : null;
 }
 
+export async function listOpportunitiesForCompanyUi(companyId: string): Promise<OpportunityListRow[]> {
+  try {
+    const rows = await prisma.opportunity.findMany({
+      where: { companyId },
+      include: {
+        company: { select: { id: true, name: true } },
+        owner: { select: { id: true, name: true } },
+      },
+      orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
+    });
+    return rows.map((row) =>
+      mapOpportunityToListRow(row as unknown as OpportunityWithRelations),
+    );
+  } catch (err) {
+    console.error("[listOpportunitiesForCompanyUi] failed:", err);
+    return [];
+  }
+}
+
 export async function listCompaniesForOpportunityForm(): Promise<
   OpportunityCompanyOption[]
 > {

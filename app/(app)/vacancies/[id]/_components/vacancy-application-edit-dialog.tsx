@@ -36,19 +36,19 @@ const selectClass = cn(
 );
 
 const STAGE_LABELS: Record<VacancyApplicationStage, string> = {
-  NEW: "New",
-  PRE_SCREEN: "Pre-screen",
-  INTERNAL_INTERVIEW: "Internal interview",
-  CLIENT_INTERVIEW: "Client interview",
-  OFFER: "Offer",
-  HIRED: "Hired",
-  REJECTED: "Rejected",
-  WITHDRAWN: "Withdrawn",
+  NEW: "Nueva",
+  PRE_SCREEN: "Pre-filtro",
+  INTERNAL_INTERVIEW: "Entrevista interna",
+  CLIENT_INTERVIEW: "Entrevista cliente",
+  OFFER: "Oferta",
+  HIRED: "Contratado",
+  REJECTED: "Rechazado",
+  WITHDRAWN: "Retirado",
 };
 
 const STATUS_LABELS: Record<VacancyApplicationStatus, string> = {
-  ACTIVE: "Active",
-  CLOSED: "Closed",
+  ACTIVE: "Activa",
+  CLOSED: "Cerrada",
 };
 
 export function VacancyApplicationEditDialog({
@@ -89,7 +89,7 @@ export function VacancyApplicationEditDialog({
         onClick={() => setOpen(true)}
       >
         <PencilIcon className="size-3.5" aria-hidden />
-        Edit
+        Editar
       </Button>
       <Dialog
         open={open}
@@ -103,10 +103,10 @@ export function VacancyApplicationEditDialog({
       >
         <DialogContent className="sm:max-w-lg" showCloseButton>
           <DialogHeader>
-            <DialogTitle>Edit application</DialogTitle>
+            <DialogTitle>Editar postulación</DialogTitle>
             <DialogDescription>
-              Update stage, status, and metadata for this candidate in the vacancy
-              pipeline.
+              Actualiza etapa, estado y datos de la postulación en el embudo de la
+              vacante.
             </DialogDescription>
           </DialogHeader>
           <form key={formKey} onSubmit={onSubmit} className="space-y-4">
@@ -114,7 +114,7 @@ export function VacancyApplicationEditDialog({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Stage</label>
+                <label className="text-sm font-medium">Etapa</label>
                 <select
                   name="stage"
                   className={selectClass}
@@ -135,7 +135,7 @@ export function VacancyApplicationEditDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
+                <label className="text-sm font-medium">Estado</label>
                 <select
                   name="status"
                   className={selectClass}
@@ -157,7 +157,7 @@ export function VacancyApplicationEditDialog({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Source</label>
+              <label className="text-sm font-medium">Origen</label>
               <Input
                 name="source"
                 defaultValue={row.source ?? ""}
@@ -171,7 +171,7 @@ export function VacancyApplicationEditDialog({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Notes</label>
+              <label className="text-sm font-medium">Notas</label>
               <textarea
                 name="notes"
                 defaultValue={row.notes ?? ""}
@@ -194,11 +194,11 @@ export function VacancyApplicationEditDialog({
             <DialogFooter className="border-0 bg-transparent p-0 sm:justify-end gap-2 sm:gap-2">
               <DialogClose asChild>
                 <Button type="button" variant="secondary" disabled={pending}>
-                  Cancel
+                  Cancelar
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={pending}>
-                {pending ? "Saving…" : "Save"}
+                {pending ? "Guardando…" : "Guardar"}
               </Button>
             </DialogFooter>
           </form>
@@ -210,26 +210,26 @@ export function VacancyApplicationEditDialog({
 
 function uiStageToPrisma(stage: VacancyPipelineRowUi["stage"]): VacancyApplicationStage {
   switch (stage) {
-    case "New":
+    case "Nueva":
       return "NEW";
-    case "Pre-screen":
+    case "Pre-filtro":
       return "PRE_SCREEN";
-    case "Internal interview":
+    case "Entrevista interna":
       return "INTERNAL_INTERVIEW";
-    case "Client interview":
+    case "Entrevista cliente":
       return "CLIENT_INTERVIEW";
-    case "Offer":
+    case "Oferta":
       return "OFFER";
-    case "Hired":
+    case "Contratado":
       return "HIRED";
-    case "Rejected":
+    case "Rechazado":
       return "REJECTED";
-    case "Withdrawn":
+    case "Retirado":
       return "WITHDRAWN";
   }
 }
 
 function uiStatusToPrisma(status: VacancyPipelineRowUi["status"]): VacancyApplicationStatus {
-  return status === "Active" ? "ACTIVE" : "CLOSED";
+  return status === "Activa" ? "ACTIVE" : "CLOSED";
 }
 

@@ -1,3 +1,8 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+
 import {
   Table,
   TableBody,
@@ -6,7 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { WeeklyLogListRowUi, WeeklyLogPlacementOption } from "@/lib/weekly-logs/types";
+import { Button } from "@/components/ui/button";
+import { markWeeklyLogReminderSent } from "@/lib/weekly-logs/actions";
+import type {
+  WeeklyLogListRowUi,
+  WeeklyLogPlacementOption,
+} from "@/lib/weekly-logs/types";
 
 import { WeeklyLogEditDialog } from "./weekly-log-edit-dialog";
 import { WeeklyLogStatusBadge } from "./weekly-log-status-badge";
@@ -20,6 +30,8 @@ export function WeeklyLogsTable({
   canManage: boolean;
   placements: WeeklyLogPlacementOption[];
 }) {
+  const router = useRouter();
+  const [pendingId, setPendingId] = React.useState<string | null>(null);
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center text-sm text-muted-foreground">
@@ -37,8 +49,9 @@ export function WeeklyLogsTable({
           <TableHead className="max-w-[220px]">Role</TableHead>
           <TableHead className="w-[220px]">Week</TableHead>
           <TableHead className="w-[110px]">Status</TableHead>
+          <TableHead className="w-[110px]">Follow-up</TableHead>
           <TableHead className="w-[100px] text-right">Hours</TableHead>
-          {canManage ? <TableHead className="w-[110px]" /> : null}
+          {canManage ? <TableHead className="w-[220px]" /> : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -51,14 +64,52 @@ export function WeeklyLogsTable({
             </TableCell>
             <TableCell className="text-muted-foreground">{r.weekLabel}</TableCell>
             <TableCell>
-              <WeeklyLogStatusBadge status={r.status} />
+              <div className="flex flex-wrap items-center gap-2">
+                <WeeklyLogStatusBadge status={r.status} />
+                {r.isOverdue ? (
+                  <span className="rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                    Overdue
+                  </span>
+                ) : null}
+              </div>
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {r.isOverdue ? (
+                r.reminderLastSentAtLabel ? (
+                  <span>Sent {r.reminderLastSentAtLabel}</span>
+                ) : (
+                  <span className="text-destructive">Reminder pending</span>
+                )
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell className="text-right text-muted-foreground">
               {r.hoursTotalAmount == null ? "—" : r.hoursTotalAmount.toString()}
             </TableCell>
             {canManage ? (
               <TableCell className="text-right">
-                <WeeklyLogEditDialog row={r} placements={placements} />
+                <div className="flex justify-end gap-2">
+                  {r.isOverdue ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={pendingId === r.id}
+                      onClick={async () => {
+                        setPendingId(r.id);
+                        const fd = new FormData();
+                        fd.set("weeklyLogId", r.id);
+                        await markWeeklyLogReminderSent(null, fd);
+                        setPendingId(null);
+                        router.refresh();
+                      }}
+                    >
+                      {pendingId === r.id ? "Marking…" : "Mark reminder sent"}
+                    </Button>
+                  ) : null}
+                  <WeeklyLogEditDialog row={r} placements={placements} />
+                </div>
               </TableCell>
             ) : null}
           </TableRow>

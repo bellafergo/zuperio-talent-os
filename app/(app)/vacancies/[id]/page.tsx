@@ -1,30 +1,35 @@
-import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
-import { canManageApplications } from "@/lib/auth/application-access";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  DetailGrid,
+  PageHeader,
+  PlaceholderSection,
+  SectionCard,
+} from "@/components/layout";
+import { canManageApplications } from "@/lib/auth/application-access";
 import { canManageVacancies } from "@/lib/auth/vacancy-access";
 import { listMatchesForVacancyUi } from "@/lib/matching/queries";
 import { listSkillsForVacancyForm, listVacancyRequirementsForUi } from "@/lib/skills/queries";
+import { listExternalPublicationsForVacancySafe } from "@/lib/job-board/queries-safe";
 import { listApplicationsForVacancyUi } from "@/lib/vacancy-applications/queries";
 import { formatTargetRate } from "@/lib/vacancies/mappers";
+import { listCandidatesForVacancy } from "@/lib/vacancies/candidates-in-process-queries";
 import {
   getVacancyByIdForUi,
   getVacancyEditData,
+  listCompaniesForVacancyForm,
+  listContactsForVacancyForm,
   listOpportunitiesForVacancyForm,
 } from "@/lib/vacancies/queries";
 
+import { VacancyExternalPublicationsSection } from "./_components/vacancy-external-publications-section";
 import { VacancyCandidateMatchesSection } from "./_components/vacancy-candidate-matches-section";
+import { VacancyCandidatesInProcessSection } from "./_components/vacancy-candidates-in-process-section";
+import { VacancyInterviewPrepSection } from "./_components/vacancy-interview-prep-section";
 import { VacancyRecruitmentPipelineSection } from "./_components/vacancy-recruitment-pipeline-section";
 import { VacancyRequirementsSection } from "./_components/vacancy-requirements-section";
+import { VacancyWorkModalitySection } from "./_components/vacancy-work-modality-section";
 import { VacancyEditDialog } from "../_components/vacancy-edit-dialog";
 import { VacancyStatusBadge } from "../_components/vacancy-status-badge";
 
@@ -40,16 +45,31 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   const canManage = canManageVacancies(session?.user?.role);
   const canManageApps = canManageApplications(session?.user?.role);
 
-  const [vacancy, candidateMatches, requirements, applications, editData, opportunities, skills] =
-    await Promise.all([
-      getVacancyByIdForUi(id),
-      listMatchesForVacancyUi(id),
-      listVacancyRequirementsForUi(id),
-      listApplicationsForVacancyUi(id),
-      canManage ? getVacancyEditData(id) : Promise.resolve(null),
-      canManage ? listOpportunitiesForVacancyForm() : Promise.resolve([]),
-      canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
-    ]);
+  const [
+    vacancy,
+    candidateMatches,
+    requirements,
+    applications,
+    externalPublications,
+    candidatesInProcess,
+    editData,
+    companies,
+    opportunities,
+    contacts,
+    skills,
+  ] = await Promise.all([
+    getVacancyByIdForUi(id),
+    listMatchesForVacancyUi(id),
+    listVacancyRequirementsForUi(id),
+    listApplicationsForVacancyUi(id),
+    listExternalPublicationsForVacancySafe(id),
+    listCandidatesForVacancy(id),
+    canManage ? getVacancyEditData(id) : Promise.resolve(null),
+    canManage ? listCompaniesForVacancyForm() : Promise.resolve([]),
+    canManage ? listOpportunitiesForVacancyForm() : Promise.resolve([]),
+    canManage ? listContactsForVacancyForm() : Promise.resolve([]),
+    canManage ? listSkillsForVacancyForm() : Promise.resolve([]),
+  ]);
 
   if (!vacancy) {
     notFound();
@@ -61,153 +81,113 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   );
 
   return (
-    <div className="space-y-6">
-      <Link
-        href="/vacancies"
-        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeftIcon className="size-4 shrink-0" aria-hidden />
-        Back to vacancies
-      </Link>
-
-      <div className="space-y-1">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {vacancy.title}
-            </h1>
-            <div className="shrink-0">
-              <VacancyStatusBadge status={vacancy.status} />
-            </div>
+    <div className="space-y-8">
+      <PageHeader
+        variant="detail"
+        backHref="/vacancies"
+        backLabel="Volver a vacantes"
+        title={vacancy.title}
+        description="Requisición, requisitos estructurados, embudo de reclutamiento y matches puntuados."
+        meta={
+          <div className="shrink-0">
+            <VacancyStatusBadge status={vacancy.status} />
           </div>
-          {canManage && editData ? (
+        }
+        actions={
+          canManage && editData ? (
             <VacancyEditDialog
               vacancy={editData}
+              companies={companies}
               opportunities={opportunities}
+              contacts={contacts}
               skills={skills}
             />
-          ) : null}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Role record · loaded from database
-        </p>
-      </div>
+          ) : null
+        }
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <DetailField
-          label="Company"
-          value={vacancy.companyName}
-          href={`/companies/${vacancy.companyId}`}
-        />
-        <DetailField
-          label="Opportunity"
-          value={vacancy.opportunityTitle}
-          href={`/opportunities/${vacancy.opportunityId}`}
-        />
-        <DetailField label="Seniority" value={vacancy.seniority} />
-        <DetailField label="Target rate" value={rateDisplay} />
-        <DetailField
-          label="Skills (legacy text)"
-          value={vacancy.skillsLine ?? "—"}
-        />
-        <DetailField
-          label="Role scope"
-          value={vacancy.roleSummaryLine ?? "—"}
-        />
-      </div>
+      <DetailGrid
+        items={[
+          {
+            label: "Empresa",
+            value: vacancy.companyName,
+            href: `/companies/${vacancy.companyId}`,
+          },
+          {
+            label: "Oportunidad",
+            value: vacancy.opportunityTitle ?? "—",
+            href: vacancy.opportunityId ? `/opportunities/${vacancy.opportunityId}` : undefined,
+          },
+          {
+            label: "Contacto líder",
+            value: vacancy.contactName
+              ? vacancy.contactTitle
+                ? `${vacancy.contactName} · ${vacancy.contactTitle}`
+                : vacancy.contactName
+              : "—",
+            href: vacancy.contactId ? `/contacts/${vacancy.contactId}` : undefined,
+          },
+          { label: "Senioridad", value: vacancy.seniority },
+          { label: "Tarifa objetivo", value: rateDisplay },
+          {
+            label: "Skills (texto heredado)",
+            value: vacancy.skillsLine ?? "—",
+          },
+          {
+            label: "Alcance del rol",
+            value: vacancy.roleSummaryLine ?? "—",
+          },
+        ]}
+      />
 
-      <Card className="shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-base font-medium">Work mode</CardTitle>
-          <CardDescription>
-            Onsite, hybrid, or remote expectations for this role.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Work location and schedule policies will be stored here when the
-            hiring workflow is extended. The financial target above is in{" "}
-            {vacancy.currency} per hour (bill rate).
-          </p>
-        </CardContent>
-      </Card>
+      <VacancyWorkModalitySection workModality={vacancy.workModality} />
+
+      <VacancyExternalPublicationsSection rows={externalPublications} />
 
       <VacancyRequirementsSection requirements={requirements} />
+
+      <VacancyCandidatesInProcessSection
+        vacancyId={vacancy.id}
+        rows={candidatesInProcess}
+      />
+
+      <VacancyInterviewPrepSection
+        key={vacancy.id}
+        vacancyId={vacancy.id}
+        vacancyTitle={vacancy.title}
+        vacancySeniority={vacancy.seniority}
+        vacancySkillsLine={vacancy.skillsLine}
+        vacancyRoleSummary={vacancy.roleSummaryLine}
+        requirementNames={requirements.map((r) => r.name)}
+        candidates={candidatesInProcess.map((r) => ({
+          id: r.candidateId,
+          displayName: r.displayName,
+          role: r.role,
+        }))}
+      />
 
       <VacancyRecruitmentPipelineSection
         applications={applications}
         canManage={canManageApps}
       />
 
-      <Card className="shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-base font-medium">Responsibilities</CardTitle>
-          <CardDescription>
-            Scope, deliverables, and success criteria for the position.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Structured responsibilities can extend this section later. Matching
-            uses structured requirements; legacy skill text is for humans only.
-          </p>
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Responsabilidades"
+        description="Alcance, entregables y criterios de éxito del puesto."
+      >
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Más adelante se pueden añadir responsabilidades estructuradas. El
+          matching usa requisitos estructurados; el texto libre de skills es solo
+          para lectura humana.
+        </p>
+      </SectionCard>
 
       <VacancyCandidateMatchesSection matches={candidateMatches} />
 
       <PlaceholderSection
-        title="Activity"
-        description="Notes, interviews, and status changes."
+        title="Actividad"
+        description="Notas, entrevistas y cambios de estado."
       />
     </div>
-  );
-}
-
-function DetailField({
-  label,
-  value,
-  href,
-}: {
-  label: string;
-  value: string;
-  href?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm ring-1 ring-foreground/5">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-medium text-foreground">
-        {href ? (
-          <Link
-            href={href}
-            className="text-foreground underline-offset-4 hover:underline"
-          >
-            {value}
-          </Link>
-        ) : (
-          value
-        )}
-      </p>
-    </div>
-  );
-}
-
-function PlaceholderSection({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="py-10 text-center text-sm text-muted-foreground">
-        No {title.toLowerCase()} to show yet. This section is a placeholder.
-      </CardContent>
-    </Card>
   );
 }

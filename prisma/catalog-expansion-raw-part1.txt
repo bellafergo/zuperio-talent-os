@@ -1,0 +1,53 @@
+Python — Lenguaje IA / Automatización
+R — Lenguaje IA / Analítica
+SQL — Data / IA
+Machine Learning — IA Core
+Deep Learning — IA Avanzada
+NLP (Natural Language Processing) — IA Especializada
+Computer Vision — IA Especializada
+Generative AI — IA Avanzada
+Prompt Engineering — IA Generativa
+LLM Integration (OpenAI, Claude, Gemini) — IA Generativa
+LangChain — Framework IA
+LlamaIndex — Framework IA
+Vector Databases (Pinecone, Weaviate, FAISS) — Infraestructura IA
+RAG (Retrieval Augmented Generation) — Arquitectura IA
+AI Agents / Autonomous Agents — Arquitectura IA
+Model Fine-tuning — IA Avanzada
+MLOps — Operación IA
+TensorFlow — Framework IA
+PyTorch — Framework IA
+Scikit-learn — Framework IA
+Data Preprocessing — Data / IA
+Feature Engineering — Data / IA
+Model Deployment (APIs, Docker) — Ingeniería IA
+FastAPI — Backend IA
+Flask — Backend IA
+Docker — Infraestructura IA
+Kubernetes — Infraestructura IA
+Vertex AI — Cloud AI
+Azure Machine Learning — Cloud AI
+AWS SageMaker — Cloud AI
+Google Cloud AI APIs — Cloud AI
+Azure Cognitive Services — Cloud AI
+OpenAI API — IA Generativa
+Claude API — IA Generativa
+Gemini API — IA Generativa
+UiPath — RPA
+Automation Anywhere — RPA
+Blue Prism — RPA
+Power Automate — Automatización
+Zapier — Automatización
+Make (Integromat) — Automatización
+BPMN — Modelado de procesos
+Process Mining — Optimización procesos
+Celonis — Process Mining
+ABBYY FlexiCapture — OCR / Document AI
+Tesseract OCR — OCR
+Speech-to-Text — IA Voz
+Text-to-Speech — IA Voz
+Conversational AI — IA Aplicada
+Chatbot Development — IA Aplicada
+AI Governance — Gobierno IA
+AI Ethics — Gobierno IA
+Data Privacy (IA) — Gobierno IA

@@ -1,4 +1,5 @@
 import type {
+  JobBoardProvider,
   VacancyApplicationStage as PrismaStage,
   VacancyApplicationStatus as PrismaStatus,
 } from "@/generated/prisma/enums";
@@ -12,19 +13,19 @@ import type {
 } from "./types";
 
 const prismaStageToUi: Record<PrismaStage, VacancyApplicationStageUi> = {
-  NEW: "New",
-  PRE_SCREEN: "Pre-screen",
-  INTERNAL_INTERVIEW: "Internal interview",
-  CLIENT_INTERVIEW: "Client interview",
-  OFFER: "Offer",
-  HIRED: "Hired",
-  REJECTED: "Rejected",
-  WITHDRAWN: "Withdrawn",
+  NEW: "Nueva",
+  PRE_SCREEN: "Pre-filtro",
+  INTERNAL_INTERVIEW: "Entrevista interna",
+  CLIENT_INTERVIEW: "Entrevista cliente",
+  OFFER: "Oferta",
+  HIRED: "Contratado",
+  REJECTED: "Rechazado",
+  WITHDRAWN: "Retirado",
 };
 
 const prismaStatusToUi: Record<PrismaStatus, VacancyApplicationStatusUi> = {
-  ACTIVE: "Active",
-  CLOSED: "Closed",
+  ACTIVE: "Activa",
+  CLOSED: "Cerrada",
 };
 
 export function mapApplicationStageToUi(s: PrismaStage): VacancyApplicationStageUi {
@@ -40,12 +41,31 @@ function sourceLabel(s: string | null | undefined): string {
   return t ? t : "—";
 }
 
-type CandidateMini = { id: string; firstName: string; lastName: string };
+const availabilityLabels: Record<string, string> = {
+  AVAILABLE: "Disponible",
+  IN_PROCESS: "En proceso",
+  ASSIGNED: "Asignado",
+  NOT_AVAILABLE: "No disponible",
+};
+
+function availabilityLabel(s: string | null | undefined): string {
+  if (!s) return "—";
+  return availabilityLabels[s] ?? s;
+}
+
+type CandidateMini = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string | null;
+  seniority: string | null;
+  availabilityStatus: string | null;
+};
 
 type VacancyMini = {
   id: string;
   title: string;
-  opportunity: { company: { id: string; name: string } };
+  company: { id: string; name: string };
 };
 
 export type ApplicationWithCandidate = {
@@ -55,6 +75,7 @@ export type ApplicationWithCandidate = {
   source: string | null;
   notes: string | null;
   candidate: CandidateMini;
+  externalSource: { provider: JobBoardProvider } | null;
 };
 
 export type ApplicationWithVacancy = {
@@ -62,6 +83,7 @@ export type ApplicationWithVacancy = {
   stage: PrismaStage;
   status: PrismaStatus;
   vacancy: VacancyMini;
+  externalSource: { provider: JobBoardProvider } | null;
 };
 
 export type ApplicationMatrixPrismaRow = {
@@ -71,6 +93,7 @@ export type ApplicationMatrixPrismaRow = {
   source: string | null;
   candidate: CandidateMini;
   vacancy: VacancyMini;
+  externalSource: { provider: JobBoardProvider } | null;
 };
 
 function candidateName(c: CandidateMini): string {
@@ -82,11 +105,15 @@ export function mapToVacancyPipelineRowUi(row: ApplicationWithCandidate): Vacanc
     applicationId: row.id,
     candidateId: row.candidate.id,
     candidateName: candidateName(row.candidate),
+    candidateRole: row.candidate.role?.trim() || null,
+    candidateSeniority: row.candidate.seniority?.trim() || null,
+    availabilityLabel: availabilityLabel(row.candidate.availabilityStatus),
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
     sourceLabel: sourceLabel(row.source),
     source: row.source?.trim() || null,
     notes: row.notes?.trim() || null,
+    jobBoardProvider: row.externalSource?.provider ?? null,
   };
 }
 
@@ -97,10 +124,11 @@ export function mapToCandidateApplicationRowUi(
     applicationId: row.id,
     vacancyId: row.vacancy.id,
     vacancyTitle: row.vacancy.title,
-    companyId: row.vacancy.opportunity.company.id,
-    companyName: row.vacancy.opportunity.company.name,
+    companyId: row.vacancy.company.id,
+    companyName: row.vacancy.company.name,
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
+    jobBoardProvider: row.externalSource?.provider ?? null,
   };
 }
 
@@ -111,9 +139,10 @@ export function mapToApplicationMatrixRowUi(row: ApplicationMatrixPrismaRow): Ap
     candidateName: candidateName(row.candidate),
     vacancyId: row.vacancy.id,
     vacancyTitle: row.vacancy.title,
-    companyName: row.vacancy.opportunity.company.name,
+    companyName: row.vacancy.company.name,
     stage: mapApplicationStageToUi(row.stage),
     status: mapApplicationStatusToUi(row.status),
     sourceLabel: sourceLabel(row.source),
+    jobBoardProvider: row.externalSource?.provider ?? null,
   };
 }

@@ -1,0 +1,99 @@
+/* Print / future PDF capture: isolate layout from app chrome */
+
+.proposal-print-root {
+  --proposal-doc-border: oklch(0.88 0.006 285);
+  --proposal-doc-muted: oklch(0.45 0.02 285);
+  --proposal-doc-ink: oklch(0.18 0.006 285);
+}
+
+.proposal-print-sheet {
+  color: var(--proposal-doc-ink);
+  background: oklch(1 0 0);
+  border: 1px solid var(--proposal-doc-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.04);
+}
+
+.proposal-print-sheet table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.8125rem;
+}
+
+.proposal-print-sheet th,
+.proposal-print-sheet td {
+  border-bottom: 1px solid var(--proposal-doc-border);
+  padding: 0.5rem 0.35rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.proposal-print-sheet th {
+  font-weight: 600;
+  color: var(--proposal-doc-muted);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.proposal-print-sheet td.num,
+.proposal-print-sheet th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Detailed economic proposal: section blocks */
+.proposal-doc-economic .proposal-doc-block-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--proposal-doc-muted);
+}
+
+.proposal-doc-economic .proposal-doc-block-title:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.proposal-doc-economic .proposal-doc-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--proposal-doc-muted);
+}
+
+.proposal-doc-economic table.proposal-doc-block-table {
+  margin-bottom: 0;
+}
+
+.proposal-doc-economic tr.proposal-doc-strong td {
+  font-weight: 600;
+}
+
+.proposal-doc-economic tr.proposal-doc-strong td.num {
+  font-size: 0.875rem;
+}
+
+.proposal-doc-economic tr.proposal-doc-divider td {
+  border-top: 1px solid var(--proposal-doc-border);
+  padding-top: 0.55rem;
+}
+
+@media print {
+  .proposal-print-root .proposal-no-print {
+    display: none !important;
+  }
+
+  .proposal-print-root .proposal-print-sheet {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .proposal-print-root {
+    background: white !important;
+  }
+}

@@ -5,13 +5,13 @@ const variantByStatus: Record<
   VacancyStatusUi,
   "default" | "secondary" | "outline" | "destructive"
 > = {
-  Draft: "outline",
-  Open: "default",
-  "On hold": "secondary",
+  Borrador: "outline",
+  Abierta: "default",
+  "En pausa": "secondary",
   Sourcing: "outline",
-  Interviewing: "default",
-  Filled: "secondary",
-  Cancelled: "destructive",
+  "En entrevistas": "default",
+  Cubiertas: "secondary",
+  Cancelada: "destructive",
 };
 
 export function VacancyStatusBadge({ status }: { status: VacancyStatusUi }) {

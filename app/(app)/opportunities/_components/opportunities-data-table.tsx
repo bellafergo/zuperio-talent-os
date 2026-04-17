@@ -43,12 +43,12 @@ export function OpportunitiesDataTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Opportunity</TableHead>
-          <TableHead>Company</TableHead>
-          <TableHead>Owner</TableHead>
-          <TableHead className="w-[130px]">Stage</TableHead>
-          <TableHead className="text-right">Estimated value</TableHead>
-          <TableHead className="w-[110px]">Updated</TableHead>
+          <TableHead>Oportunidad</TableHead>
+          <TableHead>Empresa</TableHead>
+          <TableHead>Responsable</TableHead>
+          <TableHead className="w-[130px]">Etapa</TableHead>
+          <TableHead className="text-right">Valor estimado</TableHead>
+          <TableHead className="w-[110px]">Actualizado</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -60,7 +60,7 @@ export function OpportunitiesDataTable({
             className="cursor-pointer hover:bg-muted/50"
             onClick={() => goToOpportunity(row.id)}
             onKeyDown={(e) => onRowKeyDown(e, row.id)}
-            aria-label={`View ${row.title} details`}
+            aria-label={`Ver detalle de ${row.title}`}
           >
             <TableCell className="max-w-[240px] font-medium">
               <span className="line-clamp-2">{row.title}</span>

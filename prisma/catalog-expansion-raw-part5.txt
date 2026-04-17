@@ -1,0 +1,69 @@
+SQL — Data
+Python — Data / Analytics
+R — Data / Analytics
+Excel Avanzado — Analítica
+Data Analysis — Analítica
+Data Visualization — Analítica
+Business Intelligence (BI) — BI
+Data Modeling — Modelado
+Dimensional Modeling — Modelado
+Data Warehousing — Arquitectura
+Data Lakes — Arquitectura
+Data Lakehouse — Arquitectura
+ETL — Ingeniería de datos
+ELT — Ingeniería de datos
+Data Pipelines — Ingeniería de datos
+Data Integration — Ingeniería de datos
+Data Transformation — Ingeniería de datos
+Data Cleaning — Data
+Data Quality — Data
+Data Governance — Gobierno
+Master Data Management (MDM) — Gobierno
+Metadata Management — Gobierno
+Data Catalog — Gobierno
+Data Lineage — Gobierno
+Big Data — Arquitectura
+Apache Spark — Big Data
+Hadoop — Big Data
+Databricks — Plataforma Data
+Snowflake — Data Warehouse
+Amazon Redshift — Data Warehouse
+Google BigQuery — Data Warehouse
+Azure Synapse — Data Warehouse
+Power BI — Visualización
+Tableau — Visualización
+Looker — Visualización
+Qlik Sense — Visualización
+Metabase — Visualización
+Apache Superset — Visualización
+DAX — Power BI
+Power Query — Transformación
+Data Storytelling — Analítica
+KPI Design — Analítica
+Dashboard Design — Analítica
+Self-Service BI — BI
+Data Engineering — Ingeniería
+Data Architect — Arquitectura
+Data Analyst — Analítica
+Data Scientist — Ciencia de datos
+Statistical Analysis — Ciencia de datos
+Predictive Analytics — Analítica avanzada
+Prescriptive Analytics — Analítica avanzada
+Time Series Analysis — Analítica avanzada
+A/B Testing — Analítica
+Machine Learning (para analytics) — Analítica avanzada
+Feature Engineering — Data Science
+MLOps (Data) — Operación
+Airflow — Orquestación
+dbt — Transformación
+Fivetran — Integración
+Stitch — Integración
+Kafka — Streaming
+Real-time Analytics — Analítica
+Streaming Data — Ingeniería
+Data APIs — Integración
+REST APIs (Data) — Integración
+Cloud Data (AWS, Azure, GCP) — Cloud
+IAM (Data Security) — Seguridad
+Data Privacy (GDPR, etc.) — Gobierno
+FinOps (Data Cost Optimization) — Cloud

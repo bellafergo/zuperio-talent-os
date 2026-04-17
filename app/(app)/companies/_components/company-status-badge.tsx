@@ -1,16 +1,20 @@
-import { Badge } from "@/components/ui/badge";
+import { TonalBadge } from "@/components/layout";
 import type { CompanyStatus } from "@/lib/companies/types";
 
-const variantByStatus: Record<
+const toneByStatus: Record<
   CompanyStatus,
-  "default" | "secondary" | "outline" | "destructive"
+  "success" | "neutral" | "warning" | "danger"
 > = {
-  Active: "default",
-  Prospect: "outline",
-  Paused: "secondary",
-  Churned: "destructive",
+  Activa: "success",
+  Prospecto: "neutral",
+  "En pausa": "warning",
+  Baja: "danger",
 };
 
 export function CompanyStatusBadge({ status }: { status: CompanyStatus }) {
-  return <Badge variant={variantByStatus[status]}>{status}</Badge>;
+  return (
+    <TonalBadge tone={toneByStatus[status]} className="whitespace-nowrap">
+      {status}
+    </TonalBadge>
+  );
 }

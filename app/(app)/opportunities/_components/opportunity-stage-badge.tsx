@@ -1,22 +1,22 @@
-import { Badge } from "@/components/ui/badge";
+import { TonalBadge } from "@/components/layout";
 import type { OpportunityStageUi } from "@/lib/opportunities/types";
 
-const variantByStage: Record<
+const toneByStage: Record<
   OpportunityStageUi,
-  "default" | "secondary" | "outline" | "destructive"
+  "neutral" | "info" | "warning" | "success" | "danger"
 > = {
-  Prospecting: "outline",
-  Qualification: "secondary",
-  Proposal: "default",
-  Negotiation: "default",
-  "Closed won": "secondary",
-  "Closed lost": "destructive",
+  Prospección: "neutral",
+  Calificación: "info",
+  Propuesta: "info",
+  Negociación: "warning",
+  "Cerrada ganada": "success",
+  "Cerrada perdida": "danger",
 };
 
 export function OpportunityStageBadge({ stage }: { stage: OpportunityStageUi }) {
   return (
-    <Badge variant={variantByStage[stage]} className="whitespace-nowrap">
+    <TonalBadge tone={toneByStage[stage]} className="whitespace-nowrap">
       {stage}
-    </Badge>
+    </TonalBadge>
   );
 }

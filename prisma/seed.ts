@@ -4,13 +4,17 @@ import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
+import { syncContactPrimaryFields } from "../lib/contacts/sync-primary-methods";
 import { syncAllCandidateVacancyMatches } from "../lib/matching/service";
 
+import { inferSkillTypeFromCategory } from "../lib/skills/skill-type";
 import {
   SEED_CANDIDATE_SKILLS,
   SEED_SKILLS,
   SEED_VACANCY_REQUIREMENTS,
 } from "./seed-skills";
+
+import { runCatalogExpansion } from "./seed-catalog-expansion";
 
 import { SEED_VACANCY_APPLICATIONS } from "./seed-applications";
 
@@ -105,6 +109,67 @@ async function main() {
         companyId: c.companyId,
       },
     });
+
+    const email = c.email?.trim().toLowerCase() || null;
+    const phone = c.phone?.trim() || null;
+
+    if (email) {
+      await prisma.contactMethod.updateMany({
+        where: { contactId: c.id, type: "EMAIL", isActive: true },
+        data: { isPrimary: false },
+      });
+      await prisma.contactMethod.upsert({
+        where: { id: `cm_email_${c.id}` },
+        create: {
+          id: `cm_email_${c.id}`,
+          contactId: c.id,
+          type: "EMAIL",
+          value: email,
+          isPrimary: true,
+          isActive: true,
+        },
+        update: {
+          value: email,
+          isActive: true,
+          isPrimary: true,
+          contactId: c.id,
+        },
+      });
+    } else {
+      await prisma.contactMethod.deleteMany({ where: { id: `cm_email_${c.id}` } });
+    }
+
+    if (phone) {
+      await prisma.contactMethod.updateMany({
+        where: {
+          contactId: c.id,
+          type: { in: ["PHONE", "WHATSAPP"] },
+          isActive: true,
+        },
+        data: { isPrimary: false },
+      });
+      await prisma.contactMethod.upsert({
+        where: { id: `cm_phone_${c.id}` },
+        create: {
+          id: `cm_phone_${c.id}`,
+          contactId: c.id,
+          type: "PHONE",
+          value: phone,
+          isPrimary: true,
+          isActive: true,
+        },
+        update: {
+          value: phone,
+          isActive: true,
+          isPrimary: true,
+          contactId: c.id,
+        },
+      });
+    } else {
+      await prisma.contactMethod.deleteMany({ where: { id: `cm_phone_${c.id}` } });
+    }
+
+    await syncContactPrimaryFields(c.id);
   }
 
   for (const o of SEED_OPPORTUNITIES) {
@@ -120,7 +185,7 @@ async function main() {
         title: o.title,
         stage: o.stage,
         value: o.value,
-        currency: o.currency ?? "EUR",
+        currency: o.currency ?? "MXN",
         companyId: o.companyId,
         ownerId: owner.id,
       },
@@ -128,7 +193,7 @@ async function main() {
         title: o.title,
         stage: o.stage,
         value: o.value,
-        currency: o.currency ?? "EUR",
+        currency: o.currency ?? "MXN",
         companyId: o.companyId,
         ownerId: owner.id,
       },
@@ -144,7 +209,8 @@ async function main() {
         seniority: v.seniority,
         status: v.status,
         targetRate: v.targetRate,
-        currency: v.currency ?? "EUR",
+        currency: v.currency ?? "MXN",
+        companyId: v.companyId,
         opportunityId: v.opportunityId,
         skills: v.skills,
         roleSummary: v.roleSummary,
@@ -154,7 +220,8 @@ async function main() {
         seniority: v.seniority,
         status: v.status,
         targetRate: v.targetRate,
-        currency: v.currency ?? "EUR",
+        currency: v.currency ?? "MXN",
+        companyId: v.companyId,
         opportunityId: v.opportunityId,
         skills: v.skills,
         roleSummary: v.roleSummary,
@@ -163,19 +230,24 @@ async function main() {
   }
 
   for (const s of SEED_SKILLS) {
+    const skillType = inferSkillTypeFromCategory(s.category);
     await prisma.skill.upsert({
       where: { id: s.id },
       create: {
         id: s.id,
         name: s.name,
         category: s.category,
+        skillType,
       },
       update: {
         name: s.name,
         category: s.category,
+        skillType,
       },
     });
   }
+
+  const catalogExpansion = await runCatalogExpansion(prisma);
 
   for (const c of SEED_CANDIDATES) {
     await prisma.candidate.upsert({
@@ -304,12 +376,15 @@ async function main() {
 
   const matchCount = await syncAllCandidateVacancyMatches();
   console.info(`Synced ${matchCount} candidate–vacancy match rows (score > 0).`);
+  console.info(
+    `Catalog expansion: +${catalogExpansion.added} skills (skipped ${catalogExpansion.skippedDuplicate} duplicate keys in expansion JSON order, ${catalogExpansion.skippedExisting} already in catalog).`,
+  );
 }
 
 main()
   .then(() => {
     console.info(
-      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates, ${SEED_SKILLS.length} skills, ${SEED_CANDIDATE_SKILLS.length} candidate skills, ${SEED_VACANCY_REQUIREMENTS.length} vacancy requirements, ${SEED_PLACEMENTS.length} placements, ${SEED_VACANCY_APPLICATIONS.length} vacancy applications.`,
+      `Seeded ${SEED_USERS.length} users, ${SEED_COMPANIES.length} companies, ${SEED_CONTACTS.length} contacts, ${SEED_OPPORTUNITIES.length} opportunities, ${SEED_VACANCIES.length} vacancies, ${SEED_CANDIDATES.length} candidates, ${SEED_SKILLS.length} base skills (+ catalog expansion), ${SEED_CANDIDATE_SKILLS.length} candidate skills, ${SEED_VACANCY_REQUIREMENTS.length} vacancy requirements, ${SEED_PLACEMENTS.length} placements, ${SEED_VACANCY_APPLICATIONS.length} vacancy applications.`,
     );
   })
   .catch((e) => {

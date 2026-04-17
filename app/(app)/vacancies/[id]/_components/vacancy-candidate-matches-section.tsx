@@ -26,26 +26,29 @@ export function VacancyCandidateMatchesSection({
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Candidate matches</CardTitle>
+        <CardTitle className="text-base font-medium">
+          Candidatos con match
+        </CardTitle>
         <CardDescription>
-          Structured skills vs vacancy requirements, seniority, availability, and
-          role fit — deterministic, no AI. Re-sync after changing skills or reqs.
+          Cobertura de tus skills requeridos vs el perfil estructurado de cada
+          candidato. Sin requisitos requeridos no hay puntaje.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         {matches.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No scored matches. Add structured requirements and candidate skills,
-            then run seed or match sync.
+            Sin coincidencias puntuadas. Agrega skills{" "}
+            <span className="font-medium">requeridos</span> a la vacante y
+            sincroniza matching.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[200px]">Candidate</TableHead>
-                <TableHead className="w-[64px] text-right">Score</TableHead>
-                <TableHead className="w-[120px]">Match</TableHead>
-                <TableHead className="min-w-[240px]">Explanation</TableHead>
+                <TableHead className="max-w-[200px]">Candidato</TableHead>
+                <TableHead className="w-[88px] text-right">Match</TableHead>
+                <TableHead className="w-[120px]">Nivel</TableHead>
+                <TableHead className="w-[100px]">Detalle</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -59,21 +62,23 @@ export function VacancyCandidateMatchesSection({
                       {m.candidateName}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {m.score}
+                  <TableCell className="text-right">
+                    <span className="tabular-nums text-base font-semibold text-foreground">
+                      {m.score}%
+                    </span>
                   </TableCell>
                   <TableCell>
                     <MatchRecommendationBadge
                       recommendation={m.recommendation}
                     />
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    <span
-                      className="line-clamp-3 text-sm leading-relaxed"
-                      title={m.explanation}
+                  <TableCell>
+                    <Link
+                      href={`/matching/compare/${m.matchId}`}
+                      className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
                     >
-                      {m.explanation}
-                    </span>
+                      Ver detalle
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}

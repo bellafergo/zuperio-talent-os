@@ -15,6 +15,10 @@ export type WeeklyLogListRowUi = {
   summary: string | null;
   achievements: string | null;
   blockers: string | null;
+  isOverdue: boolean;
+  overdueReason: string | null;
+  reminderLastSentAtLabel: string | null;
+  reminderCount: number;
 };
 
 export type WeeklyLogPlacementOption = {

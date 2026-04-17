@@ -1,0 +1,120 @@
+import { Suspense } from "react";
+
+import { auth } from "@/auth";
+import { DataTableShell, FilterBar } from "@/components/layout";
+import { canManageProposals } from "@/lib/auth/proposal-access";
+import { parseProposalListSearchParams } from "@/lib/proposals/list-search-params";
+import type {
+  ProposalCandidateOption,
+  ProposalCompanyOption,
+  ProposalOpportunityOption,
+  ProposalVacancyOption,
+} from "@/lib/proposals/types";
+import {
+  listCandidatesForProposalForm,
+  listCompaniesForProposalForm,
+  listOpportunitiesForProposalForm,
+  listProposalsForUi,
+  listVacanciesForProposalForm,
+  getProposalsDashboardSummary,
+  type ProposalsDashboardSummary,
+} from "@/lib/proposals/queries";
+
+import { ProposalsFilters } from "./_components/proposals-filters";
+import { ProposalsHeader } from "./_components/proposals-header";
+import { ProposalsSummaryStrip } from "./_components/proposals-summary-strip";
+import { ProposalsTable } from "./_components/proposals-table";
+
+export const dynamic = "force-dynamic";
+
+type PageProps = {
+  searchParams: Promise<{ status?: string; followUp?: string }>;
+};
+
+const EMPTY_PROPOSALS_SUMMARY: ProposalsDashboardSummary = {
+  total: 0,
+  sent: 0,
+  followUpPending: 0,
+  won: 0,
+  lost: 0,
+};
+
+async function safeProposalsListSecondaryFetch<T>(
+  label: string,
+  promise: Promise<T>,
+  fallback: T,
+): Promise<T> {
+  try {
+    return await promise;
+  } catch (err) {
+    console.error(`[proposals/list] ${label} failed`, err);
+    return fallback;
+  }
+}
+
+export default async function ProposalsPage({ searchParams }: PageProps) {
+  const session = await auth();
+  const canManage = canManageProposals(session?.user?.role);
+  const sp = await searchParams;
+  const filters = parseProposalListSearchParams(sp);
+
+  const [rows, summary, companies, opportunities, vacancies, candidates] =
+    await Promise.all([
+      listProposalsForUi(filters),
+      safeProposalsListSecondaryFetch(
+        "getProposalsDashboardSummary",
+        getProposalsDashboardSummary(),
+        EMPTY_PROPOSALS_SUMMARY,
+      ),
+      canManage
+        ? safeProposalsListSecondaryFetch(
+            "listCompaniesForProposalForm",
+            listCompaniesForProposalForm(),
+            [] as ProposalCompanyOption[],
+          )
+        : Promise.resolve([] as ProposalCompanyOption[]),
+      canManage
+        ? safeProposalsListSecondaryFetch(
+            "listOpportunitiesForProposalForm",
+            listOpportunitiesForProposalForm(),
+            [] as ProposalOpportunityOption[],
+          )
+        : Promise.resolve([] as ProposalOpportunityOption[]),
+      canManage
+        ? safeProposalsListSecondaryFetch(
+            "listVacanciesForProposalForm",
+            listVacanciesForProposalForm(),
+            [] as ProposalVacancyOption[],
+          )
+        : Promise.resolve([] as ProposalVacancyOption[]),
+      canManage
+        ? safeProposalsListSecondaryFetch(
+            "listCandidatesForProposalForm",
+            listCandidatesForProposalForm(),
+            [] as ProposalCandidateOption[],
+          )
+        : Promise.resolve([] as ProposalCandidateOption[]),
+    ]);
+
+  return (
+    <div className="space-y-8">
+      <ProposalsHeader
+        canManage={canManage}
+        companies={companies}
+        opportunities={opportunities}
+        vacancies={vacancies}
+        candidates={candidates}
+      />
+      <ProposalsSummaryStrip summary={summary} />
+      <Suspense fallback={<div className="h-10" />}>
+        <FilterBar>
+          <ProposalsFilters />
+        </FilterBar>
+      </Suspense>
+      <DataTableShell>
+        <ProposalsTable rows={rows} />
+      </DataTableShell>
+    </div>
+  );
+}
+

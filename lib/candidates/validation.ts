@@ -1,9 +1,14 @@
 import {
-  CandidateAvailabilityStatus as AvailabilityConst,
+  CandidatePipelineIntent as PipelineIntentConst,
+  CandidateRecruitmentStage as RecruitmentStageConst,
   VacancySeniority as SeniorityConst,
   type CandidateAvailabilityStatus,
+  type CandidatePipelineIntent,
+  type CandidateRecruitmentStage,
   type VacancySeniority,
 } from "@/generated/prisma/enums";
+
+import { CV_RAW_TEXT_MAX, CV_WORK_EXPERIENCE_FIELD_MAX } from "./cv-text-limits";
 
 export type CandidateSkillDraft = {
   skillId: string;
@@ -11,8 +16,102 @@ export type CandidateSkillDraft = {
   level: string | null;
 };
 
-const AVAILABILITY_SET = new Set<string>(Object.values(AvailabilityConst));
 const SENIORITY_SET = new Set<string>(Object.values(SeniorityConst));
+const PIPELINE_INTENT_SET = new Set<string>(Object.values(PipelineIntentConst));
+const RECRUITMENT_STAGE_SET = new Set<string>(Object.values(RecruitmentStageConst));
+
+const AVAILABILITY_MODE_SET = new Set<string>([
+  "IMMEDIATE",
+  "TWO_WEEKS",
+  "SPECIFIC_DATE",
+  "NOT_AVAILABLE",
+]);
+
+export type CandidateAvailabilityFormMode =
+  | "IMMEDIATE"
+  | "TWO_WEEKS"
+  | "SPECIFIC_DATE"
+  | "NOT_AVAILABLE";
+
+function startOfUTCDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+function addDaysUTC(base: Date, days: number): Date {
+  return new Date(base.getTime() + days * 86400000);
+}
+
+/**
+ * Maps UX availability mode + optional calendar value into persisted enum + optional start date.
+ */
+export function computeAvailabilityForPersistence(
+  mode: CandidateAvailabilityFormMode,
+  specificDateYmd: string | null,
+  now: Date = new Date(),
+):
+  | { ok: true; availabilityStatus: CandidateAvailabilityStatus; availabilityStartDate: Date | null }
+  | { ok: false; fieldErrors: Record<string, string> } {
+  if (mode === "NOT_AVAILABLE") {
+    return {
+      ok: true,
+      availabilityStatus: "NOT_AVAILABLE",
+      availabilityStartDate: null,
+    };
+  }
+  if (mode === "IMMEDIATE") {
+    return {
+      ok: true,
+      availabilityStatus: "AVAILABLE",
+      availabilityStartDate: null,
+    };
+  }
+  if (mode === "TWO_WEEKS") {
+    const start = startOfUTCDay(now);
+    const plus14 = addDaysUTC(start, 14);
+    return {
+      ok: true,
+      availabilityStatus: "AVAILABLE",
+      availabilityStartDate: plus14,
+    };
+  }
+  const ymd = specificDateYmd?.trim() ?? "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+    return {
+      ok: false,
+      fieldErrors: {
+        availabilitySpecificDate: "Selecciona una fecha válida.",
+      },
+    };
+  }
+  const [ys, ms, ds] = ymd.split("-");
+  const y = Number(ys);
+  const m = Number(ms);
+  const d = Number(ds);
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    return {
+      ok: false,
+      fieldErrors: { availabilitySpecificDate: "La fecha no es válida." },
+    };
+  }
+  const dt = new Date(Date.UTC(y, m - 1, d, 12, 0, 0, 0));
+  if (
+    dt.getUTCFullYear() !== y ||
+    dt.getUTCMonth() !== m - 1 ||
+    dt.getUTCDate() !== d
+  ) {
+    return {
+      ok: false,
+      fieldErrors: { availabilitySpecificDate: "La fecha no es válida." },
+    };
+  }
+  return {
+    ok: true,
+    availabilityStatus: "AVAILABLE",
+    availabilityStartDate: dt,
+  };
+}
+
+const CV_TEXT_MAX = 6000;
 
 export type CandidateFormParsed = {
   firstName: string;
@@ -21,10 +120,23 @@ export type CandidateFormParsed = {
   phone: string | null;
   role: string;
   seniority: VacancySeniority;
-  availabilityStatus: CandidateAvailabilityStatus;
+  availabilityMode: CandidateAvailabilityFormMode;
+  availabilitySpecificDate: string | null;
+  pipelineIntent: CandidatePipelineIntent;
+  pipelineVacancyId: string | null;
+  recruitmentStage: CandidateRecruitmentStage;
   currentCompany: string | null;
   notes: string | null;
   structuredSkills: CandidateSkillDraft[];
+  locationCity: string | null;
+  workModality: string | null;
+  cvLanguagesText: string | null;
+  cvCertificationsText: string | null;
+  cvIndustriesText: string | null;
+  cvEducationText: string | null;
+  cvSoftSkillsText: string | null;
+  cvWorkExperienceText: string | null;
+  cvRawText: string | null;
 };
 
 export type CandidateFormValidationResult =
@@ -36,6 +148,24 @@ function parseOptionalTrimmed(formData: FormData, key: string): string | null {
   if (typeof raw !== "string") return null;
   const v = raw.trim();
   return v ? v : null;
+}
+
+function parseOptionalLongText(
+  formData: FormData,
+  key: string,
+  fieldLabel: string,
+  max: number,
+  fieldErrors: Record<string, string>,
+): string | null {
+  const raw = formData.get(key);
+  if (typeof raw !== "string") return null;
+  const v = raw.trim();
+  if (!v) return null;
+  if (v.length > max) {
+    fieldErrors[key] = `${fieldLabel} excede ${max} caracteres.`;
+    return null;
+  }
+  return v;
 }
 
 function parseRequiredTrimmed(
@@ -126,9 +256,43 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
     fieldErrors.seniority = "Select a valid seniority.";
   }
 
-  const availabilityRaw = parseOptionalTrimmed(formData, "availabilityStatus") ?? "";
-  if (!availabilityRaw || !AVAILABILITY_SET.has(availabilityRaw)) {
-    fieldErrors.availabilityStatus = "Select a valid availability status.";
+  const availabilityModeRaw = parseOptionalTrimmed(formData, "availabilityMode") ?? "";
+  if (!availabilityModeRaw || !AVAILABILITY_MODE_SET.has(availabilityModeRaw)) {
+    fieldErrors.availabilityMode = "Selecciona una opción de disponibilidad.";
+  }
+  const availabilityMode = availabilityModeRaw as CandidateAvailabilityFormMode;
+
+  const availabilitySpecificDate = parseOptionalTrimmed(
+    formData,
+    "availabilitySpecificDate",
+  );
+  if (availabilityMode === "SPECIFIC_DATE") {
+    const ymd = availabilitySpecificDate ?? "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+      fieldErrors.availabilitySpecificDate = "Selecciona una fecha.";
+    }
+  }
+
+  const pipelineIntentRaw = parseOptionalTrimmed(formData, "pipelineIntent") ?? "";
+  if (!pipelineIntentRaw || !PIPELINE_INTENT_SET.has(pipelineIntentRaw)) {
+    fieldErrors.pipelineIntent = "Selecciona el contexto de reclutamiento.";
+  }
+  const pipelineIntent = pipelineIntentRaw as CandidatePipelineIntent;
+
+  const recruitmentStageRaw = parseOptionalTrimmed(formData, "recruitmentStage") ?? "";
+  if (!recruitmentStageRaw || !RECRUITMENT_STAGE_SET.has(recruitmentStageRaw)) {
+    fieldErrors.recruitmentStage = "Selecciona una etapa del proceso.";
+  }
+  const recruitmentStage = recruitmentStageRaw as CandidateRecruitmentStage;
+
+  const pipelineVacancyRaw = parseOptionalTrimmed(formData, "pipelineVacancyId");
+  let pipelineVacancyId: string | null = null;
+  if (pipelineIntent === "OPEN_VACANCY") {
+    if (!pipelineVacancyRaw) {
+      fieldErrors.pipelineVacancyId = "Selecciona una vacante abierta.";
+    } else {
+      pipelineVacancyId = pipelineVacancyRaw;
+    }
   }
 
   const emailRaw = parseOptionalTrimmed(formData, "email");
@@ -142,10 +306,70 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
   }
 
   const phone = parseOptionalTrimmed(formData, "phone");
-  const currentCompany = parseOptionalTrimmed(formData, "currentCompany");
+  const currentCompany = parseOptionalTrimmed(formData, "currentCompanyHidden");
 
   const notesRaw = parseOptionalTrimmed(formData, "notes");
   const notes = notesRaw ? notesRaw : null;
+
+  const locationCity = parseOptionalTrimmed(formData, "locationCity");
+  const workModalityRaw = parseOptionalTrimmed(formData, "workModality");
+  let workModality: string | null = null;
+  if (workModalityRaw) {
+    if (workModalityRaw.length > 120) {
+      fieldErrors.workModality = "Modalidad: máximo 120 caracteres.";
+    } else {
+      workModality = workModalityRaw;
+    }
+  }
+  const cvLanguagesText = parseOptionalLongText(
+    formData,
+    "cvLanguagesText",
+    "Idiomas (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvCertificationsText = parseOptionalLongText(
+    formData,
+    "cvCertificationsText",
+    "Certificaciones (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvIndustriesText = parseOptionalLongText(
+    formData,
+    "cvIndustriesText",
+    "Industrias (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvEducationText = parseOptionalLongText(
+    formData,
+    "cvEducationText",
+    "Educación (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvSoftSkillsText = parseOptionalLongText(
+    formData,
+    "cvSoftSkillsText",
+    "Habilidades blandas (CV)",
+    CV_TEXT_MAX,
+    fieldErrors,
+  );
+  const cvWorkExperienceText = parseOptionalLongText(
+    formData,
+    "cvWorkExperienceText",
+    "Experiencia laboral (CV)",
+    CV_WORK_EXPERIENCE_FIELD_MAX,
+    fieldErrors,
+  );
+  const cvRawText = parseOptionalLongText(
+    formData,
+    "cvRawText",
+    "Texto crudo del CV",
+    CV_RAW_TEXT_MAX,
+    fieldErrors,
+  );
 
   const skillsJsonRaw = parseOptionalTrimmed(formData, "structuredSkills");
   const skillsParsed = parseSkillsJson(skillsJsonRaw);
@@ -167,10 +391,23 @@ export function parseCandidateForm(formData: FormData): CandidateFormValidationR
       phone,
       role,
       seniority: seniorityRaw as VacancySeniority,
-      availabilityStatus: availabilityRaw as CandidateAvailabilityStatus,
+      availabilityMode,
+      availabilitySpecificDate,
+      pipelineIntent,
+      pipelineVacancyId,
+      recruitmentStage,
       currentCompany,
       notes,
       structuredSkills,
+      locationCity,
+      workModality,
+      cvLanguagesText,
+      cvCertificationsText,
+      cvIndustriesText,
+      cvEducationText,
+      cvSoftSkillsText,
+      cvWorkExperienceText,
+      cvRawText,
     },
   };
 }

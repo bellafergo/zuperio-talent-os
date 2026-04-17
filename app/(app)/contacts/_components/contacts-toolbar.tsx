@@ -29,31 +29,31 @@ export function ContactsToolbar({
   return (
     <div className="space-y-4">
       <Input
-        placeholder="Search name, role, company, email, or phone…"
+        placeholder="Buscar por nombre, puesto, empresa, correo o teléfono…"
         value={filters.query}
         onChange={(e) => patch({ query: e.target.value })}
         type="search"
-        aria-label="Search contacts"
+        aria-label="Buscar contactos"
         className="max-w-md"
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
         <FilterSelect
-          label="Status"
+          label="Estado"
           value={filters.status}
           onValueChange={(status) => patch({ status })}
-          placeholder="All statuses"
+          placeholder="Todos los estados"
           options={[
-            { value: "all", label: "All statuses" },
+            { value: "all", label: "Todos los estados" },
             ...CONTACT_STATUSES.map((s) => ({ value: s, label: s })),
           ]}
         />
         <FilterSelect
-          label="Company"
+          label="Empresa"
           value={filters.companyId}
           onValueChange={(companyId) => patch({ companyId })}
-          placeholder="All companies"
+          placeholder="Todas las empresas"
           options={[
-            { value: "all", label: "All companies" },
+            { value: "all", label: "Todas las empresas" },
             ...companies.map((co) => ({
               value: co.id,
               label: co.name,

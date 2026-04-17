@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionCard } from "@/components/layout/section-card";
 import {
   filterCompanies,
   industriesFromCompanies,
@@ -41,28 +41,19 @@ export function CompaniesModule({ companies }: { companies: Company[] }) {
   const noMatches = !catalogEmpty && filtered.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {!catalogEmpty && (
-        <Card className="shadow-sm">
-          <CardHeader className="border-b border-border pb-4">
-            <CardTitle className="text-base font-medium">Filters</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <CompaniesToolbar
-              filters={filters}
-              onFiltersChange={setFilters}
-              industries={industries}
-              owners={owners}
-            />
-          </CardContent>
-        </Card>
+        <SectionCard title="Filtros" contentClassName="pt-6">
+          <CompaniesToolbar
+            filters={filters}
+            onFiltersChange={setFilters}
+            industries={industries}
+            owners={owners}
+          />
+        </SectionCard>
       )}
 
-      <Card className="shadow-sm">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-base font-medium">Directory</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
+      <SectionCard title="Directorio" contentClassName="pt-0">
           {catalogEmpty ? (
             <div className="pt-6">
               <CompaniesEmptyState variant="no-catalog" />
@@ -79,8 +70,7 @@ export function CompaniesModule({ companies }: { companies: Company[] }) {
               <CompaniesDataTable companies={filtered} />
             </div>
           )}
-        </CardContent>
-      </Card>
+      </SectionCard>
     </div>
   );
 }

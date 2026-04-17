@@ -55,7 +55,7 @@ export function OpportunitiesModule({
       {!catalogEmpty && (
         <Card className="shadow-sm">
           <CardHeader className="border-b border-border pb-4">
-            <CardTitle className="text-base font-medium">Filters</CardTitle>
+            <CardTitle className="text-base font-medium">Filtros</CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
             <OpportunitiesToolbar
@@ -70,7 +70,7 @@ export function OpportunitiesModule({
 
       <Card className="shadow-sm">
         <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-base font-medium">Pipeline</CardTitle>
+          <CardTitle className="text-base font-medium">Embudo comercial</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {catalogEmpty ? (

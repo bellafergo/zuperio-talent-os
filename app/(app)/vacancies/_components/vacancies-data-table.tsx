@@ -39,13 +39,13 @@ export function VacanciesDataTable({ vacancies }: { vacancies: VacancyListRow[] 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="max-w-[200px]">Vacancy</TableHead>
-          <TableHead>Company</TableHead>
-          <TableHead className="max-w-[220px]">Opportunity</TableHead>
-          <TableHead className="w-[90px]">Seniority</TableHead>
-          <TableHead className="w-[120px]">Status</TableHead>
-          <TableHead className="text-right">Target rate</TableHead>
-          <TableHead className="w-[100px]">Updated</TableHead>
+          <TableHead className="max-w-[200px]">Vacante</TableHead>
+          <TableHead>Empresa</TableHead>
+          <TableHead className="max-w-[220px]">Oportunidad</TableHead>
+          <TableHead className="w-[90px]">Senioridad</TableHead>
+          <TableHead className="w-[120px]">Estado</TableHead>
+          <TableHead className="text-right">Tarifa objetivo</TableHead>
+          <TableHead className="w-[100px]">Actualizado</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -57,7 +57,7 @@ export function VacanciesDataTable({ vacancies }: { vacancies: VacancyListRow[] 
             className="cursor-pointer hover:bg-muted/50"
             onClick={() => goToVacancy(row.id)}
             onKeyDown={(e) => onRowKeyDown(e, row.id)}
-            aria-label={`View ${row.title} details`}
+            aria-label={`Ver detalle de ${row.title}`}
           >
             <TableCell className="max-w-[200px] font-medium">
               <span className="line-clamp-2">{row.title}</span>
@@ -66,7 +66,7 @@ export function VacanciesDataTable({ vacancies }: { vacancies: VacancyListRow[] 
               {row.companyName}
             </TableCell>
             <TableCell className="max-w-[220px] text-muted-foreground">
-              <span className="line-clamp-2">{row.opportunityTitle}</span>
+              <span className="line-clamp-2">{row.opportunityTitle ?? "—"}</span>
             </TableCell>
             <TableCell className="text-muted-foreground">{row.seniority}</TableCell>
             <TableCell>

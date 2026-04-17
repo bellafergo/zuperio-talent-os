@@ -1,0 +1,366 @@
+import { notFound } from "next/navigation";
+
+import { auth } from "@/auth";
+import { PageHeader } from "@/components/layout";
+import {
+  canManageProposals,
+  canSendProposalClientEmail,
+} from "@/lib/auth/proposal-access";
+import { getComparisonMatrixForPair } from "@/lib/matching/queries";
+import { safeBuildProposalEmailDraft } from "@/lib/proposals/email-draft";
+import { isResendConfigured } from "@/lib/email/resend-client";
+import { type ProposalEmailTemplateData } from "@/lib/email/templates/proposal-email";
+import {
+  listCandidatesForProposalForm,
+  listCompaniesForProposalForm,
+  listOpportunitiesForProposalForm,
+  listVacanciesForProposalForm,
+  getCompanyPreferredContactForProposalEmail,
+  getProposalByIdForUi,
+} from "@/lib/proposals/queries";
+import type {
+  ProposalCandidateOption,
+  ProposalCompanyOption,
+  ProposalOpportunityOption,
+  ProposalVacancyOption,
+} from "@/lib/proposals/types";
+
+import {
+  getCandidateCvPrintData,
+  isSafeCandidateCvPrintData,
+} from "@/lib/candidates/get-candidate-cv-print-data";
+import { CandidateCvConsultingDocument } from "@/lib/candidates/pdf-template/candidate-cv-consulting";
+import { ProposalCommercialTracking } from "../_components/proposal-commercial-tracking";
+import { ProposalDetailTabs } from "../_components/proposal-detail-tabs";
+import { ProposalConsultingPdfDocument } from "@/lib/proposals/pdf-template/proposal-consulting-pdf-document";
+import { ProposalEditDialog } from "../_components/proposal-edit-dialog";
+import { ProposalStatusBadge } from "../_components/proposal-status-badge";
+import { OptionalClientSectionBoundary } from "@/components/optional-client-section-boundary";
+import { ProposalEmailDraftPanel } from "../_components/proposal-email-draft-panel";
+import { ProposalExportsSection } from "../_components/proposal-exports-section";
+import {
+  ProposalOverviewPanel,
+  ProposalPricingPanel,
+} from "../_components/proposal-tab-panels";
+
+export const dynamic = "force-dynamic";
+
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+async function safeProposalSecondaryFetch<T>(
+  label: string,
+  promise: Promise<T>,
+  fallback: T,
+): Promise<T> {
+  try {
+    return await promise;
+  } catch (err) {
+    console.error(`[proposals/detail] ${label} failed`, err);
+    return fallback;
+  }
+}
+
+function safeProposalText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+export default async function ProposalDetailPage({ params }: PageProps) {
+  const { id: rawId } = await params;
+  const id = typeof rawId === "string" ? rawId.trim() : "";
+  if (!id) {
+    notFound();
+  }
+  const session = await auth();
+  const canManage = canManageProposals(session?.user?.role);
+  const canSendEmail = canSendProposalClientEmail(session?.user?.role);
+
+  const proposal = await getProposalByIdForUi(id);
+  if (!proposal) notFound();
+
+  const hasCandidate = proposal.candidateId != null;
+
+  const [
+    companies,
+    opportunities,
+    vacancies,
+    candidates,
+    contact,
+    comparisonMatrix,
+    cvPrintData,
+  ] = await Promise.all([
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listCompaniesForProposalForm",
+          listCompaniesForProposalForm(),
+          [] as ProposalCompanyOption[],
+        )
+      : Promise.resolve([] as ProposalCompanyOption[]),
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listOpportunitiesForProposalForm",
+          listOpportunitiesForProposalForm(),
+          [] as ProposalOpportunityOption[],
+        )
+      : Promise.resolve([] as ProposalOpportunityOption[]),
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listVacanciesForProposalForm",
+          listVacanciesForProposalForm(),
+          [] as ProposalVacancyOption[],
+        )
+      : Promise.resolve([] as ProposalVacancyOption[]),
+    canManage
+      ? safeProposalSecondaryFetch(
+          "listCandidatesForProposalForm",
+          listCandidatesForProposalForm(),
+          [] as ProposalCandidateOption[],
+        )
+      : Promise.resolve([] as ProposalCandidateOption[]),
+    safeProposalSecondaryFetch(
+      "getCompanyPreferredContactForProposalEmail",
+      getCompanyPreferredContactForProposalEmail(proposal.companyId),
+      null,
+    ),
+    proposal.candidateId && proposal.vacancyId
+      ? safeProposalSecondaryFetch(
+          "getComparisonMatrixForPair",
+          getComparisonMatrixForPair(
+            proposal.candidateId,
+            proposal.vacancyId,
+          ),
+          null,
+        )
+      : Promise.resolve(null),
+    proposal.candidateId
+      ? safeProposalSecondaryFetch(
+          "getCandidateCvPrintData",
+          getCandidateCvPrintData(proposal.candidateId),
+          null,
+        )
+      : Promise.resolve(null),
+  ]);
+
+  const preparedByDisplay =
+    session?.user?.name?.trim() ||
+    session?.user?.email ||
+    "Zuperio";
+
+  const identityParts: string[] = [];
+  const candName = safeProposalText(proposal.candidateName);
+  if (candName && candName !== "—") {
+    identityParts.push(`Candidato: ${candName}`);
+  }
+  const oppTitle = safeProposalText(proposal.opportunityTitle);
+  if (oppTitle && oppTitle !== "—") {
+    identityParts.push(`Oportunidad: ${oppTitle}`);
+  }
+  const vacTitle = safeProposalText(proposal.vacancyTitle);
+  if (vacTitle && vacTitle !== "—") {
+    identityParts.push(`Vacante: ${vacTitle}`);
+  }
+  const identityLine = identityParts.join(" · ");
+  const detailDescription = identityLine
+    ? `${identityLine}. Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.`
+    : "Precios deterministas, documento listo para PDF, encaje del candidato y seguimiento comercial.";
+
+  const pageTitle = safeProposalText(proposal.companyName) || "Propuesta";
+  const currencyLabel = safeProposalText(proposal.currency) || "—";
+  const formatLabel = safeProposalText(proposal.format) || "—";
+  const validityLabel =
+    typeof proposal.validityDays === "number" &&
+    Number.isFinite(proposal.validityDays)
+      ? proposal.validityDays
+      : "—";
+
+  const emailRoleLabel =
+    vacTitle && vacTitle !== "—"
+      ? vacTitle
+      : oppTitle && oppTitle !== "—"
+        ? oppTitle
+        : "el perfil acordado";
+
+  const safeCvData = isSafeCandidateCvPrintData(cvPrintData) ? cvPrintData : null;
+
+  const templateData: ProposalEmailTemplateData = {
+    recipientName: contact?.displayName?.trim() || "Cliente",
+    candidateName:
+      candName && candName !== "—" ? candName : "el candidato",
+    // Use candidate.role directly from the proposal query — not from CV text parsing
+    candidateRole:
+      proposal.candidateRole !== "—" ? proposal.candidateRole : emailRoleLabel,
+    seniority: safeCvData?.seniorityLabel?.trim() || "—",
+    availability: safeCvData?.availabilityLabel?.trim() || "—",
+    workModality: safeCvData?.workModality?.trim() || null,
+    vacancyTitle: emailRoleLabel,
+    companyName: proposal.companyName,
+    finalMonthlyRate: proposal.finalMonthlyRateLabel,
+    finalMonthlyRateWithVAT: proposal.finalMonthlyRateWithVATLabel,
+    proposalFormat: formatLabel !== "—" ? formatLabel : "tiempo completo",
+    validityDays: proposal.validityDays,
+    senderName: preparedByDisplay,
+    currency: proposal.currency,
+    skillBreakdown:
+      comparisonMatrix?.skillMatchActive && comparisonMatrix.skillBreakdown
+        ? {
+            met: comparisonMatrix.skillBreakdown.met,
+            missing: comparisonMatrix.skillBreakdown.missing,
+          }
+        : null,
+  };
+
+  const defaultSubject = `Propuesta de recurso ${emailRoleLabel} · Zuperio`;
+
+  const emailDraft = safeBuildProposalEmailDraft(proposal, {
+    preparedByDisplay,
+    recipientDisplayName: contact?.displayName ?? null,
+    recipientEmail: contact?.email ?? null,
+    matchScore:
+      comparisonMatrix?.skillMatchActive === true
+        ? comparisonMatrix.computedMatch.score
+        : null,
+    vacancyTitleForMatch:
+      vacTitle && vacTitle !== "—" ? vacTitle : null,
+  });
+
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        variant="detail"
+        eyebrow="Detalle de propuesta"
+        backHref="/proposals"
+        backLabel="Volver a propuestas"
+        title={pageTitle}
+        description={detailDescription}
+        meta={
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <ProposalStatusBadge label={proposal.status} value={proposal.statusValue} />
+            <span
+              className="hidden h-4 w-px bg-border sm:block"
+              aria-hidden
+            />
+            <span className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{currencyLabel}</span>
+              {" · "}
+              vigencia {validityLabel}d · {formatLabel}
+            </span>
+          </div>
+        }
+        actions={
+          canManage ? (
+            <ProposalEditDialog
+              proposal={proposal}
+              companies={companies}
+              opportunities={opportunities}
+              vacancies={vacancies}
+              candidates={candidates}
+            />
+          ) : null
+        }
+      />
+
+      <ProposalCommercialTracking
+        proposalId={proposal.id}
+        canManage={canManage}
+        statusValue={proposal.statusValue}
+        isFollowUpPending={proposal.isFollowUpPending}
+        sentAtLabel={proposal.sentAtLabel}
+        lastFollowUpAtLabel={proposal.lastFollowUpAtLabel}
+        followUpCount={proposal.followUpCount}
+      />
+
+      <ProposalDetailTabs
+        overview={
+          <ProposalOverviewPanel
+            proposal={proposal}
+            comparisonMatrix={comparisonMatrix}
+          />
+        }
+        pricing={<ProposalPricingPanel proposal={proposal} />}
+        preview={
+          <div className="space-y-6">
+            <OptionalClientSectionBoundary
+              fallback={
+                <p className="text-sm text-muted-foreground">
+                  No se pudo cargar el bloque de exportaciones de documentos.
+                </p>
+              }
+            >
+              <ProposalExportsSection proposal={proposal} />
+            </OptionalClientSectionBoundary>
+
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Propuesta Económica
+              </p>
+              <OptionalClientSectionBoundary
+                fallback={
+                  <p className="text-sm text-muted-foreground">
+                    No se pudo cargar la vista previa del PDF de la propuesta.
+                  </p>
+                }
+              >
+                <div className="mx-auto w-full max-w-[210mm] rounded-xl border border-border/80 bg-white p-4 shadow-sm ring-1 ring-foreground/[0.04] sm:p-6">
+                  <ProposalConsultingPdfDocument
+                    proposal={proposal}
+                    preparedByDisplay={preparedByDisplay}
+                    comparisonMatrix={comparisonMatrix}
+                    variant="screen"
+                  />
+                </div>
+              </OptionalClientSectionBoundary>
+            </div>
+
+            {proposal.candidateId ? (
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  CV del Candidato (PDF)
+                </p>
+                {isSafeCandidateCvPrintData(cvPrintData) ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Misma plantilla que la vista de impresión del candidato — skills
+                      estructurados, experiencia registrada y perfil ejecutivo generado por la
+                      plataforma.
+                    </p>
+                    <div className="mx-auto w-full max-w-[210mm] rounded-xl border border-border/80 bg-white p-4 shadow-sm ring-1 ring-foreground/[0.04] sm:p-6">
+                      <CandidateCvConsultingDocument
+                        data={cvPrintData}
+                        variant="screen"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No fue posible cargar la vista previa del CV.
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </div>
+        }
+        emailDraft={
+          <OptionalClientSectionBoundary
+            fallback={
+              <p className="text-sm text-muted-foreground">
+                No se pudo cargar el borrador de correo. Puede recargar la página o
+                continuar con el resto de la propuesta.
+              </p>
+            }
+          >
+            <ProposalEmailDraftPanel
+              draft={emailDraft}
+              proposalId={proposal.id}
+              canSendEmail={canSendEmail}
+              hasCandidate={hasCandidate}
+              resendConfigured={isResendConfigured()}
+              templateData={templateData}
+              defaultSubject={defaultSubject}
+            />
+          </OptionalClientSectionBoundary>
+        }
+      />
+    </div>
+  );
+}

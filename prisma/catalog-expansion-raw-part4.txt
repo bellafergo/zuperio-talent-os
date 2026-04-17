@@ -1,0 +1,93 @@
+JavaScript — Lenguaje Frontend
+TypeScript — Lenguaje Frontend
+HTML — Frontend
+CSS — Frontend
+React — Framework Frontend
+Angular — Framework Frontend
+Vue.js — Framework Frontend
+Next.js — Framework Fullstack
+Nuxt.js — Framework Fullstack
+Tailwind CSS — UI Styling
+Bootstrap — UI Framework
+Node.js — Backend
+Express.js — Backend Framework
+NestJS — Backend Framework
+Java — Backend
+Spring Boot — Backend Framework
+C# — Backend
+ASP.NET Core — Backend Framework
+Python — Backend
+FastAPI — Backend Framework
+Django — Backend Framework
+Flask — Backend Framework
+Go — Backend
+Ruby — Backend
+PHP — Backend
+Laravel — Backend Framework
+REST APIs — Arquitectura
+GraphQL — Arquitectura
+Microservices — Arquitectura
+Serverless — Arquitectura
+WebSockets — Comunicación
+gRPC — Comunicación
+MySQL — Base de datos
+PostgreSQL — Base de datos
+MongoDB — Base de datos
+Firebase — Backend as a Service
+Redis — Cache
+Prisma — ORM
+Sequelize — ORM
+Docker — DevOps
+Kubernetes — DevOps
+CI/CD — DevOps
+Git — Control de versiones
+GitHub — Repositorios
+GitLab — Repositorios / CI
+Bitbucket — Repositorios
+AWS — Cloud
+Azure — Cloud
+Google Cloud Platform — Cloud
+Vercel — Hosting Frontend
+Netlify — Hosting Frontend
+Linux — Infraestructura
+Bash Scripting — Automatización
+Unit Testing — QA
+Integration Testing — QA
+End-to-End Testing (E2E) — QA
+Test Automation — QA
+Manual Testing — QA
+Test Case Design — QA
+Test Strategy — QA
+Regression Testing — QA
+Smoke Testing — QA
+Performance Testing — QA
+Load Testing — QA
+Security Testing — QA
+API Testing — QA
+Playwright — Automatización QA
+Cypress — Automatización QA
+Selenium — Automatización QA
+Appium — Automatización QA Mobile
+Cucumber — BDD Testing
+Jest — Testing Framework
+Mocha — Testing Framework
+JUnit — Testing Framework
+NUnit — Testing Framework
+TestNG — Testing Framework
+Allure Report — Reportes QA
+QMetry — Gestión QA
+TestRail — Gestión QA
+Jira (QA) — Gestión QA
+Postman — Testing API
+Swagger / OpenAPI — Documentación API
+SonarQube — Calidad de código
+Static Code Analysis — QA
+Code Review — QA
+DevSecOps — Seguridad
+OWASP — Seguridad
+Secure Coding — Seguridad
+Accessibility Testing — QA
+Cross-browser Testing — QA
+Mobile Testing — QA
+Test Data Management — QA
+CI Testing Pipelines — QA / DevOps

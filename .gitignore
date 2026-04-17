@@ -37,14 +37,20 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Prisma generated client (restored via `npm install` → postinstall)
+# Prisma generated client — recreated by `postinstall`, `npm run dev`, and `npm run build`.
+# If you see PrismaClientValidationError on new schema fields, run: npx prisma generate
 /generated/
 
 # vercel
 .vercel
 
+# local file uploads (CV originals — not committed)
+/uploads/cv/*.pdf
+/uploads/cv/*.doc
+/uploads/cv/*.docx
+/uploads/cv/*.txt
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-/generated/prisma
+.env*.local

@@ -4,13 +4,162 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { canManageCandidates } from "@/lib/auth/candidate-access";
+import {
+  CandidateRecruitmentStage as RecruitmentStageConst,
+  type CandidateRecruitmentStage,
+  type VacancyStatus,
+} from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
+import { syncAllCandidateVacancyMatches } from "@/lib/matching/sync";
 
-import { parseCandidateForm } from "./validation";
+import {
+  getCandidateEditData,
+  type CandidateEditDataJson,
+} from "./queries";
+import { saveCandidateCvFile } from "./cv-file-save";
+import {
+  computeAvailabilityForPersistence,
+  parseCandidateForm,
+  type CandidateFormParsed,
+} from "./validation";
+
+/** Never throws; logs on failure so candidate save still succeeds. */
+async function tryAttachCvFromForm(candidateId: string, formData: FormData): Promise<void> {
+  const raw = formData.get("cvFile");
+  if (!(raw instanceof File) || raw.size === 0) return;
+  const result = await saveCandidateCvFile(candidateId, raw);
+  if (!result.ok) {
+    console.error("[candidate] CV attach after save failed:", result.message);
+  }
+}
+
+const OPEN_PIPELINE_VACANCY_STATUSES: VacancyStatus[] = [
+  "OPEN",
+  "SOURCING",
+  "INTERVIEWING",
+  "ON_HOLD",
+];
+
+async function validatePipelineVacancy(
+  data: CandidateFormParsed,
+): Promise<{ ok: true } | { ok: false; fieldErrors: Record<string, string> }> {
+  if (data.pipelineIntent !== "OPEN_VACANCY") return { ok: true };
+  const vid = data.pipelineVacancyId?.trim();
+  if (!vid) {
+    return {
+      ok: false,
+      fieldErrors: { pipelineVacancyId: "Selecciona una vacante abierta." },
+    };
+  }
+  const v = await prisma.vacancy.findUnique({
+    where: { id: vid },
+    select: { id: true, status: true },
+  });
+  if (!v || !OPEN_PIPELINE_VACANCY_STATUSES.includes(v.status)) {
+    return {
+      ok: false,
+      fieldErrors: {
+        pipelineVacancyId: "La vacante no existe o ya no está abierta.",
+      },
+    };
+  }
+  return { ok: true };
+}
+
+function scheduleMatchResync() {
+  void syncAllCandidateVacancyMatches().catch((err) => {
+    console.error("[matching] sync after candidate mutation failed", err);
+  });
+}
+
+const RECRUITMENT_STAGE_SET = new Set<string>(Object.values(RecruitmentStageConst));
+
+export type CandidateRecruitmentStageActionState =
+  | { ok: true }
+  | { ok: false; message: string };
+
+/**
+ * Updates only `recruitmentStage` (list quick-edit). Does not touch matches or skills.
+ */
+export async function updateCandidateRecruitmentStage(
+  candidateId: string,
+  recruitmentStage: CandidateRecruitmentStage,
+): Promise<CandidateRecruitmentStageActionState> {
+  const gate = await ensureCanManage();
+  if (!gate.ok) {
+    const msg =
+      gate.state.ok === false ? (gate.state.message ?? "Sin permiso.") : "Sin permiso.";
+    return { ok: false, message: msg };
+  }
+  const id = candidateId.trim();
+  if (!id) return { ok: false, message: "Identificador no válido." };
+  if (!RECRUITMENT_STAGE_SET.has(recruitmentStage)) {
+    return { ok: false, message: "Etapa no válida." };
+  }
+  try {
+    const res = await prisma.candidate.updateMany({
+      where: { id },
+      data: { recruitmentStage },
+    });
+    if (res.count === 0) {
+      return { ok: false, message: "Candidato no encontrado." };
+    }
+    revalidatePath("/candidates");
+    revalidatePath(`/candidates/${id}`);
+    return { ok: true };
+  } catch (err) {
+    console.error("[updateCandidateRecruitmentStage]", err);
+    return { ok: false, message: "No se pudo actualizar la etapa." };
+  }
+}
 
 export type CandidateActionState =
   | { ok: true; candidateId?: string }
   | { ok: false; message?: string; fieldErrors?: Record<string, string> };
+
+/**
+ * Loads edit payload for list row actions. Auth-gated; returns JSON-safe dates.
+ * Does not throw — callers show empty state on failure.
+ */
+export async function loadCandidateEditDataForListAction(
+  candidateId: string,
+): Promise<
+  { ok: true; data: CandidateEditDataJson } | { ok: false; message?: string }
+> {
+  const gate = await ensureCanManage();
+  if (!gate.ok) {
+    return { ok: false, message: "Sin permiso para editar candidatos." };
+  }
+  const id = candidateId.trim();
+  if (!id) return { ok: false, message: "Identificador no válido." };
+  try {
+    const data = await getCandidateEditData(id);
+    if (!data) {
+      const exists = await prisma.candidate.findUnique({
+        where: { id },
+        select: { id: true },
+      });
+      if (!exists) {
+        return { ok: false, message: "Candidato no encontrado." };
+      }
+      return {
+        ok: false,
+        message: "No se pudo cargar la ficha para editar. Revisa consola o migraciones.",
+      };
+    }
+    return {
+      ok: true,
+      data: {
+        ...data,
+        availabilityStartDate: data.availabilityStartDate?.toISOString() ?? null,
+        cvUploadedAt: data.cvUploadedAt?.toISOString() ?? null,
+      },
+    };
+  } catch (err) {
+    console.error("[loadCandidateEditDataForListAction]", err);
+    return { ok: false, message: "No se pudo cargar la ficha." };
+  }
+}
 
 async function ensureCanManage(): Promise<
   { ok: true } | { ok: false; state: CandidateActionState }
@@ -39,6 +188,15 @@ export async function createCandidate(
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
   const { data } = parsed;
 
+  const avail = computeAvailabilityForPersistence(
+    data.availabilityMode,
+    data.availabilitySpecificDate,
+  );
+  if (!avail.ok) return { ok: false, fieldErrors: avail.fieldErrors };
+
+  const pipelineOk = await validatePipelineVacancy(data);
+  if (!pipelineOk.ok) return { ok: false, fieldErrors: pipelineOk.fieldErrors };
+
   if (data.structuredSkills.length > 0) {
     const skillIds = data.structuredSkills.map((s) => s.skillId);
     const skills = await prisma.skill.findMany({
@@ -60,10 +218,23 @@ export async function createCandidate(
             phone: data.phone,
             role: data.role,
             seniority: data.seniority,
-            availabilityStatus: data.availabilityStatus,
+            availabilityStatus: avail.availabilityStatus,
+            availabilityStartDate: avail.availabilityStartDate,
+            pipelineIntent: data.pipelineIntent,
+            pipelineVacancyId: data.pipelineVacancyId,
+            recruitmentStage: data.recruitmentStage,
             currentCompany: data.currentCompany,
             notes: data.notes,
             skills: legacy,
+            locationCity: data.locationCity,
+            workModality: data.workModality,
+            cvLanguagesText: data.cvLanguagesText,
+            cvCertificationsText: data.cvCertificationsText,
+            cvIndustriesText: data.cvIndustriesText,
+            cvEducationText: data.cvEducationText,
+            cvSoftSkillsText: data.cvSoftSkillsText,
+            cvWorkExperienceText: data.cvWorkExperienceText,
+            cvRawText: data.cvRawText,
           },
           select: { id: true },
         });
@@ -77,8 +248,11 @@ export async function createCandidate(
         });
         return candidate;
       });
+      await tryAttachCvFromForm(created.id, formData);
       revalidatePath("/candidates");
       revalidatePath(`/candidates/${created.id}`);
+      revalidatePath("/matching");
+      scheduleMatchResync();
       return { ok: true, candidateId: created.id };
     } catch {
       return { ok: false, message: "Could not create the candidate. Try again." };
@@ -94,15 +268,31 @@ export async function createCandidate(
         phone: data.phone,
         role: data.role,
         seniority: data.seniority,
-        availabilityStatus: data.availabilityStatus,
+        availabilityStatus: avail.availabilityStatus,
+        availabilityStartDate: avail.availabilityStartDate,
+        pipelineIntent: data.pipelineIntent,
+        pipelineVacancyId: data.pipelineVacancyId,
+        recruitmentStage: data.recruitmentStage,
         currentCompany: data.currentCompany,
         notes: data.notes,
         skills: "",
+        locationCity: data.locationCity,
+        workModality: data.workModality,
+        cvLanguagesText: data.cvLanguagesText,
+        cvCertificationsText: data.cvCertificationsText,
+        cvIndustriesText: data.cvIndustriesText,
+        cvEducationText: data.cvEducationText,
+        cvSoftSkillsText: data.cvSoftSkillsText,
+        cvWorkExperienceText: data.cvWorkExperienceText,
+        cvRawText: data.cvRawText,
       },
       select: { id: true },
     });
+    await tryAttachCvFromForm(created.id, formData);
     revalidatePath("/candidates");
     revalidatePath(`/candidates/${created.id}`);
+    revalidatePath("/matching");
+    scheduleMatchResync();
     return { ok: true, candidateId: created.id };
   } catch {
     return { ok: false, message: "Could not create the candidate. Try again." };
@@ -130,6 +320,15 @@ export async function updateCandidate(
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
   const { data } = parsed;
 
+  const avail = computeAvailabilityForPersistence(
+    data.availabilityMode,
+    data.availabilitySpecificDate,
+  );
+  if (!avail.ok) return { ok: false, fieldErrors: avail.fieldErrors };
+
+  const pipelineOk = await validatePipelineVacancy(data);
+  if (!pipelineOk.ok) return { ok: false, fieldErrors: pipelineOk.fieldErrors };
+
   // Validate skills and build legacy string.
   let legacySkills = "";
   if (data.structuredSkills.length > 0) {
@@ -155,10 +354,23 @@ export async function updateCandidate(
           phone: data.phone,
           role: data.role,
           seniority: data.seniority,
-          availabilityStatus: data.availabilityStatus,
+          availabilityStatus: avail.availabilityStatus,
+          availabilityStartDate: avail.availabilityStartDate,
+          pipelineIntent: data.pipelineIntent,
+          pipelineVacancyId: data.pipelineVacancyId,
+          recruitmentStage: data.recruitmentStage,
           currentCompany: data.currentCompany,
           notes: data.notes,
           skills: legacySkills,
+          locationCity: data.locationCity,
+          workModality: data.workModality,
+          cvLanguagesText: data.cvLanguagesText,
+          cvCertificationsText: data.cvCertificationsText,
+          cvIndustriesText: data.cvIndustriesText,
+          cvEducationText: data.cvEducationText,
+          cvSoftSkillsText: data.cvSoftSkillsText,
+          cvWorkExperienceText: data.cvWorkExperienceText,
+          cvRawText: data.cvRawText,
         },
       });
 
@@ -175,8 +387,11 @@ export async function updateCandidate(
       }
     });
 
+    await tryAttachCvFromForm(candidateId, formData);
     revalidatePath("/candidates");
     revalidatePath(`/candidates/${candidateId}`);
+    revalidatePath("/matching");
+    scheduleMatchResync();
     return { ok: true, candidateId };
   } catch {
     return { ok: false, message: "Could not update the candidate. Try again." };

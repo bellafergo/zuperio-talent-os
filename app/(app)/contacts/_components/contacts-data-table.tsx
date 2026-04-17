@@ -39,12 +39,12 @@ export function ContactsDataTable({ contacts }: { contacts: ContactListRow[] }) 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Contact</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Company</TableHead>
-          <TableHead className="max-w-[200px]">Email</TableHead>
-          <TableHead>Phone</TableHead>
-          <TableHead className="w-[100px]">Status</TableHead>
+          <TableHead>Contacto</TableHead>
+          <TableHead>Puesto</TableHead>
+          <TableHead>Empresa</TableHead>
+          <TableHead className="max-w-[200px]">Correo</TableHead>
+          <TableHead>Teléfono</TableHead>
+          <TableHead className="w-[100px]">Estado</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -56,7 +56,7 @@ export function ContactsDataTable({ contacts }: { contacts: ContactListRow[] }) 
             className="cursor-pointer hover:bg-muted/50"
             onClick={() => goToContact(row.id)}
             onKeyDown={(e) => onRowKeyDown(e, row.id)}
-            aria-label={`View ${row.displayName} details`}
+            aria-label={`Ver detalle de ${row.displayName}`}
           >
             <TableCell className="font-medium">{row.displayName}</TableCell>
             <TableCell className="text-muted-foreground">{row.title}</TableCell>

@@ -1,0 +1,1020 @@
+/* Zuperio client documents — brand tokens per spec (proposal + shared CV) */
+
+@page {
+  size: A4;
+  margin: 15mm;
+}
+
+.consulting-pdf-root {
+  --cpdf-primary: #1565c0;
+  --cpdf-secondary: #1976d2;
+  --cpdf-accent: #42a5f5;
+  --cpdf-tag-bg: #e8f0fe;
+  --cpdf-ink: #1a1a1a;
+  --cpdf-muted: #5c5c5c;
+  --cpdf-terms-text: #424242;
+  --cpdf-row-alt: #f5f9ff;
+  --cpdf-why-bg: #eef4fb;
+  --cpdf-rule: #e0e0e0;
+  --cpdf-white: #ffffff;
+  --cpdf-sidebar-rule: #e8eef4;
+  /* Semantic aliases */
+  --cpdf-blue: var(--cpdf-primary);
+  --cpdf-blue-soft: var(--cpdf-secondary);
+  --cpdf-blue-pale: var(--cpdf-tag-bg);
+  --cpdf-rule-strong: #e0e0e0;
+  --cpdf-surface: #fafafa;
+  --cpdf-zebra: var(--cpdf-row-alt);
+  --cpdf-match-full: #2e7d32;
+  --cpdf-match-partial: #f57c00;
+  --cpdf-match-gap: #c62828;
+
+  font-family:
+    var(--font-inter-pdf),
+    "Inter",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  color: var(--cpdf-ink);
+  background: var(--cpdf-white);
+  -webkit-font-smoothing: antialiased;
+}
+
+.consulting-pdf-root--screen {
+  font-size: 14px;
+}
+
+/* PDF + in-app preview: same rem base for proposal/CV (overrides --screen above). */
+.consulting-pdf-root.consulting-pdf-root--proposal-executive,
+.consulting-pdf-root.consulting-pdf-root--cv-consulting {
+  font-size: 13px;
+}
+
+.consulting-pdf-doc {
+  /* ~A4 content width at 96dpi with 15mm side margins */
+  max-width: 794px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* ——— Header ——— */
+.cpdf-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 0.65rem;
+}
+
+.cpdf-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 32px;
+}
+
+.cpdf-logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 4px;
+  background: var(--cpdf-primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.cpdf-logo-text {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--cpdf-ink);
+  line-height: 32px;
+}
+
+.cpdf-top-meta {
+  text-align: right;
+  font-size: 9px;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+  color: var(--cpdf-muted);
+}
+
+.cpdf-top-meta-folio {
+  font-weight: 700;
+  color: var(--cpdf-ink);
+  font-size: 9px;
+}
+
+.cpdf-top-meta-line {
+  font-size: 9px;
+  color: var(--cpdf-muted);
+}
+
+.cpdf-top-meta strong {
+  display: block;
+  font-weight: 600;
+  color: var(--cpdf-ink);
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+}
+
+.cpdf-rule-blue {
+  height: 2px;
+  background: var(--cpdf-primary);
+  margin: 0 0 1.5rem;
+}
+
+/* ——— Title block (proposal) ——— */
+.cpdf-title-block {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+  margin-bottom: 1.75rem;
+}
+
+.cpdf-title-accent {
+  width: 4px;
+  min-height: 3.25rem;
+  flex-shrink: 0;
+  background: var(--cpdf-primary);
+  border-radius: 1px;
+}
+
+.cpdf-title-inner {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Propuesta económica — fondo blanco, solo acento izquierdo (target) */
+.cpdf-title-block--economic {
+  border-left: 4px solid #1565c0;
+  padding-left: 14px;
+  gap: 0;
+}
+
+.cpdf-title-block--economic .cpdf-title-accent {
+  display: none;
+}
+
+.cpdf-title-block--economic .cpdf-title-inner {
+  background: transparent !important;
+  padding: 8px 0;
+}
+
+.cpdf-doc-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-doc-subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cpdf-secondary);
+}
+
+.cpdf-doc-kicker {
+  margin: 0.45rem 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cpdf-muted);
+}
+
+/* ——— Dirigido / Elabora ——— */
+.cpdf-party-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 2.25rem;
+  align-items: start;
+  margin-bottom: 1.6rem;
+  padding-bottom: 1.35rem;
+  border-bottom: 1px solid var(--cpdf-rule);
+}
+
+.cpdf-party {
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--cpdf-primary);
+}
+
+.cpdf-party-label {
+  margin: 0 0 0.4rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cpdf-primary);
+}
+
+.cpdf-party-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-party-lines {
+  margin: 0.28rem 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--cpdf-muted);
+}
+
+a.cpdf-party-email,
+.cpdf-party-email {
+  color: var(--cpdf-primary);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ——— Sections ——— */
+.cpdf-section {
+  margin-bottom: 1.5rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.cpdf-sec-label {
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.3rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cpdf-primary);
+  border-bottom: 1px solid var(--cpdf-rule-strong);
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.cpdf-intro {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cpdf-ink);
+  white-space: pre-wrap;
+}
+
+.cpdf-intro .cpdf-em {
+  color: var(--cpdf-secondary);
+  font-weight: 600;
+}
+
+/* ——— Recurso propuesto ——— */
+.cpdf-resource-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  background: var(--cpdf-white);
+  border: 1px solid var(--cpdf-rule);
+  border-left: 3px solid var(--cpdf-primary);
+  border-radius: 3px;
+}
+
+.cpdf-avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--cpdf-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+}
+
+.cpdf-resource-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cpdf-resource-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cpdf-resource-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-resource-role {
+  margin: 0.15rem 0 0;
+  font-size: 13px;
+  color: var(--cpdf-muted);
+  line-height: 1.35;
+}
+
+.cpdf-pill {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: var(--cpdf-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cpdf-resource-note {
+  margin: 0.65rem 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--cpdf-ink);
+  white-space: pre-wrap;
+}
+
+/* ——— Match table ——— */
+.cpdf-match-wrap {
+  border: 1px solid var(--cpdf-rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cpdf-match-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.cpdf-match-table thead th {
+  background: var(--cpdf-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0.5rem 0.45rem;
+  border: none;
+}
+
+.cpdf-match-table thead th:last-child {
+  text-align: center;
+  width: 5rem;
+}
+
+.cpdf-match-table tbody td {
+  padding: 0.5rem 0.45rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--cpdf-rule);
+  line-height: 1.4;
+}
+
+.cpdf-match-table tbody tr:nth-child(even) td {
+  background: var(--cpdf-row-alt);
+}
+
+.cpdf-match-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cpdf-match-req {
+  font-weight: 600;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-match-cand {
+  color: var(--cpdf-muted);
+}
+
+.cpdf-match-pct {
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cpdf-match-pct--full {
+  color: var(--cpdf-match-full);
+}
+
+.cpdf-match-pct--partial {
+  color: var(--cpdf-match-partial);
+}
+
+.cpdf-match-pct--gap {
+  color: var(--cpdf-match-gap);
+}
+
+.cpdf-match-pct--open {
+  color: var(--cpdf-muted);
+  font-weight: 600;
+}
+
+.cpdf-match-summary {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.65rem;
+  background: var(--cpdf-tag-bg);
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-match-summary strong {
+  color: var(--cpdf-primary);
+}
+
+/* ——— Tarifa del servicio ——— */
+.cpdf-rate-wrap {
+  border: 1px solid var(--cpdf-rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cpdf-rate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.cpdf-rate-table thead th {
+  background: var(--cpdf-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0.5rem 0.55rem;
+}
+
+.cpdf-rate-table thead th:last-child {
+  text-align: right;
+}
+
+.cpdf-rate-table tbody td {
+  padding: 0.75rem 0.55rem;
+  border-top: 1px solid var(--cpdf-rule);
+  vertical-align: top;
+  background: #fff;
+}
+
+.cpdf-rate-perfil {
+  font-weight: 700;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-rate-cand-name {
+  font-weight: 700;
+  display: block;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-rate-cand-sub {
+  font-size: 12px;
+  color: var(--cpdf-muted);
+  margin-top: 0.1rem;
+}
+
+.cpdf-rate-amount {
+  text-align: right;
+}
+
+.cpdf-rate-big {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--cpdf-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.cpdf-rate-sub {
+  font-size: 11px;
+  color: var(--cpdf-muted);
+  margin-top: 0.15rem;
+}
+
+/* ——— Condiciones comerciales ——— */
+.cpdf-kv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  border: none;
+}
+
+.cpdf-kv-table tr:nth-child(odd) td {
+  background: #fff;
+}
+
+.cpdf-kv-table tr:nth-child(even) td {
+  background: var(--cpdf-row-alt);
+}
+
+.cpdf-kv-table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--cpdf-rule);
+  vertical-align: top;
+}
+
+.cpdf-kv-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cpdf-kv-key {
+  width: 30%;
+  font-weight: 700;
+  color: var(--cpdf-primary);
+}
+
+.cpdf-kv-val {
+  width: 70%;
+  color: var(--cpdf-muted);
+}
+
+/* ——— Economic breakdown ——— */
+.consulting-pdf-root .proposal-doc-economic .proposal-doc-block-title {
+  margin: 0 0 0.35rem;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cpdf-primary);
+}
+
+.consulting-pdf-root .proposal-doc-economic .proposal-doc-block-title:not(:first-child) {
+  margin-top: 0.85rem;
+}
+
+.consulting-pdf-root .proposal-doc-economic .proposal-doc-note {
+  margin: 0 0 0.55rem;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--cpdf-muted);
+}
+
+.consulting-pdf-root .proposal-doc-economic table.proposal-doc-block-table {
+  margin-bottom: 0;
+  border: 1px solid var(--cpdf-rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.consulting-pdf-root .proposal-doc-economic table.proposal-doc-block-table thead th {
+  background: var(--cpdf-tag-bg);
+  color: var(--cpdf-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.consulting-pdf-root .proposal-doc-economic tr.proposal-doc-strong td {
+  font-weight: 700;
+}
+
+.consulting-pdf-root .proposal-doc-economic tr.proposal-doc-strong td.num {
+  font-size: 14px;
+  color: var(--cpdf-primary);
+}
+
+.consulting-pdf-root .proposal-doc-economic tr.proposal-doc-divider td {
+  border-top: 2px solid var(--cpdf-rule);
+  padding-top: 0.45rem;
+}
+
+.consulting-pdf-root .proposal-print-sheet table.proposal-doc-block-table th,
+.consulting-pdf-root .proposal-print-sheet table.proposal-doc-block-table td {
+  border-bottom-color: var(--cpdf-rule);
+}
+
+.cpdf-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 0.35rem;
+  border: 1px solid var(--cpdf-rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cpdf-data-table td {
+  border-bottom: 1px solid var(--cpdf-rule);
+  padding: 0.45rem 0.5rem;
+  vertical-align: top;
+}
+
+.cpdf-data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cpdf-data-table tr:nth-child(even) td {
+  background: var(--cpdf-row-alt);
+}
+
+.cpdf-data-table td:first-child {
+  width: 52%;
+  font-weight: 600;
+  color: var(--cpdf-primary);
+}
+
+.cpdf-data-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--cpdf-ink);
+}
+
+/* ——— Términos ——— */
+.cpdf-terms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cpdf-terms-grid li {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cpdf-terms-text);
+  padding-left: 0.9rem;
+  position: relative;
+}
+
+.cpdf-terms-grid li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.42em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cpdf-primary);
+}
+
+/* ——— Observaciones comerciales ——— */
+.cpdf-remark {
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-left: 4px solid var(--cpdf-primary);
+  background: var(--cpdf-tag-bg);
+  border-radius: 0 4px 4px 0;
+}
+
+.cpdf-remark-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cpdf-primary);
+}
+
+.cpdf-remark-body {
+  margin: 0.3rem 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-closing {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cpdf-ink);
+  white-space: pre-wrap;
+}
+
+/* ——— Aceptación ——— */
+.cpdf-accept {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--cpdf-rule);
+  break-inside: avoid;
+}
+
+.cpdf-accept-label {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.35rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cpdf-primary);
+  border-bottom: 1px solid var(--cpdf-rule);
+}
+
+.cpdf-accept-intro {
+  margin: 0 0 1rem;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cpdf-muted);
+}
+
+.cpdf-accept-email-box {
+  background-color: #F8F9FA;
+  border: 1px dashed #bdbdbd;
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+}
+
+.cpdf-accept-email-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--cpdf-muted);
+}
+
+.cpdf-sign-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.cpdf-sign-card {
+  border: 1px solid var(--cpdf-primary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cpdf-sign-bar {
+  background: var(--cpdf-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.5rem;
+  text-align: center;
+}
+
+.cpdf-sign-body {
+  padding: 0.85rem 0.75rem 1rem;
+  background: var(--cpdf-white);
+}
+
+.cpdf-sign-inkline {
+  margin-top: 1.75rem;
+  height: 0;
+  border-bottom: 1px solid var(--cpdf-ink);
+}
+
+.cpdf-sign-name-slot {
+  margin: 0.35rem 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cpdf-ink);
+}
+
+.cpdf-sign-role-slot {
+  margin: 0.15rem 0 0;
+  font-size: 12px;
+  color: var(--cpdf-muted);
+}
+
+.cpdf-sign-fecha {
+  margin: 0.85rem 0 0;
+  font-size: 12px;
+  color: var(--cpdf-muted);
+}
+
+/* Legacy sign lines (unused if using slots) */
+.cpdf-sign-line {
+  display: none;
+}
+
+/* ——— Footer ——— */
+.cpdf-doc-footer {
+  margin-top: 1.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--cpdf-rule);
+  font-size: 9px;
+  letter-spacing: 0.02em;
+  color: var(--cpdf-muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cpdf-doc-footer strong,
+.cpdf-doc-footer .cpdf-footer-brand {
+  color: var(--cpdf-primary);
+  font-weight: 700;
+}
+
+.cpdf-doc-footer a {
+  color: var(--cpdf-primary);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.cpdf-body--empty {
+  color: var(--cpdf-muted);
+  font-style: italic;
+  font-size: 12px;
+}
+
+@media print {
+  .consulting-pdf-root {
+    background: #fff !important;
+  }
+
+  .consulting-pdf-doc {
+    max-width: none !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* Flowing footer: avoids overlap on multi-page CVs (fixed + long body stacks in Chromium). */
+  .cpdf-doc-footer {
+    position: static;
+    width: 100%;
+    margin-top: 1.15rem;
+    padding: 8px 0 0;
+    border-top: 1px solid var(--cpdf-rule);
+    background: transparent;
+  }
+
+  /* Long documents: allow sections to split; keep small components intact */
+  .consulting-pdf-doc .cpdf-section {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .cpdf-rate-table thead {
+    display: table-header-group;
+  }
+
+  .cpdf-rate-table tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cpdf-kv-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cpdf-terms-grid li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cpdf-resource-card,
+  .cpdf-match-wrap,
+  .cpdf-rate-wrap,
+  .cpdf-sign-card,
+  .cpdf-remark {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cpdf-accept {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cpdf-terms-accept-wrap {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* ——— Executive one-page proposal (tighter rhythm; @page A4 matches Puppeteer) ——— */
+.consulting-pdf-root--proposal-executive .consulting-pdf-doc {
+  max-width: 748px;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-top {
+  padding-bottom: 0.5rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-rule-blue {
+  margin-bottom: 1rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-title-block {
+  margin-bottom: 1.1rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-title-block--economic .cpdf-title-inner {
+  padding: 8px 0;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-doc-title {
+  font-size: 24px;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-party-grid {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-section {
+  margin-bottom: 0.85rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-resource-card {
+  padding: 0.65rem 0.85rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-resource-name {
+  font-size: 16px;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-rate-big {
+  font-size: 26px;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-kv-table {
+  font-size: 11px;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-kv-table td {
+  padding: 0.32rem 0.45rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-terms-grid li {
+  font-size: 10.5px;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-accept {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-sign-inkline {
+  margin-top: 1.35rem;
+}
+
+.consulting-pdf-root--proposal-executive .cpdf-doc-footer {
+  margin-top: 1rem;
+}
+
+.cpdf-lead {
+  margin: 0 0 0.95rem;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--cpdf-ink);
+  orphans: 2;
+  widows: 2;
+}
+
+.cpdf-lead .cpdf-em {
+  font-weight: 600;
+  color: var(--cpdf-secondary);
+}
+
+.cpdf-match-inline {
+  margin: 0 0 0.75rem;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--cpdf-muted);
+}
+
+.cpdf-section--compact {
+  margin-bottom: 0.65rem;
+}
+
+.cpdf-closing--tight {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Variante Sencilla: términos + aceptación no se parten entre páginas */
+.cpdf-terms-accept-wrap {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.cpdf-accept--in-wrap {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--cpdf-rule);
+}
+
+.cpdf-section--terms-in-wrap {
+  margin-bottom: 0.5rem;
+}

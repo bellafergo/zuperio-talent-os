@@ -1,26 +1,30 @@
+import { auth } from "@/auth";
+import { DataTableShell, PageHeader } from "@/components/layout";
+import { canManageSkills } from "@/lib/auth/skill-access";
 import { listSkillsCatalogGroupedForUi } from "@/lib/skills/queries";
 
+import { SkillAddDialog } from "./_components/skill-add-dialog";
 import { SkillsCatalog } from "./_components/skills-catalog";
 
 export const dynamic = "force-dynamic";
 
 export default async function SkillsCatalogPage() {
+  const session = await auth();
+  const canManage = canManageSkills(session?.user?.role);
+
   const groups = await listSkillsCatalogGroupedForUi();
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Skills catalog
-        </h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Normalized skill names used on candidate profiles and vacancy
-          requirements. Read-only reference for recruiters and sourcing.
-        </p>
-      </div>
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm ring-1 ring-foreground/5 sm:p-6">
+    <div className="space-y-8">
+      <PageHeader
+        variant="list"
+        title="Catálogo de skills"
+        description="Nombres normalizados de skills usados en perfiles de candidatos y requisitos de vacantes."
+        actions={canManage ? <SkillAddDialog /> : null}
+      />
+      <DataTableShell paddingClassName="p-4 sm:p-6">
         <SkillsCatalog groups={groups} />
-      </div>
+      </DataTableShell>
     </div>
   );
 }

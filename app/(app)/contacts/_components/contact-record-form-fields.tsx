@@ -17,8 +17,8 @@ const selectClass = cn(
 );
 
 const STATUS_LABELS: Record<ContactStatus, string> = {
-  ACTIVE: "Active",
-  INACTIVE: "Inactive",
+  ACTIVE: "Activo",
+  INACTIVE: "Inactivo",
 };
 
 export type ContactFormDefaults = {
@@ -36,13 +36,17 @@ export function ContactRecordFormFields({
   defaults,
   contactId,
   fieldErrors,
+  variant = "create",
 }: {
   companies: CompanyOption[];
   defaults?: ContactFormDefaults;
   contactId?: string;
   fieldErrors?: Record<string, string>;
+  /** `edit` omits correo/teléfono (se gestionan con métodos de contacto). */
+  variant?: "create" | "edit";
 }) {
   const statusOrder = Object.values(StatusConst) as ContactStatus[];
+  const isEdit = variant === "edit";
 
   return (
     <div className="grid gap-4">
@@ -54,7 +58,7 @@ export function ContactRecordFormFields({
             htmlFor={contactId ? `edit-first-${contactId}` : "new-first"}
             className="text-sm font-medium"
           >
-            First name <span className="text-destructive">*</span>
+            Nombre <span className="text-destructive">*</span>
           </label>
           <Input
             id={contactId ? `edit-first-${contactId}` : "new-first"}
@@ -76,7 +80,7 @@ export function ContactRecordFormFields({
             htmlFor={contactId ? `edit-last-${contactId}` : "new-last"}
             className="text-sm font-medium"
           >
-            Last name
+            Apellido
           </label>
           <Input
             id={contactId ? `edit-last-${contactId}` : "new-last"}
@@ -95,7 +99,7 @@ export function ContactRecordFormFields({
 
       <div className="space-y-2">
         <label className="text-sm font-medium">
-          Company <span className="text-destructive">*</span>
+          Empresa <span className="text-destructive">*</span>
         </label>
         <select
           name="companyId"
@@ -105,7 +109,7 @@ export function ContactRecordFormFields({
           aria-invalid={Boolean(fieldErrors?.companyId)}
         >
           <option value="" disabled>
-            Select a company…
+            Selecciona una empresa…
           </option>
           {companies.map((c) => (
             <option key={c.id} value={c.id}>
@@ -122,7 +126,7 @@ export function ContactRecordFormFields({
 
       <div className="space-y-2">
         <label className="text-sm font-medium">
-          Status <span className="text-destructive">*</span>
+          Estado <span className="text-destructive">*</span>
         </label>
         <select
           name="status"
@@ -144,56 +148,64 @@ export function ContactRecordFormFields({
         ) : null}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label
-            htmlFor={contactId ? `edit-email-${contactId}` : "new-email"}
-            className="text-sm font-medium"
-          >
-            Email
-          </label>
-          <Input
-            id={contactId ? `edit-email-${contactId}` : "new-email"}
-            name="email"
-            type="email"
-            autoComplete="email"
-            defaultValue={defaults?.email ?? ""}
-            aria-invalid={Boolean(fieldErrors?.email)}
-          />
-          {fieldErrors?.email ? (
-            <p className="text-sm text-destructive" role="alert">
-              {fieldErrors.email}
-            </p>
-          ) : null}
-        </div>
+      {!isEdit ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label
+              htmlFor={contactId ? `edit-email-${contactId}` : "new-email"}
+              className="text-sm font-medium"
+            >
+              Correo
+            </label>
+            <Input
+              id={contactId ? `edit-email-${contactId}` : "new-email"}
+              name="email"
+              type="email"
+              autoComplete="email"
+              defaultValue={defaults?.email ?? ""}
+              aria-invalid={Boolean(fieldErrors?.email)}
+            />
+            {fieldErrors?.email ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.email}
+              </p>
+            ) : null}
+          </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor={contactId ? `edit-phone-${contactId}` : "new-phone"}
-            className="text-sm font-medium"
-          >
-            Phone
-          </label>
-          <Input
-            id={contactId ? `edit-phone-${contactId}` : "new-phone"}
-            name="phone"
-            defaultValue={defaults?.phone ?? ""}
-            aria-invalid={Boolean(fieldErrors?.phone)}
-          />
-          {fieldErrors?.phone ? (
-            <p className="text-sm text-destructive" role="alert">
-              {fieldErrors.phone}
-            </p>
-          ) : null}
+          <div className="space-y-2">
+            <label
+              htmlFor={contactId ? `edit-phone-${contactId}` : "new-phone"}
+              className="text-sm font-medium"
+            >
+              Teléfono
+            </label>
+            <Input
+              id={contactId ? `edit-phone-${contactId}` : "new-phone"}
+              name="phone"
+              defaultValue={defaults?.phone ?? ""}
+              aria-invalid={Boolean(fieldErrors?.phone)}
+            />
+            {fieldErrors?.phone ? (
+              <p className="text-sm text-destructive" role="alert">
+                {fieldErrors.phone}
+              </p>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : (
+        <p className="rounded-lg border border-dashed border-border bg-muted/25 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+          El correo y teléfono de la ficha son los <span className="font-medium text-foreground">principales</span>
+          . Para añadir canales usa <span className="font-medium text-foreground">Agregar dato de contacto</span>
+          ; el Director puede revisar el historial completo abajo.
+        </p>
+      )}
 
       <div className="space-y-2">
         <label
           htmlFor={contactId ? `edit-title-${contactId}` : "new-title"}
           className="text-sm font-medium"
         >
-          Title
+          Puesto
         </label>
         <Input
           id={contactId ? `edit-title-${contactId}` : "new-title"}

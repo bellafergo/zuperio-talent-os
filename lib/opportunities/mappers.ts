@@ -1,14 +1,16 @@
 import type { OpportunityStage as PrismaOpportunityStage } from "@/generated/prisma/enums";
 
+import { DEFAULT_CURRENCY, formatMoney } from "@/lib/currency";
+
 import type { OpportunityListRow, OpportunityStageUi } from "./types";
 
 const prismaStageToUi: Record<PrismaOpportunityStage, OpportunityStageUi> = {
-  PROSPECTING: "Prospecting",
-  QUALIFICATION: "Qualification",
-  PROPOSAL: "Proposal",
-  NEGOTIATION: "Negotiation",
-  CLOSED_WON: "Closed won",
-  CLOSED_LOST: "Closed lost",
+  PROSPECTING: "Prospección",
+  QUALIFICATION: "Calificación",
+  PROPOSAL: "Propuesta",
+  NEGOTIATION: "Negociación",
+  CLOSED_WON: "Cerrada ganada",
+  CLOSED_LOST: "Cerrada perdida",
 };
 
 function formatUpdatedAt(d: Date) {
@@ -54,19 +56,11 @@ export function formatOpportunityCurrency(
   currency: string,
 ) {
   if (amount == null || Number.isNaN(amount)) return "—";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "EUR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `${amount.toLocaleString("en-US")} ${currency}`;
-  }
+  return formatMoney(amount, currency?.trim() || DEFAULT_CURRENCY, 0);
 }
 
 export function mapOpportunityToListRow(row: OpportunityWithRelations): OpportunityListRow {
-  const currency = row.currency?.trim() || "EUR";
+  const currency = row.currency?.trim() || DEFAULT_CURRENCY;
   const amount = parseValue(row.value);
   return {
     id: row.id,

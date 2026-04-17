@@ -16,6 +16,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  /** Leads ingest uses `x-api-key` + `LEADS_API_KEY` in the route handler, not session JWT. */
+  if (pathname.startsWith("/api/leads")) {
+    return NextResponse.next();
+  }
+
   const secret = process.env.AUTH_SECRET;
   if (!secret) {
     if (pathname === "/login") return NextResponse.next();
@@ -50,11 +55,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  if (pathname.startsWith("/admin") && role !== "DIRECTOR") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:ico|png|svg|webp)$).*)",
+    // Keep _next/data matched (auth on client navigations). Exclude static, image
+    // optimizer, webpack HMR, and Next dev/overlay internals — otherwise those
+    // requests can hit the auth gate and break dev assets or tooling.
+    "/((?!api/auth|_next/static|_next/image|_next/webpack|__nextjs|favicon.ico|.*\\.(?:ico|png|svg|webp|jpg|jpeg|gif|woff2?)$).*)",
   ],
 };

@@ -12,13 +12,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { JobBoardSourceBadge } from "@/components/job-board-source-badge";
 import type { ApplicationMatrixRowUi } from "@/lib/vacancy-applications/types";
 
 export function ApplicationsDataTable({ rows }: { rows: ApplicationMatrixRowUi[] }) {
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center text-sm text-muted-foreground">
-        No applications yet. Seed the database or add pipeline rows later.
+        Sin postulaciones registradas. Agrega filas de pipeline desde la vista de vacante.
       </div>
     );
   }
@@ -27,12 +28,12 @@ export function ApplicationsDataTable({ rows }: { rows: ApplicationMatrixRowUi[]
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="max-w-[140px]">Candidate</TableHead>
-          <TableHead className="max-w-[180px]">Vacancy</TableHead>
-          <TableHead>Company</TableHead>
-          <TableHead className="w-[150px]">Stage</TableHead>
-          <TableHead className="w-[90px]">Status</TableHead>
-          <TableHead>Source</TableHead>
+          <TableHead className="max-w-[140px]">Candidato</TableHead>
+          <TableHead className="max-w-[180px]">Vacante</TableHead>
+          <TableHead>Empresa</TableHead>
+          <TableHead className="w-[150px]">Etapa</TableHead>
+          <TableHead className="w-[90px]">Estado</TableHead>
+          <TableHead>Origen</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -61,7 +62,14 @@ export function ApplicationsDataTable({ rows }: { rows: ApplicationMatrixRowUi[]
             <TableCell>
               <ApplicationStatusBadge status={r.status} />
             </TableCell>
-            <TableCell className="text-muted-foreground">{r.sourceLabel}</TableCell>
+            <TableCell className="text-muted-foreground">
+              <div className="flex flex-col gap-1">
+                {r.jobBoardProvider ? (
+                  <JobBoardSourceBadge provider={r.jobBoardProvider} />
+                ) : null}
+                <span>{r.sourceLabel}</span>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

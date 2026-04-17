@@ -3,10 +3,10 @@ import type { CompanyStatus as PrismaCompanyStatus } from "@/generated/prisma/en
 import type { Company } from "./types";
 
 const prismaStatusToUi: Record<PrismaCompanyStatus, Company["status"]> = {
-  ACTIVE: "Active",
-  PROSPECT: "Prospect",
-  PAUSED: "Paused",
-  CHURNED: "Churned",
+  ACTIVE: "Activa",
+  PROSPECT: "Prospecto",
+  PAUSED: "En pausa",
+  CHURNED: "Baja",
 };
 
 export type CompanyWithOwner = {

@@ -1,0 +1,433 @@
+Python — Lenguaje IA / Automatización
+R — Lenguaje IA / Analítica
+SQL — Data / IA
+Machine Learning — IA Core
+Deep Learning — IA Avanzada
+NLP (Natural Language Processing) — IA Especializada
+Computer Vision — IA Especializada
+Generative AI — IA Avanzada
+Prompt Engineering — IA Generativa
+LLM Integration (OpenAI, Claude, Gemini) — IA Generativa
+LangChain — Framework IA
+LlamaIndex — Framework IA
+Vector Databases (Pinecone, Weaviate, FAISS) — Infraestructura IA
+RAG (Retrieval Augmented Generation) — Arquitectura IA
+AI Agents / Autonomous Agents — Arquitectura IA
+Model Fine-tuning — IA Avanzada
+MLOps — Operación IA
+TensorFlow — Framework IA
+PyTorch — Framework IA
+Scikit-learn — Framework IA
+Data Preprocessing — Data / IA
+Feature Engineering — Data / IA
+Model Deployment (APIs, Docker) — Ingeniería IA
+FastAPI — Backend IA
+Flask — Backend IA
+Docker — Infraestructura IA
+Kubernetes — Infraestructura IA
+Vertex AI — Cloud AI
+Azure Machine Learning — Cloud AI
+AWS SageMaker — Cloud AI
+Google Cloud AI APIs — Cloud AI
+Azure Cognitive Services — Cloud AI
+OpenAI API — IA Generativa
+Claude API — IA Generativa
+Gemini API — IA Generativa
+UiPath — RPA
+Automation Anywhere — RPA
+Blue Prism — RPA
+Power Automate — Automatización
+Zapier — Automatización
+Make (Integromat) — Automatización
+BPMN — Modelado de procesos
+Process Mining — Optimización procesos
+Celonis — Process Mining
+ABBYY FlexiCapture — OCR / Document AI
+Tesseract OCR — OCR
+Speech-to-Text — IA Voz
+Text-to-Speech — IA Voz
+Conversational AI — IA Aplicada
+Chatbot Development — IA Aplicada
+AI Governance — Gobierno IA
+AI Ethics — Gobierno IA
+Data Privacy (IA) — Gobierno IA
+Project Management — Gestión de proyectos
+Program Management — Gestión avanzada
+Portfolio Management — Gestión estratégica
+Agile Methodologies — Metodologías ágiles
+Scrum — Metodología ágil
+Kanban — Metodología ágil
+SAFe — Escalamiento ágil
+Lean — Mejora continua
+Waterfall — Metodología tradicional
+Hybrid Methodologies — Metodología híbrida
+PMI Framework (PMBOK) — Framework PM
+Prince2 — Framework PM
+OKRs — Gestión de objetivos
+KPIs — Medición desempeño
+Roadmapping — Planeación estratégica
+Stakeholder Management — Gestión stakeholders
+Risk Management — Gestión de riesgos
+Issue Management — Gestión de incidencias
+Change Management — Gestión del cambio
+Resource Management — Gestión de recursos
+Capacity Planning — Planeación de capacidad
+Budget Management — Gestión financiera
+Cost Estimation — Estimación
+Forecasting — Planeación financiera
+Governance Models — Gobierno de proyectos
+PMO Setup — Implementación PMO
+PMO Governance — Gobierno PMO
+PMO Maturity Models — Madurez organizacional
+Business Process Management (BPM) — Gestión de procesos
+Process Mapping — Modelado
+Process Design — Diseño de procesos
+Process Optimization — Optimización
+Process Reengineering (BPR) — Reingeniería
+Process Automation — Automatización
+Process Governance — Gobierno de procesos
+SAP Signavio — BPM Suite
+Bizagi — BPM Suite
+AuraQuantic — BPM Suite
+Appian — Low-code BPM
+Pega — BPM / Case Management
+Workflow Design — Diseño de flujos
+Business Analysis — Análisis de negocio
+Requirements Gathering — Levantamiento
+User Stories — Agile
+Use Cases — Análisis funcional
+Functional Specifications — Documentación
+UAT (User Acceptance Testing) — Validación negocio
+Continuous Improvement — Mejora continua
+Six Sigma — Mejora continua
+Lean Six Sigma — Mejora continua
+Value Stream Mapping — Lean
+Decision Modeling (DMN) — Modelado decisiones
+Change Impact Analysis — Gestión cambio
+Organizational Design — Diseño organizacional
+Service Design — Diseño servicios
+Operating Model Design — Modelo operativo
+Digital Transformation — Transformación digital
+Jira — Herramienta PM
+Confluence — Documentación
+MS Project — Herramienta PM
+Smartsheet — Herramienta PM
+Monday.com — Herramienta PM
+ClickUp — Herramienta PM
+Asana — Herramienta PM
+Trello — Herramienta PM
+Notion — Documentación
+Power BI (para PMO) — Analítica PM
+Excel Avanzado — Analítica PM
+IT Service Management (ITSM) — Gestión de servicios
+ITIL Framework — Framework ITSM
+ITIL v4 — Framework ITSM
+Service Design (ITIL) — ITSM
+Service Transition — ITSM
+Service Operation — ITSM
+Continual Service Improvement (CSI) — ITSM
+Incident Management — Operación
+Problem Management — Operación
+Change Management (ITIL) — Operación
+Release Management — Operación
+Request Fulfillment — Operación
+Service Level Management (SLAs/SLIs/SLOs) — Operación
+Availability Management — Operación
+Capacity Management — Operación
+IT Operations Management (ITOM) — Operación
+Event Management — Operación
+Monitoring & Alerting — Observabilidad
+Observability — Observabilidad
+APM (Application Performance Monitoring) — Observabilidad
+Logging & Tracing — Observabilidad
+Root Cause Analysis (RCA) — Operación
+Runbooks / SOPs — Operación
+Knowledge Management — Operación
+Service Desk — Soporte
+Help Desk — Soporte
+NOC (Network Operations Center) — Operación
+SOC (Security Operations Center) — Seguridad
+Endpoint Management — Infraestructura
+Asset Management (ITAM) — Gestión activos
+Configuration Management (CMDB) — Configuración
+Service Catalog — ITSM
+DevOps — Cultura / Operación
+SRE (Site Reliability Engineering) — Operación avanzada
+CI/CD — DevOps
+Infrastructure as Code (IaC) — DevOps
+Terraform — IaC
+Ansible — Automatización
+Cloud Operations (AWS, Azure, GCP) — Cloud
+Azure Monitor — Observabilidad
+AWS CloudWatch — Observabilidad
+Google Cloud Operations Suite — Observabilidad
+Prometheus — Observabilidad
+Grafana — Observabilidad
+ELK Stack (Elasticsearch, Logstash, Kibana) — Logging
+Splunk — Observabilidad
+Dynatrace — APM
+New Relic — APM
+Datadog — Observabilidad
+ServiceNow — Plataforma ITSM
+BMC Helix — Plataforma ITSM
+Ivanti — Plataforma ITSM
+Freshservice — Plataforma ITSM
+Zendesk — Soporte
+Jira Service Management — Plataforma ITSM
+ManageEngine — Plataforma ITSM
+Cherwell — Plataforma ITSM
+SolarWinds — Monitoreo
+PagerDuty — Alerting
+Opsgenie — Alerting
+Incident Response — Operación
+Disaster Recovery (DRP) — Continuidad
+Business Continuity (BCP) — Continuidad
+Backup & Restore — Continuidad
+Security Operations — Seguridad
+Vulnerability Management — Seguridad
+Patch Management — Seguridad
+Identity & Access Management (IAM) — Seguridad
+Compliance (ISO 27001, SOC2) — Gobierno
+Audit & Governance — Gobierno
+FinOps — Cloud financiero
+Cost Optimization (Cloud) — Cloud
+Vendor Management — Gestión proveedores
+SLA Reporting — Operación
+Dashboarding (Power BI / Grafana) — Analítica
+JavaScript — Lenguaje Frontend
+TypeScript — Lenguaje Frontend
+HTML — Frontend
+CSS — Frontend
+React — Framework Frontend
+Angular — Framework Frontend
+Vue.js — Framework Frontend
+Next.js — Framework Fullstack
+Nuxt.js — Framework Fullstack
+Tailwind CSS — UI Styling
+Bootstrap — UI Framework
+Node.js — Backend
+Express.js — Backend Framework
+NestJS — Backend Framework
+Java — Backend
+Spring Boot — Backend Framework
+C# — Backend
+ASP.NET Core — Backend Framework
+Python — Backend
+FastAPI — Backend Framework
+Django — Backend Framework
+Flask — Backend Framework
+Go — Backend
+Ruby — Backend
+PHP — Backend
+Laravel — Backend Framework
+REST APIs — Arquitectura
+GraphQL — Arquitectura
+Microservices — Arquitectura
+Serverless — Arquitectura
+WebSockets — Comunicación
+gRPC — Comunicación
+MySQL — Base de datos
+PostgreSQL — Base de datos
+MongoDB — Base de datos
+Firebase — Backend as a Service
+Redis — Cache
+Prisma — ORM
+Sequelize — ORM
+Docker — DevOps
+Kubernetes — DevOps
+CI/CD — DevOps
+Git — Control de versiones
+GitHub — Repositorios
+GitLab — Repositorios / CI
+Bitbucket — Repositorios
+AWS — Cloud
+Azure — Cloud
+Google Cloud Platform — Cloud
+Vercel — Hosting Frontend
+Netlify — Hosting Frontend
+Linux — Infraestructura
+Bash Scripting — Automatización
+Unit Testing — QA
+Integration Testing — QA
+End-to-End Testing (E2E) — QA
+Test Automation — QA
+Manual Testing — QA
+Test Case Design — QA
+Test Strategy — QA
+Regression Testing — QA
+Smoke Testing — QA
+Performance Testing — QA
+Load Testing — QA
+Security Testing — QA
+API Testing — QA
+Playwright — Automatización QA
+Cypress — Automatización QA
+Selenium — Automatización QA
+Appium — Automatización QA Mobile
+Cucumber — BDD Testing
+Jest — Testing Framework
+Mocha — Testing Framework
+JUnit — Testing Framework
+NUnit — Testing Framework
+TestNG — Testing Framework
+Allure Report — Reportes QA
+QMetry — Gestión QA
+TestRail — Gestión QA
+Jira (QA) — Gestión QA
+Postman — Testing API
+Swagger / OpenAPI — Documentación API
+SonarQube — Calidad de código
+Static Code Analysis — QA
+Code Review — QA
+DevSecOps — Seguridad
+OWASP — Seguridad
+Secure Coding — Seguridad
+Accessibility Testing — QA
+Cross-browser Testing — QA
+Mobile Testing — QA
+Test Data Management — QA
+CI Testing Pipelines — QA / DevOps
+SQL — Data
+Python — Data / Analytics
+R — Data / Analytics
+Excel Avanzado — Analítica
+Data Analysis — Analítica
+Data Visualization — Analítica
+Business Intelligence (BI) — BI
+Data Modeling — Modelado
+Dimensional Modeling — Modelado
+Data Warehousing — Arquitectura
+Data Lakes — Arquitectura
+Data Lakehouse — Arquitectura
+ETL — Ingeniería de datos
+ELT — Ingeniería de datos
+Data Pipelines — Ingeniería de datos
+Data Integration — Ingeniería de datos
+Data Transformation — Ingeniería de datos
+Data Cleaning — Data
+Data Quality — Data
+Data Governance — Gobierno
+Master Data Management (MDM) — Gobierno
+Metadata Management — Gobierno
+Data Catalog — Gobierno
+Data Lineage — Gobierno
+Big Data — Arquitectura
+Apache Spark — Big Data
+Hadoop — Big Data
+Databricks — Plataforma Data
+Snowflake — Data Warehouse
+Amazon Redshift — Data Warehouse
+Google BigQuery — Data Warehouse
+Azure Synapse — Data Warehouse
+Power BI — Visualización
+Tableau — Visualización
+Looker — Visualización
+Qlik Sense — Visualización
+Metabase — Visualización
+Apache Superset — Visualización
+DAX — Power BI
+Power Query — Transformación
+Data Storytelling — Analítica
+KPI Design — Analítica
+Dashboard Design — Analítica
+Self-Service BI — BI
+Data Engineering — Ingeniería
+Data Architect — Arquitectura
+Data Analyst — Analítica
+Data Scientist — Ciencia de datos
+Statistical Analysis — Ciencia de datos
+Predictive Analytics — Analítica avanzada
+Prescriptive Analytics — Analítica avanzada
+Time Series Analysis — Analítica avanzada
+A/B Testing — Analítica
+Machine Learning (para analytics) — Analítica avanzada
+Feature Engineering — Data Science
+MLOps (Data) — Operación
+Airflow — Orquestación
+dbt — Transformación
+Fivetran — Integración
+Stitch — Integración
+Kafka — Streaming
+Real-time Analytics — Analítica
+Streaming Data — Ingeniería
+Data APIs — Integración
+REST APIs (Data) — Integración
+Cloud Data (AWS, Azure, GCP) — Cloud
+IAM (Data Security) — Seguridad
+Data Privacy (GDPR, etc.) — Gobierno
+FinOps (Data Cost Optimization) — Cloud
+Enterprise Resource Planning (ERP) — Core ERP
+ERP Implementation — Implementación
+ERP Configuration — Implementación
+ERP Customization — Desarrollo ERP
+ERP Integration — Integración
+ERP Migration — Implementación
+ERP Rollout — Implementación
+SAP — Plataforma ERP
+SAP S/4HANA — Plataforma ERP
+SAP ECC — Plataforma ERP
+SAP FICO — Módulo Finanzas
+SAP MM — Módulo Supply Chain
+SAP SD — Módulo Ventas
+SAP PP — Módulo Producción
+SAP HCM — Módulo RH
+SAP ABAP — Desarrollo ERP
+SAP BTP — Plataforma Cloud
+SAP Ariba — Compras
+SAP SuccessFactors — RH
+SAP Analytics Cloud — BI ERP
+Oracle ERP — Plataforma ERP
+Oracle EBS — Plataforma ERP
+Oracle Fusion Cloud — Plataforma ERP
+Oracle Financials — Finanzas
+Oracle SCM — Supply Chain
+Oracle HCM — RH
+Oracle PL/SQL — Desarrollo ERP
+Microsoft Dynamics 365 — Plataforma ERP
+Dynamics Finance & Operations — Finanzas
+Dynamics Business Central — ERP Mid-market
+Dynamics CRM — CRM
+Power Platform (Power Apps, Power Automate) — Low-code ERP
+Odoo — ERP Open Source
+NetSuite — ERP Cloud
+Infor — ERP
+Epicor — ERP
+Sage — ERP
+Workday — ERP / HCM
+ERP Functional Consultant — Funcional
+ERP Technical Consultant — Técnico
+Finance Processes (AP, AR, GL) — Negocio
+Procurement Processes — Negocio
+Inventory Management — Negocio
+Order Management — Negocio
+Manufacturing Processes — Negocio
+Supply Chain Management (SCM) — Negocio
+Human Capital Management (HCM) — Negocio
+Payroll — Negocio
+Financial Reporting — Finanzas
+Taxation — Finanzas
+Budgeting & Forecasting — Finanzas
+Business Process Mapping (ERP) — Procesos
+Fit-Gap Analysis — Implementación
+Data Migration (ERP) — Data
+Master Data (ERP) — Data
+Data Cleansing (ERP) — Data
+Integration Middleware — Integración
+APIs (ERP Integration) — Integración
+EDI — Integración
+SAP PI/PO — Integración
+MuleSoft — Integración
+Boomi — Integración
+Testing ERP — QA
+UAT (ERP) — QA
+Change Management (ERP) — Implementación
+Training & Adoption — Implementación
+Go-live Support — Implementación
+Hypercare — Implementación
+ERP Support (AMS) — Operación
+Incident Management (ERP) — Operación
+SLA Management (ERP) — Operación
+Security & Roles (ERP) — Seguridad
+Segregation of Duties (SoD) — Seguridad
+Compliance (ERP) — Gobierno
+Audit (ERP) — Gobierno

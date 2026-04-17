@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { EmptyState } from "@/components/layout";
 import { MatchRecommendationBadge } from "@/components/match-recommendation-badge";
 import {
   Table,
@@ -16,9 +17,11 @@ import type { MatchMatrixRowUi } from "@/lib/matching/types";
 export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-muted/20 px-6 py-14 text-center text-sm text-muted-foreground">
-        No match rows in the database. Seed the app or run a match sync.
-      </div>
+      <EmptyState
+        variant="embedded"
+        title="Sin matches puntuados"
+        description="Las vacantes necesitan skills requeridos y los candidatos perfil estructurado. Ejecuta sincronización de matching desde el flujo de datos o seed."
+      />
     );
   }
 
@@ -26,12 +29,13 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="max-w-[140px]">Candidate</TableHead>
-          <TableHead className="max-w-[160px]">Vacancy</TableHead>
-          <TableHead>Company</TableHead>
-          <TableHead className="w-[56px] text-right">Score</TableHead>
-          <TableHead className="w-[108px]">Match</TableHead>
-          <TableHead className="min-w-[200px]">Explanation</TableHead>
+          <TableHead className="max-w-[140px]">Candidato</TableHead>
+          <TableHead className="max-w-[160px]">Vacante</TableHead>
+          <TableHead>Empresa</TableHead>
+          <TableHead className="w-[80px] text-right">Match</TableHead>
+          <TableHead className="w-[120px]">Nivel</TableHead>
+          <TableHead className="w-[100px]">Detalle</TableHead>
+          <TableHead className="min-w-[200px]">Resumen</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -56,11 +60,19 @@ export function MatchingDataTable({ rows }: { rows: MatchMatrixRowUi[] }) {
             <TableCell className="text-muted-foreground">
               {r.companyName}
             </TableCell>
-            <TableCell className="text-right tabular-nums text-muted-foreground">
-              {r.score}
+            <TableCell className="bg-muted/15 text-right tabular-nums text-base font-semibold text-foreground">
+              {r.score}%
             </TableCell>
             <TableCell>
               <MatchRecommendationBadge recommendation={r.recommendation} />
+            </TableCell>
+            <TableCell>
+              <Link
+                href={`/matching/compare/${r.matchId}`}
+                className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                Ver detalle
+              </Link>
             </TableCell>
             <TableCell className="text-muted-foreground">
               <span

@@ -17,39 +17,60 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { JobBoardSourceBadge } from "@/components/job-board-source-badge";
 import type { CandidateApplicationRowUi } from "@/lib/vacancy-applications/types";
+
+function isRenderableApplication(a: unknown): a is CandidateApplicationRowUi {
+  if (!a || typeof a !== "object") return false;
+  const o = a as Record<string, unknown>;
+  return (
+    typeof o.applicationId === "string" &&
+    o.applicationId.length > 0 &&
+    typeof o.vacancyId === "string" &&
+    typeof o.vacancyTitle === "string" &&
+    typeof o.companyId === "string" &&
+    typeof o.companyName === "string" &&
+    typeof o.stage === "string" &&
+    typeof o.status === "string"
+  );
+}
 
 export function CandidateApplicationsSection({
   applications,
 }: {
   applications: CandidateApplicationRowUi[];
 }) {
+  const rows = Array.isArray(applications)
+    ? applications.filter(isRenderableApplication)
+    : [];
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-base font-medium">Applications</CardTitle>
+        <CardTitle className="text-base font-medium">Postulaciones</CardTitle>
         <CardDescription>
-          Vacancy pipelines this candidate is or was in (independent from
-          matching and placements).
+          Pipelines de reclutamiento en los que el candidato participa o participó
+          (independiente de matches y colocaciones).
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
-        {applications.length === 0 ? (
+        {rows.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No vacancy applications on file.
+            Sin postulaciones registradas.
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="max-w-[220px]">Vacancy</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead className="w-[160px]">Stage</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="max-w-[220px]">Vacante</TableHead>
+                <TableHead>Empresa</TableHead>
+                <TableHead className="w-[160px]">Etapa</TableHead>
+                <TableHead className="w-[100px]">Estado</TableHead>
+                <TableHead className="w-[140px]">Origen</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {applications.map((a) => (
+              {rows.map((a) => (
                 <TableRow key={a.applicationId}>
                   <TableCell className="font-medium">
                     <Link
@@ -72,6 +93,13 @@ export function CandidateApplicationsSection({
                   </TableCell>
                   <TableCell>
                     <ApplicationStatusBadge status={a.status} />
+                  </TableCell>
+                  <TableCell>
+                    {a.jobBoardProvider ? (
+                      <JobBoardSourceBadge provider={a.jobBoardProvider} />
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

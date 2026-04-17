@@ -8,13 +8,17 @@ import {
   type VacancySeniority,
   type VacancyStatus,
 } from "@/generated/prisma/enums";
+import { CANDIDATE_WORK_MODALITY_OPTIONS } from "@/lib/candidates/constants";
 import type { SkillOption } from "@/lib/skills/queries";
+import type { ContactOptionForVacancyForm } from "@/lib/vacancies/queries";
 import type {
+  CompanyOption,
   VacancyListRow,
   VacancyRequirementDraft,
 } from "@/lib/vacancies/types";
 import { cn } from "@/lib/utils";
 
+import { CurrencySelect } from "@/components/currency-select";
 import { Input } from "@/components/ui/input";
 import { VacancyRequirementsEditor } from "./vacancy-requirements-editor";
 
@@ -26,17 +30,17 @@ const selectClass = cn(
 );
 
 const STATUS_LABELS: Record<VacancyStatus, string> = {
-  DRAFT: "Draft",
-  OPEN: "Open",
-  ON_HOLD: "On hold",
+  DRAFT: "Borrador",
+  OPEN: "Abierta",
+  ON_HOLD: "En pausa",
   SOURCING: "Sourcing",
-  INTERVIEWING: "Interviewing",
-  FILLED: "Filled",
-  CANCELLED: "Cancelled",
+  INTERVIEWING: "En entrevistas",
+  FILLED: "Cubiertas",
+  CANCELLED: "Cancelada",
 };
 
 const SENIORITY_LABELS: Record<VacancySeniority, string> = {
-  INTERN: "Intern",
+  INTERN: "Interno",
   JUNIOR: "Junior",
   MID: "Mid",
   SENIOR: "Senior",
@@ -53,23 +57,30 @@ export type OpportunityOptionForForm = {
 
 type Defaults = {
   title: string;
-  opportunityId: string;
+  companyId: string;
+  opportunityId: string | null;
+  contactId: string | null;
   seniorityValue: VacancyListRow["seniorityValue"];
   statusValue: VacancyListRow["statusValue"];
   targetRateAmount: number | null;
   currency: string;
   roleSummaryLine: string | null;
+  workModality: string | null;
   requirements: VacancyRequirementDraft[];
 };
 
 export function VacancyRecordFormFields({
+  companies,
   opportunities,
+  contacts,
   skills,
   defaults,
   vacancyId,
   fieldErrors,
 }: {
+  companies: CompanyOption[];
   opportunities: OpportunityOptionForForm[];
+  contacts: ContactOptionForVacancyForm[];
   skills: SkillOption[];
   defaults?: Defaults;
   vacancyId?: string;
@@ -79,8 +90,48 @@ export function VacancyRecordFormFields({
     defaults?.requirements ?? [],
   );
 
+  const [selectedCompanyId, setSelectedCompanyId] = React.useState(
+    defaults?.companyId ?? "",
+  );
+  const [selectedContactId, setSelectedContactId] = React.useState(
+    defaults?.contactId ?? "",
+  );
+
+  const [titleForSuggest, setTitleForSuggest] = React.useState(defaults?.title ?? "");
+  const [summaryForSuggest, setSummaryForSuggest] = React.useState(
+    defaults?.roleSummaryLine ?? "",
+  );
+  React.useEffect(() => {
+    setTitleForSuggest(defaults?.title ?? "");
+    setSummaryForSuggest(defaults?.roleSummaryLine ?? "");
+    setSelectedCompanyId(defaults?.companyId ?? "");
+    setSelectedContactId(defaults?.contactId ?? "");
+  }, [defaults?.title, defaults?.roleSummaryLine, defaults?.companyId, defaults?.contactId, vacancyId]);
+
+  function handleCompanyChange(companyId: string) {
+    setSelectedCompanyId(companyId);
+    setSelectedContactId("");
+  }
+
+  const filteredOpportunities = selectedCompanyId
+    ? opportunities.filter((o) => o.companyId === selectedCompanyId)
+    : opportunities;
+
+  const filteredContacts = selectedCompanyId
+    ? contacts.filter((c) => c.companyId === selectedCompanyId)
+    : contacts;
+
   const statusOrder = Object.values(VacancyStatusConst) as VacancyStatus[];
   const seniorityOrder = Object.values(VacancySeniorityConst) as VacancySeniority[];
+
+  const workModalityCurrent = (defaults?.workModality ?? "").trim();
+  const workModalityLegacy =
+    workModalityCurrent &&
+    !(CANDIDATE_WORK_MODALITY_OPTIONS as readonly string[]).includes(
+      workModalityCurrent,
+    )
+      ? workModalityCurrent
+      : null;
 
   return (
     <div className="grid gap-4">
@@ -99,14 +150,15 @@ export function VacancyRecordFormFields({
           htmlFor={vacancyId ? `edit-title-${vacancyId}` : "new-title"}
           className="text-sm font-medium"
         >
-          Title <span className="text-destructive">*</span>
+          Título <span className="text-destructive">*</span>
         </label>
         <Input
           id={vacancyId ? `edit-title-${vacancyId}` : "new-title"}
           name="title"
           required
           maxLength={200}
-          defaultValue={defaults?.title ?? ""}
+          value={titleForSuggest}
+          onChange={(e) => setTitleForSuggest(e.target.value)}
           aria-invalid={Boolean(fieldErrors?.title)}
         />
         {fieldErrors?.title ? (
@@ -118,23 +170,52 @@ export function VacancyRecordFormFields({
 
       <div className="space-y-2">
         <label
+          htmlFor={vacancyId ? `edit-company-${vacancyId}` : "new-company"}
+          className="text-sm font-medium"
+        >
+          Empresa <span className="text-destructive">*</span>
+        </label>
+        <select
+          id={vacancyId ? `edit-company-${vacancyId}` : "new-company"}
+          name="companyId"
+          required
+          className={selectClass}
+          value={selectedCompanyId}
+          onChange={(e) => handleCompanyChange(e.target.value)}
+          aria-invalid={Boolean(fieldErrors?.companyId)}
+        >
+          <option value="" disabled>
+            Selecciona una empresa…
+          </option>
+          {companies.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        {fieldErrors?.companyId ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.companyId}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <label
           htmlFor={vacancyId ? `edit-opportunity-${vacancyId}` : "new-opportunity"}
           className="text-sm font-medium"
         >
-          Opportunity <span className="text-destructive">*</span>
+          Oportunidad <span className="text-muted-foreground font-normal">(opcional)</span>
         </label>
         <select
           id={vacancyId ? `edit-opportunity-${vacancyId}` : "new-opportunity"}
           name="opportunityId"
-          required
           className={selectClass}
           defaultValue={defaults?.opportunityId ?? ""}
           aria-invalid={Boolean(fieldErrors?.opportunityId)}
         >
-          <option value="" disabled>
-            Select an opportunity…
-          </option>
-          {opportunities.map((o) => (
+          <option value="">Ninguna</option>
+          {filteredOpportunities.map((o) => (
             <option key={o.id} value={o.id}>
               {o.companyName} — {o.title}
             </option>
@@ -147,13 +228,48 @@ export function VacancyRecordFormFields({
         ) : null}
       </div>
 
+      <div className="space-y-2">
+        <label
+          htmlFor={vacancyId ? `edit-contact-${vacancyId}` : "new-contact"}
+          className="text-sm font-medium"
+        >
+          Contacto líder <span className="text-destructive">*</span>
+        </label>
+        <select
+          id={vacancyId ? `edit-contact-${vacancyId}` : "new-contact"}
+          name="contactId"
+          required
+          disabled={!selectedCompanyId}
+          className={selectClass}
+          value={selectedContactId}
+          onChange={(e) => setSelectedContactId(e.target.value)}
+          aria-invalid={Boolean(fieldErrors?.contactId)}
+        >
+          <option value="" disabled>
+            {selectedCompanyId
+              ? "Selecciona un contacto…"
+              : "Selecciona primero una empresa"}
+          </option>
+          {filteredContacts.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.displayName}
+            </option>
+          ))}
+        </select>
+        {fieldErrors?.contactId ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.contactId}
+          </p>
+        ) : null}
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label
             htmlFor={vacancyId ? `edit-seniority-${vacancyId}` : "new-seniority"}
             className="text-sm font-medium"
           >
-            Seniority <span className="text-destructive">*</span>
+            Senioridad <span className="text-destructive">*</span>
           </label>
           <select
             id={vacancyId ? `edit-seniority-${vacancyId}` : "new-seniority"}
@@ -181,7 +297,7 @@ export function VacancyRecordFormFields({
             htmlFor={vacancyId ? `edit-status-${vacancyId}` : "new-status"}
             className="text-sm font-medium"
           >
-            Status <span className="text-destructive">*</span>
+            Estado <span className="text-destructive">*</span>
           </label>
           <select
             id={vacancyId ? `edit-status-${vacancyId}` : "new-status"}
@@ -211,7 +327,7 @@ export function VacancyRecordFormFields({
             htmlFor={vacancyId ? `edit-rate-${vacancyId}` : "new-rate"}
             className="text-sm font-medium"
           >
-            Target rate
+            Tarifa objetivo
           </label>
           <Input
             id={vacancyId ? `edit-rate-${vacancyId}` : "new-rate"}
@@ -237,14 +353,11 @@ export function VacancyRecordFormFields({
             htmlFor={vacancyId ? `edit-currency-${vacancyId}` : "new-currency"}
             className="text-sm font-medium"
           >
-            Currency
+            Moneda
           </label>
-          <Input
+          <CurrencySelect
             id={vacancyId ? `edit-currency-${vacancyId}` : "new-currency"}
-            name="currency"
-            placeholder="EUR"
-            maxLength={3}
-            defaultValue={defaults?.currency ?? "EUR"}
+            defaultValue={defaults?.currency ?? "MXN"}
             aria-invalid={Boolean(fieldErrors?.currency)}
           />
           {fieldErrors?.currency ? (
@@ -260,13 +373,14 @@ export function VacancyRecordFormFields({
           htmlFor={vacancyId ? `edit-roleSummary-${vacancyId}` : "new-roleSummary"}
           className="text-sm font-medium"
         >
-          Role scope (placeholder)
+          Alcance del rol (provisional)
         </label>
         <Input
           id={vacancyId ? `edit-roleSummary-${vacancyId}` : "new-roleSummary"}
           name="roleSummary"
           maxLength={400}
-          defaultValue={defaults?.roleSummaryLine ?? ""}
+          value={summaryForSuggest}
+          onChange={(e) => setSummaryForSuggest(e.target.value)}
           aria-invalid={Boolean(fieldErrors?.roleSummary)}
         />
         {fieldErrors?.roleSummary ? (
@@ -276,11 +390,47 @@ export function VacancyRecordFormFields({
         ) : null}
       </div>
 
+      <div className="space-y-2">
+        <label
+          htmlFor={vacancyId ? `edit-modality-${vacancyId}` : "new-modality"}
+          className="text-sm font-medium"
+        >
+          Modalidad de trabajo
+        </label>
+        <select
+          id={vacancyId ? `edit-modality-${vacancyId}` : "new-modality"}
+          name="workModality"
+          className={selectClass}
+          defaultValue={
+            workModalityLegacy ? workModalityLegacy : workModalityCurrent || ""
+          }
+          aria-invalid={Boolean(fieldErrors?.workModality)}
+        >
+          <option value="">Sin especificar</option>
+          {CANDIDATE_WORK_MODALITY_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+          {workModalityLegacy ? (
+            <option value={workModalityLegacy}>
+              {workModalityLegacy} (valor actual)
+            </option>
+          ) : null}
+        </select>
+        {fieldErrors?.workModality ? (
+          <p className="text-sm text-destructive" role="alert">
+            {fieldErrors.workModality}
+          </p>
+        ) : null}
+      </div>
+
       <VacancyRequirementsEditor
         skills={skills}
         value={requirements}
         onChange={setRequirements}
         error={fieldErrors?.requirements}
+        suggestionSeedText={`${titleForSuggest} ${summaryForSuggest}`.trim()}
       />
     </div>
   );
@@ -290,4 +440,3 @@ function useStateWithDefault<T>(defaultValue: T): [T, (v: T) => void] {
   const [state, setState] = React.useState<T>(defaultValue);
   return [state, setState];
 }
-

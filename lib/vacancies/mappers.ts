@@ -3,6 +3,8 @@ import type {
   VacancyStatus as PrismaVacancyStatus,
 } from "@/generated/prisma/enums";
 
+import { DEFAULT_CURRENCY, formatMoney } from "@/lib/currency";
+
 import type {
   VacancyListRow,
   VacancySeniorityUi,
@@ -10,20 +12,20 @@ import type {
 } from "./types";
 
 const prismaStatusToUi: Record<PrismaVacancyStatus, VacancyStatusUi> = {
-  DRAFT: "Draft",
-  OPEN: "Open",
-  ON_HOLD: "On hold",
+  DRAFT: "Borrador",
+  OPEN: "Abierta",
+  ON_HOLD: "En pausa",
   SOURCING: "Sourcing",
-  INTERVIEWING: "Interviewing",
-  FILLED: "Filled",
-  CANCELLED: "Cancelled",
+  INTERVIEWING: "En entrevistas",
+  FILLED: "Cubiertas",
+  CANCELLED: "Cancelada",
 };
 
 export const prismaSeniorityToUi: Record<
   PrismaVacancySeniority,
   VacancySeniorityUi
 > = {
-  INTERN: "Intern",
+  INTERN: "Interno",
   JUNIOR: "Junior",
   MID: "Mid",
   SENIOR: "Senior",
@@ -49,16 +51,8 @@ function parseDecimal(
 
 export function formatTargetRate(amount: number | null, currency: string) {
   if (amount == null || Number.isNaN(amount)) return "—";
-  try {
-    const formatted = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "EUR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-    return `${formatted} / hr`;
-  } catch {
-    return `${amount.toLocaleString("en-US")} ${currency} / hr`;
-  }
+  const formatted = formatMoney(amount, currency?.trim() || DEFAULT_CURRENCY, 0);
+  return `${formatted} / h`;
 }
 
 function formatUpdatedAt(d: Date) {
@@ -78,26 +72,35 @@ export type VacancyWithRelations = {
   currency: string | null;
   skills: string | null;
   roleSummary: string | null;
+  workModality: string | null;
   updatedAt: Date;
-  opportunity: {
-    id: string;
-    title: string;
-    company: { id: string; name: string };
-  };
+  companyId: string;
+  company: { id: string; name: string };
+  opportunity: { id: string; title: string } | null;
+  contactId: string | null;
+  contact: { id: string; firstName: string; lastName: string | null; title: string | null } | null;
 };
 
 export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
-  const currency = row.currency?.trim() || "EUR";
+  const currency = row.currency?.trim() || DEFAULT_CURRENCY;
   const amount = parseDecimal(row.targetRate);
   const skillsLine = row.skills?.trim() || null;
   const roleSummaryLine = row.roleSummary?.trim() || null;
+  const contactName = row.contact
+    ? `${row.contact.firstName} ${row.contact.lastName ?? ""}`.trim()
+    : null;
+  const contactTitle = row.contact?.title?.trim() || null;
+
   return {
     id: row.id,
     title: row.title,
-    companyId: row.opportunity.company.id,
-    companyName: row.opportunity.company.name,
-    opportunityId: row.opportunity.id,
-    opportunityTitle: row.opportunity.title,
+    companyId: row.company.id,
+    companyName: row.company.name,
+    opportunityId: row.opportunity?.id ?? null,
+    opportunityTitle: row.opportunity?.title ?? null,
+    contactId: row.contactId ?? null,
+    contactName,
+    contactTitle,
     seniority: prismaSeniorityToUi[row.seniority],
     status: prismaStatusToUi[row.status],
     seniorityValue: row.seniority,
@@ -107,6 +110,7 @@ export function mapVacancyToListRow(row: VacancyWithRelations): VacancyListRow {
     currency,
     skillsLine,
     roleSummaryLine,
+    workModality: row.workModality?.trim() || null,
     updatedAtLabel: formatUpdatedAt(row.updatedAt),
   };
 }

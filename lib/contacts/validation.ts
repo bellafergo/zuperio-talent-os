@@ -30,6 +30,45 @@ function looksLikeEmail(v: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
+/** Identity-only updates (email/phone come from ContactMethod + sync). */
+export function parseContactIdentityForm(
+  formData: FormData,
+): ContactFormValidationResult {
+  const fieldErrors: Record<string, string> = {};
+
+  const firstNameRaw = parseOptionalTrimmed(formData, "firstName") ?? "";
+  if (!firstNameRaw) fieldErrors.firstName = "El nombre es obligatorio.";
+  const firstName = firstNameRaw;
+
+  const lastName = parseOptionalTrimmed(formData, "lastName");
+  const title = parseOptionalTrimmed(formData, "title");
+
+  const companyId = parseOptionalTrimmed(formData, "companyId") ?? "";
+  if (!companyId) fieldErrors.companyId = "La empresa es obligatoria.";
+
+  const statusRaw = parseOptionalTrimmed(formData, "status") ?? "";
+  if (!statusRaw || !STATUS_SET.has(statusRaw)) {
+    fieldErrors.status = "Selecciona un estado válido.";
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { ok: false, fieldErrors };
+  }
+
+  return {
+    ok: true,
+    data: {
+      firstName,
+      lastName,
+      email: null,
+      phone: null,
+      title,
+      companyId,
+      status: statusRaw as ContactStatus,
+    },
+  };
+}
+
 export function parseContactForm(formData: FormData): ContactFormValidationResult {
   const fieldErrors: Record<string, string> = {};
 
